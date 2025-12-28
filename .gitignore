@@ -1,0 +1,40 @@
+# Node
+node_modules/
+.npm/
+.pnpm-store/
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+backend/dist/
+frontend/.next/
+frontend/out/
+
+# Next.js lint output
+frontend/.next-lint.json
+
+# Local volumes
+volumes/
+
+# Backup artifacts (keep scripts/templates tracked)
+backups/*.sql
+backups/*.sql.gz
+backups/*.dump
+backups/*.tar
+backups/*.tar.gz
+
+# IDE
+.vscode/
+.idea/
