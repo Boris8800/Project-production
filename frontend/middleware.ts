@@ -20,7 +20,7 @@ export function middleware(req: NextRequest) {
   const tenant = tenantFromHost(host);
 
   // Rewrite everything to per-tenant route tree
-  url.pathname = `/_tenants/${tenant}${url.pathname}`;
+  url.pathname = `/tenants/${tenant}${url.pathname}`;
   return NextResponse.rewrite(url);
 }
 
