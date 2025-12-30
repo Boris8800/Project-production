@@ -2879,7 +2879,6 @@ JWT_REFRESH_SECRET=
 NEXT_PUBLIC_API_URL=
 CORS_ORIGINS=
 EOF
-    chmod 600 "${file}" || true
   fi
 
   # Generate secrets if missing
@@ -2897,6 +2896,10 @@ EOF
   # Prefer going through nginx proxy on port 80 when available
   ensure_env_kv "${file}" NEXT_PUBLIC_API_URL "http://${ip}/api"
   ensure_env_kv "${file}" CORS_ORIGINS "http://${ip},http://${ip}:3000"
+  
+  # Ensure file is readable by deploy user
+  chmod 644 "${file}" || true
+  chown "${SUDO_USER:-root}:${SUDO_USER:-root}" "${file}" 2>/dev/null || true
 }
 
 setup_frontend_host_service() {
@@ -2941,6 +2944,11 @@ main() {
   install_docker_compose
   configure_firewall_ip_mode
   ensure_ip_env_file "${ip}"
+  
+  # Ensure repo is owned by the deploy user (if running from fresh install as root)
+  if [ -n "${SUDO_USER:-}" ] && [ "${SUDO_USER}" != "root" ]; then
+    chown -R "${SUDO_USER}:${SUDO_USER}" . 2>/dev/null || true
+  fi
 
   print
   print "Starting stack (docker-compose.yml)"
