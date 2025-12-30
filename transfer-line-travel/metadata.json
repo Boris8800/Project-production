@@ -1,0 +1,8 @@
+
+{
+  "name": "Transfer Line Travel",
+  "description": "A bespoke intercity travel and chauffeur service web application specializing in UK-wide executive transport.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

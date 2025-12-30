@@ -1,0 +1,24 @@
+
+{
+  "name": "Transfer Line Travel",
+  "short_name": "Transfer Line",
+  "description": "Executive intercity travel and chauffeur service across the United Kingdom.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0C0B09",
+  "theme_color": "#B4966B",
+  "icons": [
+    {
+      "src": "https://fonts.gstatic.com/s/i/short-term/release/googlesymbols/support_agent/default/48px.svg",
+      "sizes": "48x48",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "https://fonts.gstatic.com/s/i/short-term/release/googlesymbols/support_agent/default/192px.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
