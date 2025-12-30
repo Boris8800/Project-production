@@ -4182,7 +4182,7 @@ build_frontend() {
   require_cmd sudo
 
   print "[frontend] Building (npm ci && npm run build) as ${SERVICE_USER}"
-  print "         ${C_DIM}(npm warnings are normal and can be ignored)${C_RESET}"
+  print "         (npm warnings are normal and can be ignored)"
   sudo -u "${SERVICE_USER}" -H bash -lc "
     set -euo pipefail
     cd '${FRONTEND_DIR}'
