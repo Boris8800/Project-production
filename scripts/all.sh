@@ -4182,6 +4182,7 @@ build_frontend() {
   require_cmd sudo
 
   print "[frontend] Building (npm ci && npm run build) as ${SERVICE_USER}"
+  print "         ${C_DIM}(npm warnings are normal and can be ignored)${C_RESET}"
   sudo -u "${SERVICE_USER}" -H bash -lc "
     set -euo pipefail
     cd '${FRONTEND_DIR}'
@@ -4190,7 +4191,7 @@ build_frontend() {
       . '${ENV_FILE}'
       set +a
     fi
-    npm ci
+    npm ci --loglevel=error 2>&1 | grep -v 'deprecated' || true
     npm run build
   "
 }
