@@ -1633,85 +1633,128 @@ run_env_menu() {
   done
 }
 
+print_system_summary() {
+  print "================================================================="
+  print "  SYSTEM SUMMARY"
+  print "================================================================="
+  
+  local load mem disk
+  load="$(uptime | awk -F'load average:' '{ print $2 }' | cut -d, -f1 | xargs || echo "N/A")"
+  mem="$(free -m 2>/dev/null | awk '/Mem:/ { printf "%d/%d MB", $3, $2 }' || echo "N/A")"
+  disk="$(df -h / 2>/dev/null | awk '/\// { print $5 }' | tail -1 || echo "N/A")"
+  
+  printf "  Load: %-10s | RAM: %-15s | Disk: %-5s\n" "${load}" "${mem}" "${disk}"
+
+  if command -v docker >/dev/null 2>&1; then
+    local containers
+    containers="$(docker ps -q | wc -l)"
+    if [ "${containers}" -gt 0 ]; then
+      printf "  Docker: ${C_GREEN}%s containers running${C_RESET}\n" "${containers}"
+    else
+      printf "  Docker: ${C_YELLOW}0 containers running${C_RESET}\n"
+    fi
+  else
+    printf "  Docker: ${C_RED}Not installed${C_RESET}\n"
+  fi
+
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    local branch local_hash
+    branch="$(git rev-parse --abbrev-ref HEAD)"
+    local_hash="$(git rev-parse --short HEAD)"
+    printf "  Branch: ${C_CYAN}%s${C_RESET} (%s)\n" "${branch}" "${local_hash}"
+  fi
+  print "================================================================="
+}
+
+confirm_action() {
+  local msg="${1:-Are you sure?}"
+  local resp
+  resp="$(prompt "${msg} (y/N)" "n")"
+  if [[ "${resp}" =~ ^[yY] ]]; then
+    return 0
+  fi
+  return 1
+}
+
 run_pro_menu() {
   require_root
   cd "$(repo_root)"
   require_repo_root
 
   while true; do
-    print
-    print "Pro menu (advanced)"
-    print "- For experienced operators."
-    print "- These actions can restart services and change server state."
-    print
-    print "1) Show update status (pending GitHub commits)"
-    print "2) Update from GitHub + redeploy (stash local changes)"
-    print "3) Update from GitHub + redeploy (DISCARD local changes)"
-    print "4) Redeploy now (no git update)"
-    print "5) Update host frontend (rebuild + restart systemd)"
-    print "6) Restart stack (docker compose restart)"
-    print "7) Tail logs (choose service)"
-    print "8) Status + Health check"
-    print "9) Back"
-    print
+    clear
+    print "================================================================="
+    print "  PRO MANAGEMENT MENU (Advanced)"
+    print "================================================================="
+    print " 1) Git: Show pending commits (origin/main)"
+    print " 2) Git: Stash local changes & Update"
+    print " 3) Git: DISCARD local changes & Update (Force)"
+    print " 4) Docker: Restart entire stack"
+    print " 5) Docker: Prune unused images/volumes (Clean Disk)"
+    print " 6) Docker: Force rebuild (no-cache)"
+    print " 7) Database: Reset/Wipe (DANGER!)"
+    print " 8) Frontend: Update host-mode frontend"
+    print " 9) System: View journalctl logs"
+    print "10) System: Check open ports (netstat)"
+    print " 0) Back to Main Menu"
+    print "================================================================="
 
     local choice
-    choice="$(prompt "Choose" "1")"
+    choice="$(prompt "Choose" "0")"
     case "${choice}" in
       1)
-        require_cmd git
-        if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-          print "ERROR: Not a git repository"
-          pause
-          continue
-        fi
         print "[pro] Fetching origin..."
         git fetch -q origin || true
-        print
-        print "[pro] Current: $(git rev-parse --short HEAD 2>/dev/null || true)"
-        print "[pro] Pending commits (HEAD..origin/main):"
-        git log --oneline --decorate --no-color HEAD..origin/main 2>/dev/null | head -n 50 || true
+        print "[pro] Pending commits:"
+        git log --oneline --decorate HEAD..origin/main 2>/dev/null || echo "No pending commits or not a git repo."
         pause
         ;;
       2)
-        print "[pro] Updating from GitHub + redeploy (stash)"
+        print "[pro] Stashing and updating..."
+        git stash
         SYNC_REPO=true AUTO_STASH=true FORCE_RESET=false bash scripts/all.sh deploy
         pause
         ;;
       3)
-        print "[pro] Updating from GitHub + redeploy (DISCARD local changes)"
-        print "[pro] WARNING: This resets any local changes on the server."
+        confirm_action "This will DISCARD all local changes. Continue?" || continue
+        git reset --hard HEAD
         SYNC_REPO=true AUTO_STASH=false FORCE_RESET=true bash scripts/all.sh deploy
         pause
         ;;
       4)
-        print "[pro] Redeploying (no git update)"
-        SYNC_REPO=false bash scripts/all.sh deploy
+        cmd_stack_restart
         pause
         ;;
       5)
-        print "[pro] Updating host frontend"
-        bash scripts/all.sh setup-frontend-host
+        confirm_action "This will delete all unused Docker data. Continue?" || continue
+        docker system prune -af --volumes
         pause
         ;;
       6)
-        print "[pro] Restarting stack"
-        cmd_stack_restart || true
+        confirm_action "This will force a full rebuild of all images. Continue?" || continue
+        prod build --no-cache
+        prod up -d
         pause
         ;;
       7)
-        local svc
-        svc="$(prompt "Service (example: backend-api, nginx-proxy, postgres)" "backend-api")"
-        cmd_stack_logs "${svc}" || true
+        confirm_action "DANGER: This will WIPE the database volumes. Continue?" || continue
+        prod down -v
+        prod up -d
         pause
         ;;
       8)
-        cmd_stack_status || true
-        print
-        cmd_stack_health || true
+        bash scripts/all.sh setup-frontend-host
         pause
         ;;
-      9) break ;;
+      9)
+        journalctl -u docker --no-pager -n 50
+        pause
+        ;;
+      10)
+        netstat -tulpn
+        pause
+        ;;
+      0) break ;;
       *) print "Invalid option" ;;
     esac
   done
@@ -1723,60 +1766,58 @@ run_menu() {
   require_repo_root
 
   while true; do
+    clear
+    print_system_summary
     print
-    print "Project - Main Menu"
-    print_current_config
+    print "--- DEPLOYMENT & SETUP ---"
+    print " 1) First-time setup wizard (recommended)"
+    print " 2) Standard Deploy (guided)"
+    print " 3) IP-only Deploy (no domain/SSL)"
+    print " 4) Dry-run Deploy (test only)"
     print
-    print "0) First-time setup wizard (recommended)"
-    print "1) First-time deploy (guided)"
-    print "1a) IP-only deploy (no domain/SSL)"
-    print "2) Update from GitHub + redeploy"
-    print "3) App management (start/stop/status/logs/health)"
-    print "4) SSL / HTTPS (Let's Encrypt)"
-    print "5) Database (backup/restore)"
-    print "6) Monitoring (Grafana/Prometheus/Loki)"
-    print "7) System / security (updates, firewall)"
-    print "8) .env.production (view/edit)"
-    print "9) Troubleshoot (guided checks)"
-    print "10) Preflight checks"
-    print "10a) Complete check (everything)"
-    print "11) Integrations (API keys)"
-    print "12) Help"
-    print "13) Domain change wizard"
-    print "14) Show all (dashboard)"
-    print "15) Ops web dashboard"
-    print "16) Dry-run deploy"
-    print "17) Rollback"
-    print "18) Pro menu (advanced update/ops)"
-    print "19) Quit"
+    print "--- UPDATES & MAINTENANCE ---"
+    print " 5) Update from GitHub + Redeploy"
+    print " 6) Rollback to previous version"
+    print " 7) System & Security updates (apt/firewall)"
+    print
+    print "--- SERVICE MANAGEMENT ---"
+    print " 8) App Management (start/stop/status/logs)"
+    print " 9) Monitoring Dashboard (Grafana/Prometheus)"
+    print "10) View/Edit .env.production"
+    print
+    print "--- DATA & DOMAIN ---"
+    print "11) Database Tools (backup/restore)"
+    print "12) SSL / HTTPS Management"
+    print "13) Domain Change Wizard"
+    print
+    print "--- ADVANCED ---"
+    print "14) Troubleshoot & Preflight checks"
+    print "15) Pro Menu (Advanced Ops)"
+    print "16) Help & Documentation"
+    print " 0) Exit"
     print
 
     local choice
-    choice="$(prompt "Choose" "1")"
+    choice="$(prompt "Choose" "0")"
 
     case "${choice}" in
-      0) run_first_time_wizard ;;
-      1) run_deploy_guided ;;
-      1a) run_deploy_ip_mode ;;
-      2) run_update_guided ;;
-      3) run_manage_menu ;;
-      4) run_ssl_menu ;;
-      5) run_database_menu ;;
-      6) run_monitoring_menu ;;
+      1) run_first_time_wizard ;;
+      2) run_deploy_guided ;;
+      3) run_deploy_ip_mode ;;
+      4) run_dry_run_deploy ;;
+      5) run_update_guided ;;
+      6) run_rollback_menu ;;
       7) run_system_menu ;;
-      8) run_env_menu ;;
-      9) cmd_stack_troubleshoot; pause ;;
-      10) cmd_preflight_checks; pause ;;
-      10a) cmd_full_check; pause ;;
-      11) run_integrations_menu ;;
-      12) run_help_menu ;;
+      8) run_manage_menu ;;
+      9) run_monitoring_menu ;;
+      10) run_env_menu ;;
+      11) run_database_menu ;;
+      12) run_ssl_menu ;;
       13) run_domain_change_wizard ;;
-      14) run_show_all_dashboard ;;
-      15) run_ops_web_dashboard_menu ;;
-      16) run_dry_run_deploy ;;
-      17) run_rollback_menu ;;
-      18) run_pro_menu ;;
-      19) break ;;
+      14) cmd_full_check; pause ;;
+      15) run_pro_menu ;;
+      16) run_help_menu ;;
+      0) break ;;
       *) print "Invalid option" ;;
     esac
   done
