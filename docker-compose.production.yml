@@ -89,7 +89,7 @@ services:
       - internal
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h localhost"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -128,6 +128,11 @@ services:
       - ./.env.production
     environment:
       PORT: 4000
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_USER: ${POSTGRES_USER:-Project_admin}
+      POSTGRES_DB: ${POSTGRES_DB:-Project}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - internal
     restart: unless-stopped
@@ -140,19 +145,18 @@ services:
       - /bin/sh
       - -c
       - |
-        echo "Waiting for database ($${POSTGRES_HOST}:$${POSTGRES_PORT}) to be ready..."
-        until pg_isready -h "$${POSTGRES_HOST}" -p "$${POSTGRES_PORT}" -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"; do
-          echo "Database not ready yet, sleeping..."
+        echo "Waiting for database to be ready..."
+        until pg_isready -h "$${POSTGRES_HOST:-postgres}" -p "$${POSTGRES_PORT:-5432}" -U "$${POSTGRES_USER:-Project_admin}"; do
           sleep 2
         done
         echo "Database is ready. Starting backend."
         node dist/src/main.js
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4000/v1/health || exit 1"]
-      interval: 15s
+      interval: 20s
       timeout: 10s
-      retries: 15
-      start_period: 45s
+      retries: 10
+      start_period: 60s
     logging:
       driver: "json-file"
       options:
