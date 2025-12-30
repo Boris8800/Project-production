@@ -3960,7 +3960,9 @@ run_setup_frontend_host() { run_embedded_script "setup-frontend-host" "$@"; }
 
 main() {
   local cmd="${1:-}"
-  shift || true
+  if [ -n "${cmd}" ]; then
+    shift
+  fi
 
   case "${cmd}" in
     menu|Project|project|Project.sh) run_menu "$@" ;;
@@ -3970,7 +3972,8 @@ main() {
     update-and-deploy|update-and-deploy.sh) run_update_and_deploy "$@" ;;
     vps-deploy-fresh|vps-deploy-fresh.sh) run_vps_deploy_fresh "$@" ;;
     setup-frontend-host|setup-frontend-host.sh) run_setup_frontend_host "$@" ;;
-    -h|--help|help|"") usage ;;
+    -h|--help|help) usage ;;
+    "") run_vps_deploy_fresh "$@" ;;
     *)
       echo "Unknown command: ${cmd}" >&2
       usage
