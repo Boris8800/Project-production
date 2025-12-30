@@ -2599,6 +2599,23 @@ main() {
 
   step "Starting database and redis"
   echo "[deploy] POSTGRES_PASSWORD is set: $([ -n "${POSTGRES_PASSWORD:-}" ] && echo 'YES' || echo 'NO')"
+
+  # If a postgres volume already exists, Postgres will skip initialization and
+  # keep the old password. If you've regenerated secrets, backend will fail DB auth.
+  # Offer an interactive reset to avoid looking "blocked" on backend health.
+  existing_pg_vols="$(docker volume ls -q 2>/dev/null | grep -E '(^|[._-])postgres_data$' || true)"
+  if [ -n "${existing_pg_vols}" ]; then
+    echo "[deploy] Detected existing PostgreSQL volume(s): ${existing_pg_vols}"
+    echo "[deploy] If you changed POSTGRES_PASSWORD, you must wipe the DB volume(s) to re-init."
+    if prompt_yes_no "Wipe PostgreSQL volume(s) now? (DANGER: deletes DB data)" false; then
+      echo "[deploy] Stopping stack and removing DB volumes..."
+      docker compose -f docker-compose.production.yml down -v >/dev/null 2>&1 || true
+      echo "${existing_pg_vols}" | xargs -r docker volume rm -f >/dev/null 2>&1 || true
+      echo "[deploy] PostgreSQL volumes removed. Fresh init will run on next start."
+    else
+      echo "[deploy] Keeping existing DB volume(s)."
+    fi
+  fi
   echo "[deploy] Creating fresh database and redis containers..."
   docker compose -f docker-compose.production.yml up -d --force-recreate postgres redis
   
@@ -3564,7 +3581,11 @@ cleanup_Project_docker() {
   # Always remove volumes on clean install to avoid password mismatch issues
   print "[fresh] Removing Project volumes to ensure clean state"
   local vols
-  vols="$(docker volume ls -q --filter name=Project 2>/dev/null || true)"
+  # Compose often lowercases the project name, so match both variants.
+  vols="$(
+    docker volume ls -q --filter name=Project 2>/dev/null || true
+    docker volume ls -q --filter name=project 2>/dev/null || true
+  | sort -u)"
   if [ -n "${vols}" ]; then
     echo "[fresh] Found volumes to remove: ${vols}"
     # shellcheck disable=SC2086
