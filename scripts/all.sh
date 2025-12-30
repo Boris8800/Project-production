@@ -3590,9 +3590,11 @@ cleanup_Project_docker() {
   local vols
   # Compose often lowercases the project name, so match both variants.
   vols="$(
-    docker volume ls -q --filter name=Project 2>/dev/null || true
-    docker volume ls -q --filter name=project 2>/dev/null || true
-  | sort -u)"
+    {
+      docker volume ls -q --filter name=Project 2>/dev/null || true
+      docker volume ls -q --filter name=project 2>/dev/null || true
+    } | sort -u
+  )"
   if [ -n "${vols}" ]; then
     echo "[fresh] Found volumes to remove: ${vols}"
     # shellcheck disable=SC2086
@@ -3604,9 +3606,10 @@ cleanup_Project_docker() {
   fi
   
   # Verify critical volumes are gone
-  if docker volume ls | grep -q "Project.*postgres"; then
+  if docker volume ls | grep -qiE "(Project|project).*postgres"; then
     print "[fresh] WARNING: PostgreSQL volume still exists, forcing removal..."
     docker volume rm -f Project_postgres_data 2>&1 || true
+    docker volume rm -f project_postgres_data 2>&1 || true
   fi
   
   # Wait a moment for cleanup to complete
