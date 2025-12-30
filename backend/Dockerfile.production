@@ -17,8 +17,8 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Install postgresql-client for pg_isready and curl for health checks
-RUN apk add --no-cache postgresql-client curl
+# Install postgresql-client for pg_isready, curl for health checks, and netcat for connectivity checks
+RUN apk add --no-cache postgresql-client curl netcat-openbsd
 
 RUN addgroup -S nodejs && adduser -S nodeuser -G nodejs
 

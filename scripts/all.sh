@@ -2572,7 +2572,7 @@ main() {
   bash scripts/all.sh setup-ssl
 
   step "Starting application services"
-  docker compose -f docker-compose.production.yml up -d
+  docker compose -f docker-compose.production.yml up -d --build
 
   if [ "${START_MONITORING}" = "true" ]; then
     step "Starting monitoring stack"

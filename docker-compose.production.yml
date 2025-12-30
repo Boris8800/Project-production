@@ -159,8 +159,12 @@ services:
         fi
 
         echo "Waiting for database server to accept connections..."
-        until pg_isready -h "$${POSTGRES_HOST:-postgres}" -p "$${POSTGRES_PORT:-5432}"; do
-          echo "Postgres is not ready yet... waiting 2s"
+        until command -v pg_isready >/dev/null 2>&1 && pg_isready -h "$${POSTGRES_HOST:-postgres}" -p "$${POSTGRES_PORT:-5432}"; do
+          if ! command -v pg_isready >/dev/null 2>&1; then
+            echo "ERROR: pg_isready not found in container. Check Dockerfile."
+          else
+            echo "Postgres is not ready yet... waiting 2s"
+          fi
           sleep 2
         done
         
