@@ -4,6 +4,6 @@ import { Controller, Get } from '@nestjs/common';
 export class AppController {
   @Get('/')
   root() {
-    return { name: 'Rapid Roads API', status: 'ok' };
+    return { name: 'Project API', status: 'ok' };
   }
 }

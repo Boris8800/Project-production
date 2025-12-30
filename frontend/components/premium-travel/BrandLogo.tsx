@@ -12,7 +12,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ className = '', size = 40 }) => {
     <div
       className={`rounded-xl flex items-center justify-center ${className}`}
       style={{ width: size, height: size }}
-      aria-label="Rapid Roads"
+      aria-label="Project"
       role="img"
     >
       <svg

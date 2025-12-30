@@ -1,4 +1,4 @@
--- Rapid Roads Taxi System - Seed data (bootstrap)
+-- Project - Seed data (bootstrap)
 -- Runs on first init only.
 
 BEGIN;

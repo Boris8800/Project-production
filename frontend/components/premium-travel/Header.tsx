@@ -20,7 +20,7 @@ const Header: React.FC<HeaderProps> = ({ toggleDarkMode, isDarkMode, onHomeClick
           className="flex items-center gap-4 text-slate-900 dark:text-white hover:opacity-80 transition-opacity cursor-pointer text-left"
         >
           <BrandLogo size={36} />
-          <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] font-display">Rapid Roads</h2>
+          <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] font-display">Project</h2>
         </button>
         
         <div className="hidden md:flex flex-1 justify-end gap-8 items-center">

@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   const history = Array.isArray(body.history) ? body.history : [];
 
   const systemInstruction =
-    "You are a professional, helpful, and sophisticated UK travel concierge for Rapid Roads. Use British English. Prices in GBP (£). Always maintain an elite and refined tone.";
+    "You are a professional, helpful, and sophisticated UK travel concierge for Project. Use British English. Prices in GBP (£). Always maintain an elite and refined tone.";
 
   try {
     const ai = new GoogleGenAI({ apiKey });

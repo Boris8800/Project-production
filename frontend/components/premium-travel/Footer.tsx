@@ -20,7 +20,7 @@ const Footer: React.FC<FooterProps> = ({ onHomeClick, onCategoryChange }) => {
               className="flex items-center gap-3 text-white mb-8 hover:opacity-80 transition-opacity cursor-pointer text-left"
             >
               <BrandLogo size={40} />
-              <h2 className="text-xl font-bold font-display">Rapid Roads</h2>
+              <h2 className="text-xl font-bold font-display">Project</h2>
             </button>
             <p className="text-text-muted text-sm max-w-xs mb-8 leading-relaxed">
               The premium choice for intercity travel, airport transfers, and bespoke chauffeur services across the United Kingdom. Reliable, safe, and comfortable.
@@ -60,7 +60,7 @@ const Footer: React.FC<FooterProps> = ({ onHomeClick, onCategoryChange }) => {
         </div>
         
         <div className="border-t border-surface-dark-lighter pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-text-muted text-xs font-medium">© 2024 Rapid Roads Inc. All rights reserved.</p>
+          <p className="text-text-muted text-xs font-medium">© 2024 Project. All rights reserved.</p>
           <div className="flex gap-8 text-xs text-text-muted font-medium">
             <a className="hover:text-white transition-colors" href="#">Privacy</a>
             <a className="hover:text-white transition-colors" href="#">Terms</a>

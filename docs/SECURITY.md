@@ -12,7 +12,7 @@
 - Optional CSRF middleware (enable with `ENABLE_CSRF=true` when you rely on cookies)
 
 ## Host security
-- `ufw` + `fail2ban` installed by [scripts/deploy-Project.sh](scripts/deploy-Project.sh)
+- `ufw` + `fail2ban` installed by [scripts/all.sh](../scripts/all.sh) (deploy)
 - `unattended-upgrades` enabled
 
 ## Secrets

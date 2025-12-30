@@ -1,9 +1,9 @@
 apiVersion: 1
 
 dashboards:
-  - name: RapidRoads
+  - name: Project
     orgId: 1
-    folder: "RapidRoads"
+    folder: "Project"
     type: file
     disableDeletion: true
     updateIntervalSeconds: 30

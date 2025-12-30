@@ -1,4 +1,4 @@
-# Rapid Roads Taxi System (Production)
+# Project (Production)
 
 Production-ready monorepo scaffold for:
 - **rapidroad.uk** (customer booking)
@@ -7,7 +7,7 @@ Production-ready monorepo scaffold for:
 - **api.rapidroad.uk** (NestJS API)
 
 ## What’s in this repo (initial scaffold)
-- Docker Compose (production) for Nginx + API + Web (Next.js) + Postgres + Redis
+- Docker Compose (production) for Nginx + API + Postgres + Redis (frontend runs on the host in production)
 - Nginx reverse proxy layout (per-subdomain configs)
 - Env templates for production/development
 - Scripts directory (deploy/SSL/backup to be filled next)
@@ -15,7 +15,7 @@ Production-ready monorepo scaffold for:
 ## Next steps (you will run on the VPS)
 1. Point DNS A records to **5.249.164.40** for: `@`, `www`, `api`, `driver`, `admin`.
 2. Copy `.env.production.example` to `.env.production` and replace secrets/passwords.
-3. Run: `sudo bash scripts/deploy-Project.sh`.
+3. Run: `sudo bash scripts/all.sh deploy`.
 
 The deploy script will also:
 - Install Docker + Docker Compose

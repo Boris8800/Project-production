@@ -28,7 +28,7 @@ const Features: React.FC = () => {
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary text-[10px] font-black rounded uppercase tracking-[0.2em] mb-4">
             Our Commitment
           </div>
-          <h2 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white mb-4 tracking-tighter">Why Choose Rapid Roads?</h2>
+          <h2 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white mb-4 tracking-tighter">Why Choose Project?</h2>
           <p className="text-slate-500 dark:text-text-muted max-w-2xl mx-auto text-lg font-medium">We redefine long-distance travel with professional drivers and a heritage of excellence.</p>
         </div>
         

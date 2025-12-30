@@ -53,8 +53,8 @@ async function bootstrap() {
   );
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Rapid Roads API')
-    .setDescription('Production API for Rapid Roads Taxi System')
+    .setTitle('Project API')
+    .setDescription('Production API for Project')
     .setVersion('1.0.0')
     .addBearerAuth()
     .build();

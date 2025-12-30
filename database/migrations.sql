@@ -1,4 +1,4 @@
--- Rapid Roads Taxi System - Core schema (bootstrap)
+-- Project - Core schema (bootstrap)
 -- This runs only on *first* init of a fresh Postgres data volume.
 
 BEGIN;

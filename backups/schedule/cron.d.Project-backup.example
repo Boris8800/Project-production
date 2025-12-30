@@ -3,4 +3,4 @@
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-15 2 * * * root cd /opt/Project-production && BACKUP_DIR=/opt/Project-production/backups KEEP_DAYS=14 bash scripts/Project.sh backup >> backups/logs/backup.log 2>&1
+15 2 * * * root cd /opt/Project-production && BACKUP_DIR=/opt/Project-production/backups KEEP_DAYS=14 bash scripts/all.sh menu backup >> backups/logs/backup.log 2>&1

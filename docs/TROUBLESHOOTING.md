@@ -4,7 +4,7 @@
 - Ensure DNS records point to the VPS
 - Ensure ports 80/443 are open
 - Check Nginx is running: `docker compose -f docker-compose.production.yml ps`
-- Re-run: `bash scripts/setup-ssl.sh`
+- Re-run: `bash scripts/all.sh setup-ssl`
 
 ## 502 Bad Gateway
 - Check backend container health: `docker compose -f docker-compose.production.yml ps`

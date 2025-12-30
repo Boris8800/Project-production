@@ -84,7 +84,7 @@ async function buildStatus() {
   const checks = {
     nginxHostHealth: await fetchWithTimeout('http://Project-nginx/health').catch(() => ({ ok: false })),
     backendHealth: await fetchWithTimeout('http://backend-api:4000/v1/health'),
-    frontendHome: await fetchWithTimeout('http://frontend-web:3000/'),
+    frontendHome: await fetchWithTimeout('http://Project-nginx/'),
   };
 
   const apiInfo = {
@@ -93,7 +93,7 @@ async function buildStatus() {
       endpoints: ['/v1/health'],
     },
     frontendAiRoutes: {
-      note: 'These are Next.js server routes (run inside frontend container).',
+      note: 'These are Next.js server routes (served by the frontend process).',
       endpoints: ['/api/premium-travel/chat', '/api/premium-travel/route-map', '/api/premium-travel/destination-highlight'],
     },
   };
@@ -118,7 +118,7 @@ function htmlPage() {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Rapid Roads — Ops Dashboard</title>
+  <title>Project — Ops Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100">

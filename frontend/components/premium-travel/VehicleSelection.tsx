@@ -319,7 +319,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
           
           <footer className="mt-20 text-center border-t border-gray-200 dark:border-white/5 pt-16 mb-20">
             <p className="text-slate-400 dark:text-text-muted text-[10px] font-black leading-relaxed max-w-2xl mx-auto uppercase tracking-[0.3em]">
-              Rapid Roads operates a fleet of licensed, professionally maintained vehicles. Every {journeyMetrics.distance} mile journey is monitored 24/7 by our operations centre.
+              Project operates a fleet of licensed, professionally maintained vehicles. Every {journeyMetrics.distance} mile journey is monitored 24/7 by our operations centre.
             </p>
           </footer>
         </div>
