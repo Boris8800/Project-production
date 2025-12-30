@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server';
 
 function tenantFromHost(host: string) {
   const h = host.toLowerCase();
-  if (h.startsWith('driver.')) return 'driver';
-  if (h.startsWith('admin.')) return 'admin';
-  return 'customer';
+  if (h.startsWith('driver.')) return 'driver' as const;
+  if (h.startsWith('admin.')) return 'admin' as const;
+  return null;
 }
 
 export function middleware(req: NextRequest) {
@@ -16,10 +16,19 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // If user explicitly hits /tenants/*, don't rewrite again.
+  if (url.pathname.startsWith('/tenants/')) {
+    return NextResponse.next();
+  }
+
   const host = req.headers.get('host') ?? '';
   const tenant = tenantFromHost(host);
+  if (!tenant) {
+    // Main site stays public (no tenant prefix).
+    return NextResponse.next();
+  }
 
-  // Rewrite everything to per-tenant route tree
+  // Rewrite to per-tenant route tree (subdomains only)
   url.pathname = `/tenants/${tenant}${url.pathname}`;
   return NextResponse.rewrite(url);
 }

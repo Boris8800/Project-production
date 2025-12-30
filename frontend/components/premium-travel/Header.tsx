@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import BrandLogo from './BrandLogo';
 import { BookingCategory } from './types';
 
@@ -48,7 +49,12 @@ const Header: React.FC<HeaderProps> = ({ toggleDarkMode, isDarkMode, onHomeClick
                 {isDarkMode ? 'light_mode' : 'dark_mode'}
               </span>
             </button>
-            <button className="text-sm font-medium hover:text-primary transition-colors">Log In</button>
+            <Link
+              href="/tenants/customer"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
+              Log In
+            </Link>
             <button 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30 hover:bg-primary-dark transition-all"
