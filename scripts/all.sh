@@ -3282,10 +3282,10 @@ __PROJECT_SCRIPT__
 
 set -euo pipefail
 
-INSTALL_DIR="${INSTALL_DIR:-/opt/Project-production}"
+DEPLOY_USER="${DEPLOY_USER:-taxi}"
+INSTALL_DIR="${INSTALL_DIR:-/home/${DEPLOY_USER}/Project-production}"
 REPO_URL="${REPO_URL:-https://github.com/Boris8800/Project-production.git}"
 BRANCH="${BRANCH:-main}"
-DEPLOY_USER="${DEPLOY_USER:-taxi}"
 DEPLOY_MODE="${DEPLOY_MODE:-domain}"
 
 # IMPORTANT DEFAULTS (as requested):
@@ -3619,25 +3619,25 @@ ensure_env_kv() {
 }
 
 clone_or_update_repo() {
-  mkdir -p "$(dirname "${INSTALL_DIR}")"
-
   reset_install_dir_if_requested
 
   if [ -d "${INSTALL_DIR}/.git" ]; then
-    print "[fresh] Repo already exists at ${INSTALL_DIR}; updating"
-    cd "${INSTALL_DIR}"
-    git fetch -q origin
-    if git show-ref --verify --quiet "refs/remotes/origin/${BRANCH}"; then
-      git checkout -q "${BRANCH}" || git checkout -q -b "${BRANCH}" "origin/${BRANCH}"
-      git reset --hard -q "origin/${BRANCH}"
-    else
-      git checkout -q "${BRANCH}" || true
-    fi
+    print "[fresh] Repo already exists at ${INSTALL_DIR}; updating as ${DEPLOY_USER}"
+    sudo -u "${DEPLOY_USER}" -H bash -lc "
+      cd '${INSTALL_DIR}'
+      git fetch -q origin
+      git checkout -q '${BRANCH}' || git checkout -q -b '${BRANCH}' 'origin/${BRANCH}'
+      git reset --hard -q 'origin/${BRANCH}'
+    "
     return
   fi
 
-  print "[fresh] Cloning ${REPO_URL} -> ${INSTALL_DIR}"
-  git clone --depth 1 --branch "${BRANCH}" "${REPO_URL}" "${INSTALL_DIR}"
+  print "[fresh] Cloning ${REPO_URL} -> ${INSTALL_DIR} as ${DEPLOY_USER}"
+  # Ensure the parent directory is writable by the user (it should be /home/taxi)
+  mkdir -p "$(dirname "${INSTALL_DIR}")"
+  chown "${DEPLOY_USER}:${DEPLOY_USER}" "$(dirname "${INSTALL_DIR}")" || true
+  
+  sudo -u "${DEPLOY_USER}" -H git clone --depth 1 --branch "${BRANCH}" "${REPO_URL}" "${INSTALL_DIR}"
   cd "${INSTALL_DIR}"
 }
 
@@ -3683,22 +3683,30 @@ main() {
   configure_docker_for_user "${DEPLOY_USER}"
 
   clone_or_update_repo
-  ensure_env_file
 
-  print "[fresh] Setting repo ownership to ${DEPLOY_USER}"
-  chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${INSTALL_DIR}" || true
+  # Ensure env file exists and is owned by user
+  sudo -u "${DEPLOY_USER}" -H bash -lc "
+    cd '${INSTALL_DIR}'
+    if [ ! -f .env.production ]; then
+      if [ -f .env.production.example ]; then
+        cp .env.production.example .env.production
+        echo '[fresh] Created .env.production from .env.production.example'
+      fi
+    fi
+  "
 
   if [ -n "${vps_ip}" ]; then
     print "[fresh] Writing VPS_IP=${vps_ip} into .env.production"
-    ensure_env_kv ./.env.production VPS_IP "${vps_ip}"
+    ensure_env_kv "${INSTALL_DIR}/.env.production" VPS_IP "${vps_ip}"
   fi
 
-  chmod +x scripts/*.sh || true
+  print "[fresh] Finalizing ownership and permissions in ${INSTALL_DIR}"
+  chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${INSTALL_DIR}"
+  chmod +x "${INSTALL_DIR}/scripts/"*.sh || true
 
   if [ "${DEPLOY_MODE}" = "ip" ]; then
-    print "[fresh] Deploying in IP mode (no domain/SSL/nginx)"
-    cd "${INSTALL_DIR}"
-    bash scripts/all.sh deploy-ip
+    print "[fresh] Deploying in IP mode (no domain/SSL/nginx) as ${DEPLOY_USER}"
+    sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; bash scripts/all.sh deploy-ip"
   else
     print "[fresh] Deploying app as ${DEPLOY_USER} (domain mode)"
     # Run app-level steps (docker compose + SSL bootstrap) as the deploy user.
