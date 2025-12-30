@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TerminusModule } from '@nestjs/terminus';
-import * as pg from 'pg';
 
 import configuration from './config/configuration';
 import { databaseConfig } from './config/database.config';
@@ -28,9 +27,6 @@ const databaseImports = dbEnabled
       TypeOrmModule.forRootAsync({
         useFactory: () => ({
           type: 'postgres',
-          // Explicitly provide the pg driver to avoid CJS/ESM interop edge cases
-          // that can result in `Pool is not a constructor` at runtime.
-          driver: pg,
           host: process.env.POSTGRES_HOST,
           port: Number(process.env.POSTGRES_PORT ?? 5432),
           username: process.env.POSTGRES_USER,

@@ -63,6 +63,7 @@ async function bootstrap() {
   try {
     const dataSource = app.get(DataSource);
     if (dataSource) {
+      Logger.log('Starting database migrations...', 'Bootstrap');
       await dataSource.runMigrations();
       Logger.log('Migrations executed successfully', 'Bootstrap');
     }

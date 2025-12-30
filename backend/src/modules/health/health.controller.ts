@@ -19,4 +19,9 @@ export class HealthController {
 
     return this.health.check([async () => this.db!.pingCheck('postgres')]);
   }
+
+  @Get('ping')
+  ping() {
+    return { status: 'ok', timestamp: new Date().toISOString() };
+  }
 }

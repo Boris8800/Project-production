@@ -146,27 +146,34 @@ services:
       - -c
       - |
         echo "--- Backend Startup ---"
+        echo "Current User: $(id)"
         echo "DB Host: $${POSTGRES_HOST:-postgres}"
         echo "DB User: $${POSTGRES_USER:-Project_admin}"
         echo "DB Name: $${POSTGRES_DB:-Project}"
         
-        echo "Waiting for database to be ready..."
-        # Use pg_isready without -U to just check if the server is up
+        echo "Checking network connectivity to postgres..."
+        if nc -z "$${POSTGRES_HOST:-postgres}" "$${POSTGRES_PORT:-5432}"; then
+          echo "Network connection to postgres:5432 is OK"
+        else
+          echo "ERROR: Cannot reach postgres:5432 via network"
+        fi
+
+        echo "Waiting for database server to accept connections..."
         until pg_isready -h "$${POSTGRES_HOST:-postgres}" -p "$${POSTGRES_PORT:-5432}"; do
           echo "Postgres is not ready yet... waiting 2s"
           sleep 2
         done
         
-        echo "Database server is up. Giving it 10s to finish initialization..."
-        sleep 10
+        echo "Database server is up. Giving it 15s for initialization scripts..."
+        sleep 15
         echo "Starting NestJS application..."
         exec node dist/src/main.js
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:4000/v1/health || (echo 'Health check failed' && exit 1)"]
-      interval: 15s
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/v1/health || curl -f http://localhost:4000/v1/health/ping || exit 1"]
+      interval: 10s
       timeout: 10s
-      retries: 20
-      start_period: 120s
+      retries: 30
+      start_period: 180s
     logging:
       driver: "json-file"
       options:
