@@ -3058,6 +3058,66 @@ if ! docker compose version >/dev/null 2>&1; then
   fi
 fi
 
+resolve_ipv4() {
+  local host="$1"
+
+  if command -v dig >/dev/null 2>&1; then
+    dig +short "${host}" A | head -n 1
+    return 0
+  fi
+
+  if command -v getent >/dev/null 2>&1; then
+    getent ahostsv4 "${host}" 2>/dev/null | awk 'NR==1{print $1}'
+    return 0
+  fi
+
+  if command -v nslookup >/dev/null 2>&1; then
+    nslookup "${host}" 2>/dev/null | awk '/^Address: /{print $2}' | head -n 1
+    return 0
+  fi
+
+  return 1
+}
+
+detect_public_ip() {
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsS https://api.ipify.org || true
+  fi
+}
+
+# Avoid hard-failing fresh installs when DNS isn't pointed to this VPS yet.
+# If SKIP_LETSENCRYPT was explicitly set by the caller, respect it.
+if [ "${SKIP_LETSENCRYPT}" != "true" ]; then
+  if [ "${DOMAIN_ROOT}" = "yourdomain.com" ] || [[ "${DOMAIN_ROOT}" == *"example.com"* ]]; then
+    print "[SSL] DOMAIN_ROOT appears to be the example value (${DOMAIN_ROOT})."
+    print "[SSL] Defaulting SKIP_LETSENCRYPT=true (dummy certs only)."
+    SKIP_LETSENCRYPT="true"
+  else
+    expected_ip="${VPS_IP:-}"
+    if [ -z "${expected_ip}" ]; then
+      expected_ip="$(detect_public_ip)"
+    fi
+
+    if [ -n "${expected_ip}" ]; then
+      dns_ok=true
+      for d in "${DOMAINS[@]}"; do
+        resolved="$(resolve_ipv4 "${d}" || true)"
+        if [ -z "${resolved}" ] || [ "${resolved}" != "${expected_ip}" ]; then
+          dns_ok=false
+          print "[SSL] DNS not ready: ${d} -> ${resolved:-<no A record>} (expected ${expected_ip})"
+        fi
+      done
+      if [ "${dns_ok}" != "true" ]; then
+        print "[SSL] Defaulting SKIP_LETSENCRYPT=true (dummy certs only)."
+        SKIP_LETSENCRYPT="true"
+      fi
+    else
+      print "[SSL] Could not determine VPS public IP; defaulting SKIP_LETSENCRYPT=true."
+      SKIP_LETSENCRYPT="true"
+    fi
+  fi
+fi
+
 ensure_volume_file() {
   local volume_name="$1"
   local file_path="$2"
