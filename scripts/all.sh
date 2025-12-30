@@ -3421,6 +3421,13 @@ cleanup_Project_docker() {
 
   print "[fresh] Cleaning existing Project containers (freeing ports)"
 
+  # CRITICAL: Stop compose stack first to release volume locks
+  if [ -f /home/taxi/Project-production/docker-compose.production.yml ]; then
+    cd /home/taxi/Project-production || true
+    docker compose -f docker-compose.production.yml down -v 2>/dev/null || true
+    cd - >/dev/null || true
+  fi
+
   # Stop/remove compose project containers by label if present.
   local ids
   ids="$(docker ps -aq --filter label=com.docker.compose.project=Project 2>/dev/null || true)"
@@ -3447,11 +3454,14 @@ cleanup_Project_docker() {
   # Always remove volumes on clean install to avoid password mismatch issues
   print "[fresh] Removing Project volumes to ensure clean state"
   local vols
-  vols="$(docker volume ls -q --filter name=Project_ 2>/dev/null || true)"
+  vols="$(docker volume ls -q --filter name=Project 2>/dev/null || true)"
   if [ -n "${vols}" ]; then
     # shellcheck disable=SC2086
-    docker volume rm ${vols} >/dev/null 2>&1 || true
+    docker volume rm -f ${vols} 2>/dev/null || true
   fi
+  
+  # Wait a moment for cleanup to complete
+  sleep 2
 }
 
 is_interactive() {
