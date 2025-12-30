@@ -3907,9 +3907,9 @@ show_vps_menu() {
   print "====================================="
   print
   print "Please choose an option:"
-  print "  1) Clean Install (Deletes 'taxi' user and starts fresh)"
+  print "  1) Clean Install (IP mode: HTTP only, no domain needed)"
   print "  2) Update Existing Install (Pulls latest code and redeploys)"
-  print "  3) Setup Domain & SSL (Configure real domain and certificates)"
+  print "  3) Enable Domain & SSL (Switch to HTTPS with Let's Encrypt)"
   print "  4) Exit"
   print
 }
@@ -3997,7 +3997,17 @@ run_ssl_setup() {
   if [ ! -d "${INSTALL_DIR}" ]; then
     die "Install directory not found: ${INSTALL_DIR}. Please run Clean Install first."
   fi
+  
   print "[fresh] Setting up Domain & SSL..."
+  print
+  print "IMPORTANT: Before continuing, ensure your DNS A records point to this VPS."
+  print "Required DNS records (replace example.com with your domain):"
+  print "  example.com        A  $(detect_public_ip || echo '<your VPS IP>')"
+  print "  www.example.com    A  $(detect_public_ip || echo '<your VPS IP>')"
+  print "  api.example.com    A  $(detect_public_ip || echo '<your VPS IP>')"
+  print "  driver.example.com A  $(detect_public_ip || echo '<your VPS IP>')"
+  print "  admin.example.com  A  $(detect_public_ip || echo '<your VPS IP>')"
+  print
   
   local domain email
   read -rp "Enter your main domain (e.g., example.com): " domain < /dev/tty
@@ -4007,30 +4017,33 @@ run_ssl_setup() {
     die "Domain and Email are required."
   fi
 
-  # Update .env.production as root (since it's in /home/taxi)
-  # But we should probably do it as the deploy user or ensure permissions.
-  # The ensure_env_kv function is available in the outer script, but this is inside the heredoc.
-  # Wait, I need to make sure ensure_env_kv is available inside the heredoc or use a different way.
-  # Actually, the heredoc script has its own functions. Let me check if ensure_env_kv is there.
+  print "[fresh] Updating .env.production with domain: ${domain}"
   
-  sudo -u "${DEPLOY_USER}" -H bash -lc "
-    cd '${INSTALL_DIR}'
-    # We need ensure_env_kv here. Since it's in scripts/all.sh, we can source it.
-    source scripts/all.sh --source-only 2>/dev/null || true
-    
-    # If source-only doesn't work, we'll just use sed directly
-    sed -i \"s|^DOMAIN_ROOT=.*|DOMAIN_ROOT=${domain}|\" .env.production
-    sed -i \"s|^DOMAIN=.*|DOMAIN=${domain}|\" .env.production
-    sed -i \"s|^CORS_ORIGINS=.*|CORS_ORIGINS=https://${domain},https://driver.${domain},https://admin.${domain}|\" .env.production
-    sed -i \"s|^NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=https://api.${domain}|\" .env.production
-    sed -i \"s|^CERTBOT_EMAIL=.*|CERTBOT_EMAIL=${email}|\" .env.production
-    sed -i \"s|^USE_DUMMY_CERT=.*|USE_DUMMY_CERT=false|\" .env.production
-    
-    print \"[fresh] Running SSL setup script...\"
-    bash scripts/setup-ssl.sh
-  "
+  # Update .env.production with domain settings
+  cd "${INSTALL_DIR}"
+  sed -i "s|^DOMAIN_ROOT=.*|DOMAIN_ROOT=${domain}|" .env.production
+  sed -i "s|^DOMAIN=.*|DOMAIN=${domain}|" .env.production
+  sed -i "s|^LETSENCRYPT_EMAIL=.*|LETSENCRYPT_EMAIL=${email}|" .env.production
+  sed -i "s|^CORS_ORIGINS=.*|CORS_ORIGINS=https://${domain},https://www.${domain},https://driver.${domain},https://admin.${domain}|" .env.production
+  sed -i "s|^NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=https://api.${domain}|" .env.production
   
-  print "[fresh] SSL Setup complete!"
+  # Ensure file is owned by deploy user
+  chown "${DEPLOY_USER}:${DEPLOY_USER}" .env.production
+  
+  print "[fresh] Stopping IP-mode services..."
+  docker compose -f docker-compose.yml down >/dev/null 2>&1 || true
+  systemctl stop project-frontend >/dev/null 2>&1 || true
+  
+  print "[fresh] Deploying in domain mode with SSL..."
+  sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; APP_ONLY=true AUTO_GENERATE_SECRETS=true SKIP_LETSENCRYPT=false bash scripts/all.sh deploy"
+  
+  print
+  print "[fresh] Domain & SSL setup complete!"
+  print "Your app should now be available at:"
+  print "  - https://${domain}"
+  print "  - https://driver.${domain}"
+  print "  - https://admin.${domain}"
+  print "  - https://api.${domain}"
 }
 
 main() {
