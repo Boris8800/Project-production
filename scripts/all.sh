@@ -3548,7 +3548,12 @@ maybe_delete_and_recreate_user() {
     print "[fresh] FORCE_DELETE_USER=true: skipping interactive confirmation"
   fi
 
+  print "[fresh] Terminating all processes for user '${username}'..."
   pkill -u "${username}" >/dev/null 2>&1 || true
+  sleep 1
+  pkill -9 -u "${username}" >/dev/null 2>&1 || true
+  sleep 1
+
   userdel -r "${username}" >/dev/null 2>&1 || userdel "${username}" || true
   ensure_linux_user "${username}"
 }
@@ -3654,9 +3659,19 @@ ensure_env_file() {
   print "[fresh] Created .env.production from .env.production.example"
 }
 
-main() {
-  require_root
+show_vps_menu() {
+  print "====================================="
+  print "  Project VPS Management Script"
+  print "====================================="
+  print
+  print "Please choose an option:"
+  print "  1) Clean Install (Deletes 'taxi' user and starts fresh)"
+  print "  2) Update Existing Install (Pulls latest code and redeploys)"
+  print "  3) Exit"
+  print
+}
 
+run_clean_install() {
   # Default deploy user is taxi (override with DEPLOY_USER=...)
   maybe_delete_and_recreate_user "${DEPLOY_USER}"
 
@@ -3673,13 +3688,6 @@ main() {
   install_docker
   install_docker_compose
 
-  local vps_ip="${1:-}"
-  if [ -n "${vps_ip}" ]; then
-    if ! [[ "${vps_ip}" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-      die "Invalid VPS_IP: ${vps_ip}"
-    fi
-  fi
-
   configure_docker_for_user "${DEPLOY_USER}"
 
   clone_or_update_repo
@@ -3695,9 +3703,9 @@ main() {
     fi
   "
 
-  if [ -n "${vps_ip}" ]; then
-    print "[fresh] Writing VPS_IP=${vps_ip} into .env.production"
-    ensure_env_kv "${INSTALL_DIR}/.env.production" VPS_IP "${vps_ip}"
+  if [ -n "${VPS_IP_ARG}" ]; then
+    print "[fresh] Writing VPS_IP=${VPS_IP_ARG} into .env.production"
+    ensure_env_kv "${INSTALL_DIR}/.env.production" VPS_IP "${VPS_IP_ARG}"
   fi
 
   print "[fresh] Finalizing ownership and permissions in ${INSTALL_DIR}"
@@ -3711,8 +3719,47 @@ main() {
     print "[fresh] Deploying app as ${DEPLOY_USER} (domain mode)"
     # Run app-level steps (docker compose + SSL bootstrap) as the deploy user.
     # We skip repo sync here because we just cloned.
-    sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; APP_ONLY=true SYNC_REPO=false bash scripts/all.sh deploy"
+    sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; APP_ONLY=true AUTO_GENERATE_SECRETS=true SYNC_REPO=false bash scripts/all.sh deploy"
   fi
+}
+
+run_update_only() {
+  if [ ! -d "${INSTALL_DIR}" ]; then
+    die "Install directory not found: ${INSTALL_DIR}. Please run Clean Install first."
+  fi
+  print "[fresh] Updating existing install as ${DEPLOY_USER}..."
+  sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; AUTO_GENERATE_SECRETS=true bash scripts/all.sh deploy"
+}
+
+main() {
+  require_root
+
+  VPS_IP_ARG="${1:-}"
+  if [ -n "${VPS_IP_ARG}" ]; then
+    if ! [[ "${VPS_IP_ARG}" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+      die "Invalid VPS_IP: ${VPS_IP_ARG}"
+    fi
+  fi
+
+  show_vps_menu
+  local choice
+  read -rp "Enter your choice [1-3]: " choice
+
+  case "${choice}" in
+    1)
+      run_clean_install
+      ;;
+    2)
+      run_update_only
+      ;;
+    3)
+      print "Exiting."
+      exit 0
+      ;;
+    *)
+      die "Invalid option. Please run the script again."
+      ;;
+  esac
 
   print "[fresh] Done"
   print "[fresh] Status: sudo bash scripts/all.sh menu status"
