@@ -140,19 +140,19 @@ services:
       - /bin/sh
       - -c
       - |
-        echo "Waiting for database to be ready..."
-        # Loop until the postgres container is ready to accept connections
-        until pg_isready -h $${POSTGRES_HOST} -p $${POSTGRES_PORT} -U $${POSTGRES_USER} -d $${POSTGRES_DB}; do
-          sleep 2;
-        done;
+        echo "Waiting for database ($${POSTGRES_HOST}:$${POSTGRES_PORT}) to be ready..."
+        until pg_isready -h "$${POSTGRES_HOST}" -p "$${POSTGRES_PORT}" -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"; do
+          echo "Database not ready yet, sleeping..."
+          sleep 2
+        done
         echo "Database is ready. Starting backend."
         node dist/src/main.js
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O- http://localhost:4000/v1/health || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/v1/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+      start_period: 45s
     logging:
       driver: "json-file"
       options:
