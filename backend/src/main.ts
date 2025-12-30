@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
-import cookieParser from 'cookie-parser';
-import csurf from 'csurf';
+import * as cookieParser from 'cookie-parser';
+import * as csurf from 'csurf';
 import helmet from 'helmet';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
