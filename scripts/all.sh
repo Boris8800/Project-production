@@ -3471,7 +3471,7 @@ __PROJECT_SCRIPT__
 #   INSTALL_DIR=/opt/Project-production
 #   REPO_URL=https://github.com/Boris8800/Project-production.git
 #   BRANCH=main
-#   DEPLOY_MODE=ip|domain   (default: domain)
+#   DEPLOY_MODE=ip|domain   (default: ip)
 #
 # Deploy flags passed through to the deploy scripts:
 #   AUTO_GENERATE_SECRETS=true|false
@@ -3484,7 +3484,7 @@ DEPLOY_USER="${DEPLOY_USER:-taxi}"
 INSTALL_DIR="${INSTALL_DIR:-/home/${DEPLOY_USER}/Project-production}"
 REPO_URL="${REPO_URL:-https://github.com/Boris8800/Project-production.git}"
 BRANCH="${BRANCH:-main}"
-DEPLOY_MODE="${DEPLOY_MODE:-domain}"
+DEPLOY_MODE="${DEPLOY_MODE:-ip}"
 
 # IMPORTANT DEFAULTS (as requested):
 # - Delete the deploy user first (taxi), then recreate it.
@@ -3956,8 +3956,11 @@ run_clean_install() {
   chmod +x "${INSTALL_DIR}/scripts/"*.sh || true
 
   if [ "${DEPLOY_MODE}" = "ip" ]; then
-    print "[fresh] Deploying in IP mode (no domain/SSL/nginx) as ${DEPLOY_USER}"
-    sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; bash scripts/all.sh deploy-ip"
+    print "[fresh] Deploying in IP mode (no domain/SSL/nginx)"
+    # IP mode needs firewall/systemd setup, so run as root, but build/run frontend as the deploy user.
+    cd "${INSTALL_DIR}"
+    SERVICE_USER="${DEPLOY_USER}" bash scripts/all.sh deploy-ip
+    chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${INSTALL_DIR}" || true
   else
     print "[fresh] Deploying app as ${DEPLOY_USER} (domain mode)"
     # Run app-level steps (docker compose + SSL bootstrap) as the deploy user.
@@ -3971,7 +3974,23 @@ run_update_only() {
     die "Install directory not found: ${INSTALL_DIR}. Please run Clean Install first."
   fi
   print "[fresh] Updating existing install as ${DEPLOY_USER}..."
-  sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; AUTO_GENERATE_SECRETS=true bash scripts/all.sh deploy"
+
+  # Update repo as deploy user
+  sudo -u "${DEPLOY_USER}" -H bash -lc "
+    set -euo pipefail
+    cd '${INSTALL_DIR}'
+    git fetch -q origin
+    git checkout -q '${BRANCH}' || git checkout -q -b '${BRANCH}' 'origin/${BRANCH}'
+    git reset --hard -q 'origin/${BRANCH}'
+  "
+
+  if [ "${DEPLOY_MODE}" = "ip" ]; then
+    cd "${INSTALL_DIR}"
+    SERVICE_USER="${DEPLOY_USER}" bash scripts/all.sh deploy-ip
+    chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${INSTALL_DIR}" || true
+  else
+    sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; AUTO_GENERATE_SECRETS=true bash scripts/all.sh deploy"
+  fi
 }
 
 run_ssl_setup() {
