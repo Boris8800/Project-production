@@ -159,21 +159,19 @@ services:
         fi
 
         echo "Waiting for database server to accept connections..."
-        until command -v pg_isready >/dev/null 2>&1 && pg_isready -h "$${POSTGRES_HOST:-postgres}" -p "$${POSTGRES_PORT:-5432}"; do
-          if ! command -v pg_isready >/dev/null 2>&1; then
-            echo "ERROR: pg_isready not found in container. Check Dockerfile."
-          else
-            echo "Postgres is not ready yet... waiting 2s"
-          fi
+        # Use nc (netcat) to check if the port is open. This is more reliable than pg_isready
+        # if the postgresql-client package is missing or has path issues.
+        until nc -z "$${POSTGRES_HOST:-postgres}" "$${POSTGRES_PORT:-5432}"; do
+          echo "Postgres port $${POSTGRES_PORT:-5432} is not reachable yet... waiting 2s"
           sleep 2
         done
         
-        echo "Database server is up. Giving it 15s for initialization scripts..."
+        echo "Database port is open. Giving it 15s for initialization scripts..."
         sleep 15
         echo "Starting NestJS application..."
         exec node dist/src/main.js
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:4000/v1/health || curl -f http://localhost:4000/v1/health/ping || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:4000/v1/health || curl -f http://127.0.0.1:4000/v1/health/ping || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 30
