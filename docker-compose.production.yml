@@ -164,7 +164,12 @@ services:
         echo "Starting NestJS application..."
         exec node dist/src/main.js
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:4000/v1/health || curl -f http://127.0.0.1:4000/v1/health/ping || exit 1"]
+      test:
+        - CMD-SHELL
+        - >-
+          node -e "const http=require('http');
+          const req=(p)=>new Promise((resolve)=>{const r=http.request({host:'127.0.0.1',port:4000,path:p,timeout:5000},(res)=>{res.resume();resolve(res.statusCode||0);});r.on('error',()=>resolve(0));r.on('timeout',()=>{r.destroy();resolve(0);});r.end();});
+          (async()=>{const s=await req('/v1/health'); if(s===200) process.exit(0); if(s===404){const p=await req('/v1/health/ping'); process.exit(p===200?0:1);} process.exit(1);})().catch(()=>process.exit(1));"
       interval: 10s
       timeout: 10s
       retries: 30
