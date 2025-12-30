@@ -163,6 +163,7 @@ cmd_stack_logs() {
 
 cmd_stack_start() {
   require_docker_compose
+  ensure_env_file
   load_env_if_present
   prod up -d
 }
@@ -177,6 +178,7 @@ cmd_stack_stop() {
 
 cmd_stack_restart() {
   require_docker_compose
+  ensure_env_file
   load_env_if_present
   prod up -d
   if [ -f "${COMPOSE_MON_FILE}" ]; then
@@ -186,6 +188,7 @@ cmd_stack_restart() {
 
 cmd_stack_health() {
   require_docker_compose
+  ensure_env_file
 
   print "== nginx (host) =="
   if command -v curl >/dev/null 2>&1; then
@@ -213,6 +216,7 @@ cmd_stack_health() {
 
 cmd_stack_troubleshoot() {
   require_docker_compose
+  ensure_env_file
 
   print "== troubleshoot =="
   print "[info] repo: $(pwd)"
