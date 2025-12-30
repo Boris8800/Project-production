@@ -3122,9 +3122,15 @@ print "[SSL] Preparing volumes"
 docker compose -f "${COMPOSE_FILE}" up -d postgres redis || true
 
 print "[SSL] Creating dhparams in LetsEncrypt volume"
-# Compose file pins project name to "Project", so volume names are deterministic.
-LE_VOLUME="Project_letsencrypt"
-WWW_VOLUME="Project_certbot_www"
+# Compose normalizes the project name (often to lowercase), so resolve volumes robustly.
+# In practice these end up as: project_letsencrypt and project_certbot_www.
+LE_VOLUME="$(docker volume ls -q 2>/dev/null | grep -E '(^|[._-])letsencrypt$' | head -n 1 || true)"
+WWW_VOLUME="$(docker volume ls -q 2>/dev/null | grep -E '(^|[._-])certbot_www$' | head -n 1 || true)"
+
+# If only postgres/redis were started, these volumes may not exist yet.
+# Create them with the normalized compose project prefix.
+[ -n "${LE_VOLUME}" ] || LE_VOLUME="project_letsencrypt"
+[ -n "${WWW_VOLUME}" ] || WWW_VOLUME="project_certbot_www"
 
 # If only postgres/redis were started, these volumes may not exist yet.
 # Create them explicitly so we can write dhparams and dummy certs.
@@ -3141,7 +3147,8 @@ print "[SSL] Creating dummy certificates (so Nginx can start)"
 create_dummy_certs "${LE_VOLUME}"
 
 print "[SSL] Starting Nginx for ACME challenge"
-docker compose -f "${COMPOSE_FILE}" up -d nginx-proxy
+# Start nginx without waiting for backend health; ACME only needs port 80 reachable.
+docker compose -f "${COMPOSE_FILE}" up -d --no-deps nginx-proxy
 
 if [ "${SKIP_LETSENCRYPT}" = "true" ]; then
   echo "[SSL] SKIP_LETSENCRYPT=true: leaving dummy certificates in place."
