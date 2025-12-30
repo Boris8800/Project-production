@@ -2954,16 +2954,35 @@ ensure_volume_file() {
   local volume_name="$1"
   local file_path="$2"
 
-  docker run --rm -v "${volume_name}:/data" alpine:3.20 sh -eu -c '
-    file_path="$1"
-    mkdir -p "$(dirname "/data/${file_path}")"
+  # Check if file already exists
+  local file_exists
+  file_exists=$(docker run --rm -v "${volume_name}:/data" alpine:3.20 sh -c "[ -f '/data/${file_path}' ] && echo 'yes' || echo 'no'")
 
-    if [ ! -f "/data/${file_path}" ]; then
-      echo "Generating /data/${file_path}"
-      apk add --no-cache openssl >/dev/null
-      openssl dhparam -out "/data/${file_path}" 2048 >/dev/null 2>&1
-    fi
-  ' -- "${file_path}"
+  if [ "$file_exists" = "no" ]; then
+    echo "Generating /data/${file_path} (this takes 2-5 minutes, please wait)..."
+    
+    # Start background job for progress indicator
+    (
+      while true; do
+        echo -n "."
+        sleep 2
+      done
+    ) &
+    local spinner_pid=$!
+    
+    # Generate DH params
+    docker run --rm -v "${volume_name}:/data" alpine:3.20 sh -eu -c '
+      file_path="$1"
+      mkdir -p "$(dirname "/data/${file_path}")"
+      apk add --no-cache openssl >/dev/null 2>&1
+      openssl dhparam -out "/data/${file_path}" 2048 2>&1
+    ' -- "${file_path}" >/dev/null 2>&1
+    
+    # Stop progress indicator
+    kill $spinner_pid 2>/dev/null || true
+    wait $spinner_pid 2>/dev/null || true
+    echo " ✓ Done"
+  fi
 }
 
 create_dummy_certs() {
