@@ -643,12 +643,21 @@ confirm_by_typing() {
   print "${message}" >&2
   print "Type '${expected}' to continue:" >&2
   local value
-  read -r value || true
+  if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+    read -r value </dev/tty || true
+  else
+    read -r value || true
+  fi
   [ "${value}" = "${expected}" ]
 }
 
 is_interactive() {
-  [ -t 0 ] && [ -t 1 ]
+  # Support interactive prompts even when stdin is piped (e.g. curl | bash)
+  # by reading from /dev/tty if it is available.
+  if [ -t 1 ] && { [ -t 0 ] || { [ -r /dev/tty ] && [ -w /dev/tty ]; }; }; then
+    return 0
+  fi
+  return 1
 }
 
 prompt() {
@@ -667,7 +676,11 @@ prompt() {
   fi
 
   local value
-  read -r value || true
+  if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+    read -r value </dev/tty || true
+  else
+    read -r value || true
+  fi
   value="${value:-}"
 
   if [ -z "${value}" ]; then
@@ -696,7 +709,11 @@ prompt_yes_no() {
   local reply
   while true; do
     printf '%s %s: ' "${question}" "${suffix}" >&2
-    read -r reply || true
+    if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+      read -r reply </dev/tty || true
+    else
+      read -r reply || true
+    fi
     reply="${reply:-}"
 
     if [ -z "${reply}" ]; then
@@ -717,7 +734,11 @@ pause() {
     return 0
   fi
   print
-  read -r -p "Press Enter to continue..." _ || true
+  if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+    read -r -p "Press Enter to continue..." _ </dev/tty || true
+  else
+    read -r -p "Press Enter to continue..." _ || true
+  fi
 }
 
 open_editor_if_possible() {
@@ -1947,7 +1968,10 @@ step() {
 }
 
 is_interactive() {
-  [ -t 0 ] && [ -t 1 ]
+  if [ -t 1 ] && { [ -t 0 ] || { [ -r /dev/tty ] && [ -w /dev/tty ]; }; }; then
+    return 0
+  fi
+  return 1
 }
 
 prompt_yes_no() {
@@ -1968,7 +1992,11 @@ prompt_yes_no() {
   local reply
   while true; do
     printf '%s %s: ' "${prompt}" "${suffix}" >&2
-    read -r reply || true
+    if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+      read -r reply </dev/tty || true
+    else
+      read -r reply || true
+    fi
     reply="${reply:-}"
 
     if [ -z "${reply}" ]; then
@@ -2701,7 +2729,12 @@ die() {
   exit 1
 }
 
-is_interactive() { [ -t 0 ] && [ -t 1 ]; }
+is_interactive() {
+  if [ -t 1 ] && { [ -t 0 ] || { [ -r /dev/tty ] && [ -w /dev/tty ]; }; }; then
+    return 0
+  fi
+  return 1
+}
 
 prompt_yes_no() {
   local question="$1"
@@ -2718,7 +2751,11 @@ prompt_yes_no() {
   local reply
   while true; do
     printf '%s %s: ' "${question}" "${suffix}" >&2
-    read -r reply || true
+    if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+      read -r reply </dev/tty || true
+    else
+      read -r reply || true
+    fi
     reply="${reply:-}"
 
     if [ -z "${reply}" ]; then
@@ -3549,7 +3586,10 @@ cleanup_Project_docker() {
 }
 
 is_interactive() {
-  [ -t 0 ] && [ -t 1 ]
+  if [ -t 1 ] && { [ -t 0 ] || { [ -r /dev/tty ] && [ -w /dev/tty ]; }; }; then
+    return 0
+  fi
+  return 1
 }
 
 prompt() {
@@ -3568,7 +3608,11 @@ prompt() {
   fi
 
   local value
-  read -r value || true
+  if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+    read -r value </dev/tty || true
+  else
+    read -r value || true
+  fi
   value="${value:-}"
 
   if [ -z "${value}" ]; then
@@ -3589,7 +3633,11 @@ confirm_by_typing() {
   print "${message}" >&2
   print "Type '${expected}' to continue:" >&2
   local value
-  read -r value || true
+  if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+    read -r value </dev/tty || true
+  else
+    read -r value || true
+  fi
   [ "${value}" = "${expected}" ]
 }
 
