@@ -3160,7 +3160,7 @@ echo "[SSL] Requesting Let's Encrypt certificates"
 # Request certs individually to match per-hostname live paths used by nginx configs.
 for d in "${DOMAINS[@]}"; do
   echo "  - ${d}"
-  docker compose -f "${COMPOSE_FILE}" run --rm certbot certonly \
+  docker compose -f "${COMPOSE_FILE}" run --rm --entrypoint certbot certbot certonly \
     --webroot -w /var/www/certbot \
     --email "${EMAIL}" --agree-tos --no-eff-email \
     -d "${d}" \
