@@ -3587,18 +3587,24 @@ cleanup_Project_docker() {
 
   # Always remove volumes on clean install to avoid password mismatch issues
   print "[fresh] Removing Project volumes to ensure clean state"
-  local vols
+  local -a vols_list=()
+  local v
   # Compose often lowercases the project name, so match both variants.
-  vols="$(
-    {
-      docker volume ls -q --filter name=Project 2>/dev/null || true
-      docker volume ls -q --filter name=project 2>/dev/null || true
-    } | sort -u
-  )"
-  if [ -n "${vols}" ]; then
-    echo "[fresh] Found volumes to remove: ${vols}"
-    # shellcheck disable=SC2086
-    docker volume rm -f ${vols} 2>&1 | while IFS= read -r line; do
+  # Avoid pipes inside command substitutions for maximum shell compatibility.
+  while IFS= read -r v; do
+    [ -n "${v}" ] || continue
+    case " ${vols_list[*]} " in
+      *" ${v} "*) : ;; # already included
+      *) vols_list+=("${v}") ;;
+    esac
+  done < <(
+    docker volume ls -q --filter name=Project 2>/dev/null || true
+    docker volume ls -q --filter name=project 2>/dev/null || true
+  )
+
+  if [ "${#vols_list[@]}" -gt 0 ]; then
+    echo "[fresh] Found volumes to remove: ${vols_list[*]}"
+    docker volume rm -f "${vols_list[@]}" 2>&1 | while IFS= read -r line; do
       echo "[fresh]   ${line}"
     done || true
   else
