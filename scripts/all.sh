@@ -2915,7 +2915,9 @@ setup_frontend_host_service() {
   fi
 
   chmod +x ./scripts/all.sh || true
-  SERVICE_USER="${SERVICE_USER:-${SUDO_USER:-root}}" ENV_FILE=./.env.ip bash ./scripts/all.sh setup-frontend-host
+  local repo_root
+  repo_root="$(pwd -P)"
+  SERVICE_USER="${SERVICE_USER:-${SUDO_USER:-root}}" REPO_ROOT="${repo_root}" ENV_FILE="${repo_root}/.env.ip" bash ./scripts/all.sh setup-frontend-host
 }
 
 main() {
@@ -4224,7 +4226,7 @@ enable_and_start() {
 main() {
   require_root
 
-  REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)}"
+  REPO_ROOT="${REPO_ROOT:-$(pwd -P)}"
   FRONTEND_DIR="${FRONTEND_DIR:-${REPO_ROOT}/frontend}"
   ENV_FILE="${ENV_FILE:-${REPO_ROOT}/.env.ip}"
   SERVICE_USER="${SERVICE_USER:-${SUDO_USER:-$(id -un)}}"
