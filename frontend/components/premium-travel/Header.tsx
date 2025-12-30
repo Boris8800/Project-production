@@ -10,9 +10,26 @@ interface HeaderProps {
   isDarkMode: boolean;
   onHomeClick?: () => void;
   onCategoryChange?: (cat: BookingCategory) => void;
+  showNav?: boolean;
+  showLoginLink?: boolean;
+  loginHref?: string;
+  showBookNowButton?: boolean;
+  onBookNowClick?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ toggleDarkMode, isDarkMode, onHomeClick, onCategoryChange }) => {
+const Header: React.FC<HeaderProps> = ({
+  toggleDarkMode,
+  isDarkMode,
+  onHomeClick,
+  onCategoryChange,
+  showNav = true,
+  showLoginLink = true,
+  loginHref = '/tenants/customer',
+  showBookNowButton = true,
+  onBookNowClick,
+}) => {
+  const handleBookNow = onBookNowClick ?? (() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-surface-dark-lighter bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
       <div className="px-4 md:px-10 py-3 flex items-center justify-between mx-auto max-w-7xl">
@@ -21,24 +38,26 @@ const Header: React.FC<HeaderProps> = ({ toggleDarkMode, isDarkMode, onHomeClick
           className="flex items-center gap-4 text-slate-900 dark:text-white hover:opacity-80 transition-opacity cursor-pointer text-left"
         >
           <BrandLogo size={36} />
-          <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] font-display">Project</h2>
+          <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] font-display">TransferLane</h2>
         </button>
         
         <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
-          <nav className="flex items-center gap-6 lg:gap-9">
-            <button 
-              onClick={() => onCategoryChange?.(BookingCategory.INTERCITY)}
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Intercity
-            </button>
-            <button 
-              onClick={() => onCategoryChange?.(BookingCategory.AIRPORT)}
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Airport Transfer
-            </button>
-          </nav>
+          {showNav ? (
+            <nav className="flex items-center gap-6 lg:gap-9">
+              <button 
+                onClick={() => onCategoryChange?.(BookingCategory.INTERCITY)}
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                Intercity
+              </button>
+              <button 
+                onClick={() => onCategoryChange?.(BookingCategory.AIRPORT)}
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                Airport Transfer
+              </button>
+            </nav>
+          ) : null}
           
           <div className="flex items-center gap-4">
             <button 
@@ -49,18 +68,22 @@ const Header: React.FC<HeaderProps> = ({ toggleDarkMode, isDarkMode, onHomeClick
                 {isDarkMode ? 'light_mode' : 'dark_mode'}
               </span>
             </button>
-            <Link
-              href="/tenants/customer"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Log In
-            </Link>
-            <button 
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30 hover:bg-primary-dark transition-all"
-            >
-              <span className="truncate">Book Now</span>
-            </button>
+            {showLoginLink ? (
+              <Link
+                href={loginHref}
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                Log In
+              </Link>
+            ) : null}
+            {showBookNowButton ? (
+              <button 
+                onClick={handleBookNow}
+                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30 hover:bg-primary-dark transition-all"
+              >
+                <span className="truncate">Book Now</span>
+              </button>
+            ) : null}
           </div>
         </div>
         

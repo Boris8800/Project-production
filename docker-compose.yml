@@ -23,6 +23,7 @@ services:
       - backend-api
     ports:
       - "80:80"
+      - "1000:80"
     extra_hosts:
       # Allow container to reach host-run Next.js
       - "host.docker.internal:host-gateway"

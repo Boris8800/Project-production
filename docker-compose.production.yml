@@ -27,6 +27,7 @@ services:
         condition: service_healthy
     ports:
       - "80:80"
+      - "1000:80"
       - "443:443"
     extra_hosts:
       # Allow nginx container to reach host services (Linux: host-gateway; Docker Desktop already provides this)

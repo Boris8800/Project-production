@@ -5,10 +5,14 @@ export default function CustomerMagicLoginPage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen p-6">
-          <h1 className="text-2xl font-semibold">Project</h1>
-          <p className="mt-2 text-sm text-gray-600">Magic link sign-in</p>
-          <p className="mt-6 text-sm">Signing in…</p>
+        <main className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center px-6">
+          <div className="w-full max-w-xl bg-white/80 dark:bg-white/5 backdrop-blur-sm border border-gray-100 dark:border-white/10 rounded-3xl p-10 shadow-3xl text-center">
+            <div className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-white/60">TransferLane</div>
+            <h1 className="mt-4 text-3xl md:text-4xl font-black text-slate-900 dark:text-white font-display">
+              Magic link sign-in
+            </h1>
+            <p className="mt-4 text-sm text-slate-600 dark:text-text-muted font-medium">Signing in…</p>
+          </div>
         </main>
       }
     >

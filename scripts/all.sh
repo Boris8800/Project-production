@@ -2435,6 +2435,7 @@ enable_firewall() {
 
   ufw allow 22/tcp
   ufw allow 80/tcp
+  ufw allow 1000/tcp
   ufw allow 443/tcp
   ufw --force enable
 }
@@ -2555,7 +2556,7 @@ main() {
     step "Installing Docker Compose plugin (if needed)"
     install_docker_compose
 
-    step "Configuring firewall (UFW: allow 22/80/443)"
+    step "Configuring firewall (UFW: allow 22/80/443/1000)"
     enable_firewall
 
     step "Enabling automatic security updates"
@@ -2596,6 +2597,20 @@ main() {
     # shellcheck disable=SC1091
     . ./.env.production
     set +a
+
+  if [ "${SETUP_FRONTEND_HOST:-true}" = "true" ]; then
+    if [ "$(id -u)" -eq 0 ]; then
+      step "Building and restarting host frontend (Next.js)"
+      repo_root="$(pwd -P)"
+      service_user="${SERVICE_USER:-${SUDO_USER:-$(stat -c '%U' "${repo_root}" 2>/dev/null || echo root)}}"
+      SERVICE_USER="${service_user}" REPO_ROOT="${repo_root}" ENV_FILE="${repo_root}/.env.production" bash scripts/all.sh setup-frontend-host
+    else
+      print "[deploy] Not running as root; skipping host-frontend rebuild."
+      print "[deploy] To update frontend: sudo SERVICE_USER=\"${USER}\" ENV_FILE=\"$(pwd -P)/.env.production\" bash scripts/all.sh setup-frontend-host"
+    fi
+  else
+    print "[deploy] SETUP_FRONTEND_HOST!=true: skipping host-frontend rebuild"
+  fi
 
   step "Starting database and redis"
   echo "[deploy] POSTGRES_PASSWORD is set: $([ -n "${POSTGRES_PASSWORD:-}" ] && echo 'YES' || echo 'NO')"
@@ -2845,6 +2860,9 @@ configure_firewall_ip_mode() {
 
   # HTTP proxy (recommended)
   ufw allow 80/tcp >/dev/null 2>&1 || true
+
+  # Alternative HTTP port (for running the site on :1000)
+  ufw allow 1000/tcp >/dev/null 2>&1 || true
 
   # IP-mode ports
   ufw allow 3000/tcp >/dev/null 2>&1 || true
@@ -3976,6 +3994,10 @@ run_clean_install() {
     # Run app-level steps (docker compose + SSL bootstrap) as the deploy user.
     # We skip repo sync here because we just cloned.
     sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; APP_ONLY=true AUTO_GENERATE_SECRETS=true SYNC_REPO=false bash scripts/all.sh deploy"
+
+    print "[fresh] Building/restarting host frontend (Next.js)"
+    cd "${INSTALL_DIR}"
+    SERVICE_USER="${DEPLOY_USER}" REPO_ROOT="${INSTALL_DIR}" ENV_FILE="${INSTALL_DIR}/.env.production" bash scripts/all.sh setup-frontend-host
   fi
 }
 
@@ -4000,6 +4022,10 @@ run_update_only() {
     chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${INSTALL_DIR}" || true
   else
     sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; AUTO_GENERATE_SECRETS=true bash scripts/all.sh deploy"
+
+    print "[fresh] Building/restarting host frontend (Next.js)"
+    cd "${INSTALL_DIR}"
+    SERVICE_USER="${DEPLOY_USER}" REPO_ROOT="${INSTALL_DIR}" ENV_FILE="${INSTALL_DIR}/.env.production" bash scripts/all.sh setup-frontend-host
   fi
 }
 
@@ -4078,6 +4104,10 @@ run_ssl_setup() {
   
   print "[fresh] Deploying in domain mode with SSL..."
   sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; APP_ONLY=true AUTO_GENERATE_SECRETS=true SKIP_LETSENCRYPT=false bash scripts/all.sh deploy"
+
+  print "[fresh] Building/restarting host frontend (Next.js)"
+  cd "${INSTALL_DIR}"
+  SERVICE_USER="${DEPLOY_USER}" REPO_ROOT="${INSTALL_DIR}" ENV_FILE="${INSTALL_DIR}/.env.production" bash scripts/all.sh setup-frontend-host
   
   print
   print "[fresh] Domain & SSL setup complete!"
@@ -4192,7 +4222,7 @@ build_frontend() {
       . '${ENV_FILE}'
       set +a
     fi
-    npm ci --loglevel=error 2>&1 | grep -v 'deprecated' || true
+    npm ci --loglevel=error 2>&1 | sed '/deprecated/d'
   "
   print "         Building Next.js application (this may take 1-2 minutes)..."
   sudo -u "${SERVICE_USER}" -H bash -lc "

@@ -1,6 +1,6 @@
 {
-  "name": "Project Driver",
-  "short_name": "Project",
+  "name": "TransferLane Driver",
+  "short_name": "TransferLane",
   "start_url": "/(driver)",
   "display": "standalone",
   "background_color": "#ffffff",

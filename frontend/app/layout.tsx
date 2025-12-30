@@ -7,8 +7,8 @@ const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-int
 const sourceSerif = Source_Serif_4({ subsets: ['latin'], display: 'swap', variable: '--font-display' });
 
 export const metadata: Metadata = {
-  title: 'Project',
-  description: 'Project',
+  title: 'TransferLane',
+  description: 'TransferLane',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
