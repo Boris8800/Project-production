@@ -3656,6 +3656,10 @@ ensure_env_file() {
 
 main() {
   require_root
+
+  # Default deploy user is taxi (override with DEPLOY_USER=...)
+  maybe_delete_and_recreate_user "${DEPLOY_USER}"
+
   install_prereqs
 
   require_cmd git
@@ -3676,8 +3680,6 @@ main() {
     fi
   fi
 
-  # Default deploy user is taxi (override with DEPLOY_USER=...)
-  maybe_delete_and_recreate_user "${DEPLOY_USER}"
   configure_docker_for_user "${DEPLOY_USER}"
 
   clone_or_update_repo
