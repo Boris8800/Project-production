@@ -3138,7 +3138,7 @@ __PROJECT_SCRIPT__
 #
 # Optional env vars:
 #   INSTALL_DIR=/opt/Project-production
-#   REPO_URL=https://github.com/Boris8800/Rapid.git
+#   REPO_URL=https://github.com/Boris8800/Project-production.git
 #   BRANCH=main
 #   DEPLOY_MODE=ip|domain   (default: domain)
 #
@@ -3150,7 +3150,7 @@ __PROJECT_SCRIPT__
 set -euo pipefail
 
 INSTALL_DIR="${INSTALL_DIR:-/opt/Project-production}"
-REPO_URL="${REPO_URL:-https://github.com/Boris8800/Rapid.git}"
+REPO_URL="${REPO_URL:-https://github.com/Boris8800/Project-production.git}"
 BRANCH="${BRANCH:-main}"
 DEPLOY_USER="${DEPLOY_USER:-taxi}"
 DEPLOY_MODE="${DEPLOY_MODE:-domain}"
@@ -3231,6 +3231,29 @@ require_root() {
 require_cmd() {
   local cmd="$1"
   command -v "${cmd}" >/dev/null 2>&1 || die "Missing required command: ${cmd}"
+}
+
+wait_for_apt() {
+  # Wait for other apt/dpkg processes to finish, so we don't fail with lock errors.
+  # This prints status while waiting.
+  local max_seconds="${1:-600}"
+  local start now elapsed
+  start="$(date +%s)"
+
+  while true; do
+    if pgrep -x apt-get >/dev/null 2>&1 || pgrep -x dpkg >/dev/null 2>&1 || pgrep -x unattended-upgrades >/dev/null 2>&1; then
+      now="$(date +%s)"
+      elapsed="$((now - start))"
+      if [ "${elapsed}" -ge "${max_seconds}" ]; then
+        print "[fresh] apt/dpkg still busy after ${elapsed}s; continuing (may fail if lock persists)"
+        return 0
+      fi
+      print "[fresh] Waiting for apt/dpkg to finish... (${elapsed}s)"
+      sleep 5
+      continue
+    fi
+    return 0
+  done
 }
 
 stop_common_web_servers() {
@@ -3402,16 +3425,18 @@ install_prereqs() {
     die "apt-get not found (this script supports Ubuntu/Debian)."
   fi
 
-  print "[fresh] Installing prerequisites"
+  print "[fresh] Installing prerequisites (apt update + base tools)"
+  wait_for_apt 900
   apt-get update
-  apt-get install -y ca-certificates curl git openssl
+  wait_for_apt 900
+  DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl git openssl
 }
 
 install_docker() {
   if command -v docker >/dev/null 2>&1; then
     return 0
   fi
-  print "[fresh] Installing Docker"
+  print "[fresh] Installing Docker (this may take a few minutes)"
   curl -fsSL https://get.docker.com | sh
 }
 
@@ -3420,8 +3445,10 @@ install_docker_compose() {
     return 0
   fi
   print "[fresh] Installing Docker Compose plugin"
+  wait_for_apt 900
   apt-get update
-  apt-get install -y docker-compose-plugin
+  wait_for_apt 900
+  DEBIAN_FRONTEND=noninteractive apt-get install -y docker-compose-plugin
   docker compose version >/dev/null 2>&1 || die "Docker Compose plugin install failed"
 }
 
@@ -3477,12 +3504,8 @@ clone_or_update_repo() {
   fi
 
   print "[fresh] Cloning ${REPO_URL} -> ${INSTALL_DIR}"
-  git clone "${REPO_URL}" "${INSTALL_DIR}"
+  git clone --depth 1 --branch "${BRANCH}" "${REPO_URL}" "${INSTALL_DIR}"
   cd "${INSTALL_DIR}"
-
-  if [ "${BRANCH}" != "main" ]; then
-    git checkout -q "${BRANCH}"
-  fi
 }
 
 ensure_env_file() {
@@ -3549,6 +3572,7 @@ main() {
   fi
 
   print "[fresh] Done"
+  print "[fresh] Status: sudo bash scripts/all.sh menu status"
 }
 
 main "$@"
