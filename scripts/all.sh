@@ -3998,15 +3998,47 @@ run_ssl_setup() {
     die "Install directory not found: ${INSTALL_DIR}. Please run Clean Install first."
   fi
   
-  print "[fresh] Setting up Domain & SSL..."
+  local vps_ip
+  vps_ip="$(detect_public_ip || echo '<your VPS IP>')"
+  
   print
-  print "IMPORTANT: Before continuing, ensure your DNS A records point to this VPS."
-  print "Required DNS records (replace example.com with your domain):"
-  print "  example.com        A  $(detect_public_ip || echo '<your VPS IP>')"
-  print "  www.example.com    A  $(detect_public_ip || echo '<your VPS IP>')"
-  print "  api.example.com    A  $(detect_public_ip || echo '<your VPS IP>')"
-  print "  driver.example.com A  $(detect_public_ip || echo '<your VPS IP>')"
-  print "  admin.example.com  A  $(detect_public_ip || echo '<your VPS IP>')"
+  print "=========================================="
+  print " Domain & SSL Setup - Step by Step Guide"
+  print "=========================================="
+  print
+  print "This will switch your app from HTTP (IP mode) to HTTPS (domain mode)."
+  print
+  print "STEP 1: Buy a domain (if you don't have one yet)"
+  print "  - Recommended: Namecheap, Cloudflare Registrar, Google Domains"
+  print "  - Cost: ~\$10-15/year for .com domains"
+  print
+  print "STEP 2: Configure DNS A records at your domain provider"
+  print "  Your VPS IP: ${vps_ip}"
+  print
+  print "  Go to your domain's DNS settings and add these A records:"
+  print "  ┌─────────────────────┬──────┬────────────────┐"
+  print "  │ Name/Host           │ Type │ Value          │"
+  print "  ├─────────────────────┼──────┼────────────────┤"
+  print "  │ @  (or root)        │  A   │ ${vps_ip} │"
+  print "  │ www                 │  A   │ ${vps_ip} │"
+  print "  │ api                 │  A   │ ${vps_ip} │"
+  print "  │ driver              │  A   │ ${vps_ip} │"
+  print "  │ admin               │  A   │ ${vps_ip} │"
+  print "  └─────────────────────┴──────┴────────────────┘"
+  print
+  print "STEP 3: Wait for DNS propagation (5-30 minutes)"
+  print "  - Check with: dig yourdomain.com +short"
+  print "  - Or online: https://dnschecker.org/"
+  print
+  print "STEP 4: Continue below to deploy with SSL"
+  print "  - This script will:"
+  print "    • Stop IP-mode services"
+  print "    • Update configuration for your domain"
+  print "    • Deploy production stack (nginx + backend + postgres + redis)"
+  print "    • Request FREE Let's Encrypt SSL certificates"
+  print "    • Enable HTTPS on all subdomains"
+  print
+  print "=========================================="
   print
   
   local domain email
