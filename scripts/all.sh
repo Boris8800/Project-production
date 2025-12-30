@@ -2566,7 +2566,19 @@ main() {
     set +a
 
   step "Starting database and redis"
+  echo "[deploy] POSTGRES_PASSWORD is set: $([ -n "${POSTGRES_PASSWORD:-}" ] && echo 'YES' || echo 'NO')"
+  echo "[deploy] Creating fresh database and redis containers..."
   docker compose -f docker-compose.production.yml up -d --force-recreate postgres redis
+  
+  # Give postgres a moment to initialize
+  echo "[deploy] Waiting 5s for PostgreSQL to initialize with new password..."
+  sleep 5
+  
+  # Verify postgres is accepting connections
+  if ! docker exec Project-postgres pg_isready -U "${POSTGRES_USER:-Project_admin}" >/dev/null 2>&1; then
+    echo "[deploy] WARNING: PostgreSQL not ready yet, waiting another 10s..."
+    sleep 10
+  fi
 
   step "Setting up SSL (dummy certs or Let's Encrypt)"
   export LETSENCRYPT_EMAIL="${EMAIL}"
@@ -3475,8 +3487,19 @@ cleanup_Project_docker() {
   local vols
   vols="$(docker volume ls -q --filter name=Project 2>/dev/null || true)"
   if [ -n "${vols}" ]; then
+    echo "[fresh] Found volumes to remove: ${vols}"
     # shellcheck disable=SC2086
-    docker volume rm -f ${vols} 2>/dev/null || true
+    docker volume rm -f ${vols} 2>&1 | while IFS= read -r line; do
+      echo "[fresh]   ${line}"
+    done || true
+  else
+    echo "[fresh] No Project volumes found"
+  fi
+  
+  # Verify critical volumes are gone
+  if docker volume ls | grep -q "Project.*postgres"; then
+    print "[fresh] WARNING: PostgreSQL volume still exists, forcing removal..."
+    docker volume rm -f Project_postgres_data 2>&1 || true
   fi
   
   # Wait a moment for cleanup to complete
