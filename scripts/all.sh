@@ -2554,6 +2554,10 @@ main() {
 
     auto_set_skip_letsencrypt
 
+    # IMPORTANT: Generate secrets BEFORE loading the env file so Docker Compose
+    # picks up the correct password when creating the database.
+    autofill_env_secrets_if_requested ./.env.production
+
     # Docker Compose variable interpolation reads from the shell environment (and optional .env).
     # Our canonical file is .env.production, so export its values for this script run.
     set -a
@@ -2562,7 +2566,7 @@ main() {
     set +a
 
   step "Starting database and redis"
-  docker compose -f docker-compose.production.yml up -d postgres redis
+  docker compose -f docker-compose.production.yml up -d --force-recreate postgres redis
 
   step "Setting up SSL (dummy certs or Let's Encrypt)"
   export LETSENCRYPT_EMAIL="${EMAIL}"
