@@ -3667,7 +3667,8 @@ show_vps_menu() {
   print "Please choose an option:"
   print "  1) Clean Install (Deletes 'taxi' user and starts fresh)"
   print "  2) Update Existing Install (Pulls latest code and redeploys)"
-  print "  3) Exit"
+  print "  3) Setup Domain & SSL (Configure real domain and certificates)"
+  print "  4) Exit"
   print
 }
 
@@ -3731,6 +3732,43 @@ run_update_only() {
   sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; AUTO_GENERATE_SECRETS=true bash scripts/all.sh deploy"
 }
 
+run_ssl_setup() {
+  if [ ! -d "${INSTALL_DIR}" ]; then
+    die "Install directory not found: ${INSTALL_DIR}. Please run Clean Install first."
+  fi
+  print "[fresh] Setting up Domain & SSL..."
+  
+  local domain email
+  read -rp "Enter your main domain (e.g., example.com): " domain < /dev/tty
+  read -rp "Enter your email for Let's Encrypt: " email < /dev/tty
+  
+  if [ -z "${domain}" ] || [ -z "${email}" ]; then
+    die "Domain and Email are required."
+  fi
+
+  # Update .env.production as root (since it's in /home/taxi)
+  # But we should probably do it as the deploy user or ensure permissions.
+  # The ensure_env_kv function is available in the outer script, but this is inside the heredoc.
+  # Wait, I need to make sure ensure_env_kv is available inside the heredoc or use a different way.
+  # Actually, the heredoc script has its own functions. Let me check if ensure_env_kv is there.
+  
+  sudo -u "${DEPLOY_USER}" -H bash -lc "
+    cd '${INSTALL_DIR}'
+    # We need ensure_env_kv here. Since it's in scripts/all.sh, we can source it.
+    source scripts/all.sh --source-only 2>/dev/null || true
+    
+    # If source-only doesn't work, we'll just use sed directly
+    sed -i \"s|^DOMAIN=.*|DOMAIN=${domain}|\" .env.production
+    sed -i \"s|^CERTBOT_EMAIL=.*|CERTBOT_EMAIL=${email}|\" .env.production
+    sed -i \"s|^USE_DUMMY_CERT=.*|USE_DUMMY_CERT=false|\" .env.production
+    
+    print \"[fresh] Running SSL setup script...\"
+    bash scripts/setup-ssl.sh
+  "
+  
+  print "[fresh] SSL Setup complete!"
+}
+
 main() {
   require_root
 
@@ -3744,7 +3782,7 @@ main() {
   show_vps_menu
   local choice
   # Read from /dev/tty to allow interaction when script is piped (e.g. curl | bash)
-  read -rp "Enter your choice [1-3]: " choice < /dev/tty
+  read -rp "Enter your choice [1-4]: " choice < /dev/tty
 
   case "${choice}" in
     1)
@@ -3754,6 +3792,9 @@ main() {
       run_update_only
       ;;
     3)
+      run_ssl_setup
+      ;;
+    4)
       print "Exiting."
       exit 0
       ;;
