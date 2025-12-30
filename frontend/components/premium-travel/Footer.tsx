@@ -13,7 +13,7 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ onHomeClick, onCategoryChange }) => {
   return (
     <footer className="bg-background-dark border-t border-surface-dark-lighter py-20">
-      <div className="max-w-7xl mx-auto px-6 md:px-10">
+      <div className="w-full px-6 md:px-10">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
           <div className="col-span-2 lg:col-span-2">
             <button 

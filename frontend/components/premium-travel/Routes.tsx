@@ -12,7 +12,7 @@ const Routes: React.FC = () => {
 
   return (
     <section className="py-24 bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-surface-dark-lighter">
-      <div className="max-w-7xl mx-auto px-6 md:px-10 flex flex-col lg:flex-row gap-16">
+      <div className="w-full px-6 md:px-10 flex flex-col lg:flex-row gap-16">
         <div className="flex-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 dark:bg-surface-dark-lighter mb-6">
             <span className="text-xs font-bold text-primary tracking-wide uppercase">Popular UK Routes</span>

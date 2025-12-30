@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes tl-hero-bg-pan {
+  0% {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.12) translate3d(-1.5%, -1%, 0);
+  }
+  100% {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+}
+
+.hero-bg-animate {
+  animation: tl-hero-bg-pan 28s ease-in-out infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-bg-animate {
+    animation: none;
+    transform: scale(1.05);
+  }
+}
+
 :root {
   color-scheme: light;
 }

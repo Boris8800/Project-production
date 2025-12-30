@@ -206,7 +206,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
       </aside>
 
       <main className="flex-1 overflow-y-auto bg-slate-100 dark:bg-background-dark p-8 lg:p-16 custom-scrollbar">
-        <div className="max-w-5xl mx-auto">
+        <div className="w-full">
           <header className="mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
             <div>
               <h2 className="text-4xl font-black tracking-tighter text-slate-900 dark:text-white">Choose Your Carriage</h2>

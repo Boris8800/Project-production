@@ -36,7 +36,7 @@ const CTA: React.FC<CTAProps> = ({ onBookClick }) => {
         }}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
+      <div className="relative z-10 w-full px-6 md:px-10">
         <div className="grid lg:grid-cols-2 gap-20 items-center">
           <div>
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/20 border border-primary/30 mb-8 backdrop-blur-md">

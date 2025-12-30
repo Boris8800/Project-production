@@ -23,7 +23,7 @@ const Features: React.FC = () => {
 
   return (
     <section className="py-24 bg-white dark:bg-background-dark relative">
-      <div className="max-w-7xl mx-auto px-6 md:px-10">
+      <div className="w-full px-6 md:px-10">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary text-[10px] font-black rounded uppercase tracking-[0.2em] mb-4">
             Our Commitment

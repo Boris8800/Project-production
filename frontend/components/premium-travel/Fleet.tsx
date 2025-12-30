@@ -170,7 +170,7 @@ const Fleet: React.FC = () => {
 
   return (
     <section ref={sectionRef} className="py-32 bg-background-light dark:bg-background-dark relative">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="w-full px-6">
         <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-12">
           <div className="max-w-3xl text-left">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-8">
