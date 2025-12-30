@@ -1628,6 +1628,90 @@ run_env_menu() {
   done
 }
 
+run_pro_menu() {
+  require_root
+  cd "$(repo_root)"
+  require_repo_root
+
+  while true; do
+    print
+    print "Pro menu (advanced)"
+    print "- For experienced operators."
+    print "- These actions can restart services and change server state."
+    print
+    print "1) Show update status (pending GitHub commits)"
+    print "2) Update from GitHub + redeploy (stash local changes)"
+    print "3) Update from GitHub + redeploy (DISCARD local changes)"
+    print "4) Redeploy now (no git update)"
+    print "5) Update host frontend (rebuild + restart systemd)"
+    print "6) Restart stack (docker compose restart)"
+    print "7) Tail logs (choose service)"
+    print "8) Status + Health check"
+    print "9) Back"
+    print
+
+    local choice
+    choice="$(prompt "Choose" "1")"
+    case "${choice}" in
+      1)
+        require_cmd git
+        if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+          print "ERROR: Not a git repository"
+          pause
+          continue
+        fi
+        print "[pro] Fetching origin..."
+        git fetch -q origin || true
+        print
+        print "[pro] Current: $(git rev-parse --short HEAD 2>/dev/null || true)"
+        print "[pro] Pending commits (HEAD..origin/main):"
+        git log --oneline --decorate --no-color HEAD..origin/main 2>/dev/null | head -n 50 || true
+        pause
+        ;;
+      2)
+        print "[pro] Updating from GitHub + redeploy (stash)"
+        SYNC_REPO=true AUTO_STASH=true FORCE_RESET=false bash scripts/all.sh deploy
+        pause
+        ;;
+      3)
+        print "[pro] Updating from GitHub + redeploy (DISCARD local changes)"
+        print "[pro] WARNING: This resets any local changes on the server."
+        SYNC_REPO=true AUTO_STASH=false FORCE_RESET=true bash scripts/all.sh deploy
+        pause
+        ;;
+      4)
+        print "[pro] Redeploying (no git update)"
+        SYNC_REPO=false bash scripts/all.sh deploy
+        pause
+        ;;
+      5)
+        print "[pro] Updating host frontend"
+        bash scripts/all.sh setup-frontend-host
+        pause
+        ;;
+      6)
+        print "[pro] Restarting stack"
+        cmd_stack_restart || true
+        pause
+        ;;
+      7)
+        local svc
+        svc="$(prompt "Service (example: backend-api, nginx-proxy, postgres)" "backend-api")"
+        cmd_stack_logs "${svc}" || true
+        pause
+        ;;
+      8)
+        cmd_stack_status || true
+        print
+        cmd_stack_health || true
+        pause
+        ;;
+      9) break ;;
+      *) print "Invalid option" ;;
+    esac
+  done
+}
+
 run_menu() {
   require_root
   cd "$(repo_root)"
@@ -1658,7 +1742,8 @@ run_menu() {
     print "15) Ops web dashboard"
     print "16) Dry-run deploy"
     print "17) Rollback"
-    print "18) Quit"
+    print "18) Pro menu (advanced update/ops)"
+    print "19) Quit"
     print
 
     local choice
@@ -1685,7 +1770,8 @@ run_menu() {
       15) run_ops_web_dashboard_menu ;;
       16) run_dry_run_deploy ;;
       17) run_rollback_menu ;;
-      18) break ;;
+      18) run_pro_menu ;;
+      19) break ;;
       *) print "Invalid option" ;;
     esac
   done
@@ -1706,6 +1792,7 @@ main() {
 
   case "${cmd}" in
     menu) run_menu ;;
+    pro) run_pro_menu ;;
     status) cmd_stack_status ;;
     health) cmd_stack_health ;;
     logs) cmd_stack_logs "$@" ;;
