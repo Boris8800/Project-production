@@ -3743,7 +3743,8 @@ main() {
 
   show_vps_menu
   local choice
-  read -rp "Enter your choice [1-3]: " choice
+  # Read from /dev/tty to allow interaction when script is piped (e.g. curl | bash)
+  read -rp "Enter your choice [1-3]: " choice < /dev/tty
 
   case "${choice}" in
     1)
