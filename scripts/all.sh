@@ -10,6 +10,11 @@ usage() {
 Usage:
   bash scripts/all.sh <command> [args]
 
+Examples:
+  sudo bash scripts/all.sh                 # opens the menu
+  sudo bash scripts/all.sh menu pro        # opens the Pro menu
+  sudo bash scripts/all.sh menu status     # quick status
+
 Commands:
   menu                 Run the interactive ops menu
   deploy               Production deploy
