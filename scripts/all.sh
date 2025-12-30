@@ -3444,14 +3444,13 @@ cleanup_Project_docker() {
     docker network rm ${nets} >/dev/null 2>&1 || true
   fi
 
-  if [ "${NUKE_VOLUMES}" = "true" ]; then
-    print "[fresh] NUKE_VOLUMES=true: removing Project volumes (DATA LOSS)"
-    local vols
-    vols="$(docker volume ls -q --filter name=Project_ 2>/dev/null || true)"
-    if [ -n "${vols}" ]; then
-      # shellcheck disable=SC2086
-      docker volume rm ${vols} >/dev/null 2>&1 || true
-    fi
+  # Always remove volumes on clean install to avoid password mismatch issues
+  print "[fresh] Removing Project volumes to ensure clean state"
+  local vols
+  vols="$(docker volume ls -q --filter name=Project_ 2>/dev/null || true)"
+  if [ -n "${vols}" ]; then
+    # shellcheck disable=SC2086
+    docker volume rm ${vols} >/dev/null 2>&1 || true
   fi
 }
 
