@@ -38,7 +38,7 @@ run_embedded_script() {
   fi
 
   # Always clean up (best effort)
-  trap 'rm -f "${tmp}" >/dev/null 2>&1 || true' RETURN
+  trap 'rm -f "${tmp:-}" >/dev/null 2>&1 || true' RETURN EXIT
 
   case "${script_name}" in
     Project)
