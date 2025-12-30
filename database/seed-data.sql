@@ -7,7 +7,7 @@ BEGIN;
 INSERT INTO system_settings(key, value)
 VALUES
   ('app.currency', '"GBP"'::jsonb),
-  ('app.supportEmail', '"support@rapidroad.uk"'::jsonb),
+  ('app.supportEmail', '"support@yourdomain.com"'::jsonb),
   ('security.passwordPolicy', '{"minLength":12,"requireNumbers":true,"requireSymbols":true}'::jsonb)
 ON CONFLICT (key) DO NOTHING;
 

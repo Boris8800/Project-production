@@ -1,10 +1,10 @@
 # Project (Production)
 
 Production-ready monorepo scaffold for:
-- **rapidroad.uk** (customer booking)
-- **driver.rapidroad.uk** (driver panel)
-- **admin.rapidroad.uk** (admin panel)
-- **api.rapidroad.uk** (NestJS API)
+- **yourdomain.com** (customer booking)
+- **driver.yourdomain.com** (driver panel)
+- **admin.yourdomain.com** (admin panel)
+- **api.yourdomain.com** (NestJS API)
 
 ## What’s in this repo (initial scaffold)
 - Docker Compose (production) for Nginx + API + Postgres + Redis (frontend runs on the host in production)

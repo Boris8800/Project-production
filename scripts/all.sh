@@ -792,7 +792,7 @@ get_env_value() {
 print_service_links() {
   load_env_if_present
   local domain_root
-  domain_root="${DOMAIN_ROOT:-${DOMAIN:-rapidroad.uk}}"
+  domain_root="${DOMAIN_ROOT:-${DOMAIN:-yourdomain.com}}"
 
   print "Web / service links"
   print "- Customer: https://${domain_root}"
@@ -845,7 +845,7 @@ cmd_preflight_checks() {
 
 get_domain_root() {
   load_env_if_present
-  printf '%s' "${DOMAIN_ROOT:-${DOMAIN:-rapidroad.uk}}"
+  printf '%s' "${DOMAIN_ROOT:-${DOMAIN:-yourdomain.com}}"
 }
 
 ssl_expiry_report() {
@@ -1211,7 +1211,7 @@ run_deploy_guided() {
   print
 
   local domain_root email
-  domain_root="$(prompt "Domain (root)" "rapidroad.uk")"
+  domain_root="$(prompt "Domain (root)" "yourdomain.com")"
   email="$(prompt "Let's Encrypt email" "admin@${domain_root}")"
 
   local dns_ready=false
@@ -1312,7 +1312,7 @@ run_first_time_wizard() {
   fi
 
   local domain_root email
-  domain_root="$(prompt "Domain root (example: example.com)" "rapidroad.uk")"
+  domain_root="$(prompt "Domain root (example: example.com)" "yourdomain.com")"
   email="$(prompt "Let's Encrypt email" "admin@${domain_root}")"
 
   local dns_ready=false
@@ -1864,13 +1864,13 @@ __PROJECT_SCRIPT__
       cat >"${tmp}" <<'__PROJECT_SCRIPT__'
 #!/usr/bin/env bash
 # Project - Production Deployment Script
-# Domain: rapidroad.uk
+# Domain: yourdomain.com
 # VPS IP: 5.249.164.40
 
 set -euo pipefail
 
-DOMAIN="${DOMAIN:-rapidroad.uk}"
-EMAIL="${LETSENCRYPT_EMAIL:-admin@rapidroad.uk}"
+DOMAIN="${DOMAIN:-yourdomain.com}"
+EMAIL="${LETSENCRYPT_EMAIL:-admin@yourdomain.com}"
 START_MONITORING="${START_MONITORING:-false}"
 AUTO_GENERATE_SECRETS="${AUTO_GENERATE_SECRETS:-false}"
 SKIP_LETSENCRYPT="${SKIP_LETSENCRYPT:-false}"
@@ -2138,7 +2138,7 @@ auto_set_skip_letsencrypt() {
   set +a
 
   local domain_root
-  domain_root="${DOMAIN_ROOT:-${DOMAIN:-rapidroad.uk}}"
+  domain_root="${DOMAIN_ROOT:-${DOMAIN:-yourdomain.com}}"
 
   local expected_ip
   expected_ip="${VPS_IP:-}"
@@ -2861,8 +2861,8 @@ __PROJECT_SCRIPT__
 
 set -euo pipefail
 
-DOMAIN_ROOT="${DOMAIN_ROOT:-rapidroad.uk}"
-EMAIL="${LETSENCRYPT_EMAIL:-admin@rapidroad.uk}"
+DOMAIN_ROOT="${DOMAIN_ROOT:-yourdomain.com}"
+EMAIL="${LETSENCRYPT_EMAIL:-admin@yourdomain.com}"
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.production.yml}"
 SKIP_LETSENCRYPT="${SKIP_LETSENCRYPT:-false}"
 
@@ -3128,7 +3128,7 @@ auto_set_skip_letsencrypt() {
   set +a
 
   local domain_root
-  domain_root="${DOMAIN_ROOT:-${DOMAIN:-rapidroad.uk}}"
+  domain_root="${DOMAIN_ROOT:-${DOMAIN:-yourdomain.com}}"
 
   local expected_ip
   expected_ip="${VPS_IP:-}"

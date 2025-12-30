@@ -90,7 +90,7 @@ export class AuthService {
     await this.redis.set(this.magicKey(token), user.id, 'EX', ttlSeconds);
 
     // Build a safe default link (no open redirect).
-    const domainRoot = (process.env.DOMAIN_ROOT ?? process.env.DOMAIN ?? 'rapidroad.uk').trim();
+    const domainRoot = (process.env.DOMAIN_ROOT ?? process.env.DOMAIN ?? 'yourdomain.com').trim();
     const hostPrefix = tenant === 'admin' ? 'admin.' : tenant === 'driver' ? 'driver.' : '';
     const link = `https://${hostPrefix}${domainRoot}/magic?token=${encodeURIComponent(token)}`;
 

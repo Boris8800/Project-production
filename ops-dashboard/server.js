@@ -40,7 +40,7 @@ async function fetchWithTimeout(url, timeoutMs = 2500) {
 }
 
 function getDomainRoot() {
-  return process.env.DOMAIN_ROOT || process.env.DOMAIN || 'rapidroad.uk';
+  return process.env.DOMAIN_ROOT || process.env.DOMAIN || 'yourdomain.com';
 }
 
 function readCertExpiry(domain) {

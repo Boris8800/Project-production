@@ -1,10 +1,10 @@
 # API
 
 ## Base URL
-- Production: `https://api.rapidroad.uk/v1`
+- Production: `https://api.yourdomain.com/v1`
 
 ## Swagger
-- `https://api.rapidroad.uk/docs`
+- `https://api.yourdomain.com/docs`
 
 ## Health
 - `GET /v1/health`
