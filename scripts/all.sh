@@ -2594,6 +2594,44 @@ main() {
   step "Starting application services"
   docker compose -f docker-compose.production.yml up -d --build --force-recreate
 
+  # Nginx depends_on backend-api health, so Compose can look "stuck" here.
+  # Show progress and surface the real reason if backend stays unhealthy.
+  if docker inspect Project-backend >/dev/null 2>&1; then
+    print "[deploy] Waiting for Project-backend to become healthy (up to 4 minutes)..."
+    start_ts="$(date +%s)"
+    while true; do
+      now_ts="$(date +%s)"
+      elapsed=$((now_ts - start_ts))
+
+      health="$(docker inspect -f '{{.State.Health.Status}}' Project-backend 2>/dev/null || echo unknown)"
+      status="$(docker inspect -f '{{.State.Status}}' Project-backend 2>/dev/null || echo unknown)"
+
+      if [ "${health}" = "healthy" ]; then
+        print "[ok] Project-backend is healthy"
+        break
+      fi
+
+      if [ "${elapsed}" -ge 240 ]; then
+        print "[error] Project-backend is not healthy (status=${status}, health=${health})"
+        print "[deploy] Last backend logs:"
+        docker logs Project-backend --tail 120 2>/dev/null || true
+        print
+        print "[deploy] Backend healthcheck log:"
+        docker inspect -f '{{range .State.Health.Log}}{{println .ExitCode " " .Output}}{{end}}' Project-backend 2>/dev/null || true
+        print
+        print "[deploy] Last postgres logs:"
+        docker logs Project-postgres --tail 80 2>/dev/null || true
+        die "Backend did not become healthy. Fix the error above and re-run deploy."
+      fi
+
+      printf '.'
+      sleep 2
+    done
+    print
+  else
+    print "[warn] Project-backend container not found after compose up"
+  fi
+
   if [ "${START_MONITORING}" = "true" ]; then
     step "Starting monitoring stack"
     print "[deploy] Starting monitoring stack"
