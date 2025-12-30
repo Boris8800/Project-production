@@ -3758,7 +3758,10 @@ run_ssl_setup() {
     source scripts/all.sh --source-only 2>/dev/null || true
     
     # If source-only doesn't work, we'll just use sed directly
+    sed -i \"s|^DOMAIN_ROOT=.*|DOMAIN_ROOT=${domain}|\" .env.production
     sed -i \"s|^DOMAIN=.*|DOMAIN=${domain}|\" .env.production
+    sed -i \"s|^CORS_ORIGINS=.*|CORS_ORIGINS=https://${domain},https://driver.${domain},https://admin.${domain}|\" .env.production
+    sed -i \"s|^NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=https://api.${domain}|\" .env.production
     sed -i \"s|^CERTBOT_EMAIL=.*|CERTBOT_EMAIL=${email}|\" .env.production
     sed -i \"s|^USE_DUMMY_CERT=.*|USE_DUMMY_CERT=false|\" .env.production
     
