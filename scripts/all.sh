@@ -4183,6 +4183,7 @@ build_frontend() {
 
   print "[frontend] Building (npm ci && npm run build) as ${SERVICE_USER}"
   print "         (npm warnings are normal and can be ignored)"
+  print "         Installing dependencies..."
   sudo -u "${SERVICE_USER}" -H bash -lc "
     set -euo pipefail
     cd '${FRONTEND_DIR}'
@@ -4192,6 +4193,16 @@ build_frontend() {
       set +a
     fi
     npm ci --loglevel=error 2>&1 | grep -v 'deprecated' || true
+  "
+  print "         Building Next.js application (this may take 1-2 minutes)..."
+  sudo -u "${SERVICE_USER}" -H bash -lc "
+    set -euo pipefail
+    cd '${FRONTEND_DIR}'
+    if [ -f '${ENV_FILE}' ]; then
+      set -a
+      . '${ENV_FILE}'
+      set +a
+    fi
     npm run build
   "
 }
