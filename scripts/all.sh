@@ -69,7 +69,7 @@ if supports_color; then
   C_GREEN="${_ESC}[92m"
   C_YELLOW="${_ESC}[93m"
   C_BLUE="${_ESC}[94m"
-  C_CYAN="${_ESC}[96m"
+  C_CYAN="${_ESC}[93m"
 else
   C_RESET=""
   C_BOLD=""
@@ -1921,7 +1921,7 @@ if supports_color; then
   C_RED="${_ESC}[91m"
   C_YELLOW="${_ESC}[93m"
   C_BLUE="${_ESC}[94m"
-  C_CYAN="${_ESC}[96m"
+  C_CYAN="${_ESC}[93m"
 else
   C_RESET=""
   C_BOLD=""
@@ -2718,7 +2718,7 @@ if supports_color; then
   C_RESET="${_ESC}[0m"
   C_BOLD="${_ESC}[1m"
   C_RED="${_ESC}[91m"
-  C_CYAN="${_ESC}[96m"
+  C_CYAN="${_ESC}[93m"
 else
   C_RESET=""
   C_BOLD=""
@@ -2998,7 +2998,7 @@ if supports_color; then
   C_RESET="${_ESC}[0m"
   C_BOLD="${_ESC}[1m"
   C_RED="${_ESC}[91m"
-  C_CYAN="${_ESC}[96m"
+  C_CYAN="${_ESC}[93m"
 else
   C_RESET=""
   C_BOLD=""
@@ -3513,7 +3513,7 @@ if supports_color; then
   C_RED="${_ESC}[91m"
   C_GREEN="${_ESC}[92m"
   C_YELLOW="${_ESC}[93m"
-  C_CYAN="${_ESC}[96m"
+  C_CYAN="${_ESC}[93m"
 else
   C_RESET=""
   C_BOLD=""
