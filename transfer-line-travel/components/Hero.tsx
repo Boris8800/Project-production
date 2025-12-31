@@ -129,11 +129,11 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
       className="relative w-full min-h-screen flex items-center justify-center py-12 md:py-24 px-4 md:px-12 overflow-hidden bg-background-dark"
     >
       <div 
-        className="absolute inset-0 z-0 transition-transform duration-[2s] ease-out pointer-events-none"
+        className="absolute -inset-px z-0 transition-transform duration-[2s] ease-out pointer-events-none"
         style={{ transform: `scale(1.1) translate3d(${mousePos.x * -0.4}px, ${mousePos.y * -0.4}px, 0)` }}
       >
         <div 
-          className="absolute inset-0 bg-cover bg-center" 
+          className="absolute -inset-px bg-cover bg-center" 
           style={{ 
             backgroundImage: `linear-gradient(rgba(12, 11, 9, 0.5), rgba(12, 11, 9, 0.95)), url('https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&q=85&w=2400')`,
           }}

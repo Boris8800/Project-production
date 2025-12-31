@@ -122,10 +122,10 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
   const t = translations[language];
 
   return (
-    <section className="relative w-full min-h-[900px] flex items-center justify-center py-20 px-4 md:px-12 overflow-hidden">
+    <section className="relative w-full min-h-screen flex items-center justify-center px-4 md:px-12 overflow-hidden bg-background-dark">
       {/* Background with deeper overlay for better text contrast */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-center hero-bg-animate" 
+        className="absolute -inset-px z-0 bg-cover bg-center hero-bg-animate" 
         style={{ backgroundImage: `linear-gradient(rgba(10, 10, 20, 0.75), rgba(10, 10, 20, 0.98)), url('https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&q=85&w=2400')` }}
       />
 
