@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { RideData, SelectedVehicle } from './types';
 import { useLanguage, Language } from '../../lib/language';
 
@@ -16,6 +16,12 @@ interface VehicleSelectionProps {
 const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect, onBack }) => {
   const { language } = useLanguage();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [routeMetrics, setRouteMetrics] = useState<{
+    distanceMiles: number;
+    durationText: string;
+    arrivalEpochMs: number;
+    source: 'google' | 'estimate';
+  } | null>(null);
 
   const translations = {
     [Language.EN]: {
@@ -70,19 +76,59 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
 
   const t = translations[language];
 
-  const journeyMetrics = useMemo(() => {
-    const seed = (rideData.pickup.length + rideData.dropoff.length);
-    const miles = Math.floor((seed * 1.8) + 20);
+  const fallbackJourneyMetrics = useMemo(() => {
+    const seed = rideData.pickup.length + rideData.dropoff.length;
+    const miles = Math.floor(seed * 1.8 + 20);
     const speedAverage = 55;
     const hours = Math.floor(miles / speedAverage);
     const mins = Math.floor(((miles % speedAverage) / speedAverage) * 60);
-    
     return {
-      distance: miles,
-      duration: `${hours > 0 ? hours + 'h ' : ''}${mins}m`,
-      miles: miles
+      distanceMiles: miles,
+      durationText: `${hours > 0 ? `${hours}h ` : ''}${mins}m`,
+      arrivalEpochMs: Date.now() + (hours * 3600 + mins * 60) * 1000,
+      source: 'estimate' as const,
     };
-  }, [rideData]);
+  }, [rideData.dropoff.length, rideData.pickup.length]);
+
+  const metrics = routeMetrics ?? fallbackJourneyMetrics;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const url = new URL('/api/premium-travel/route-metrics', window.location.origin);
+        url.searchParams.set('pickup', rideData.pickup);
+        url.searchParams.set('dropoff', rideData.dropoff);
+
+        const res = await fetch(url.toString(), { cache: 'no-store' });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (cancelled) return;
+
+        if (
+          typeof json?.distanceMiles === 'number' &&
+          typeof json?.durationText === 'string' &&
+          typeof json?.arrivalEpochMs === 'number' &&
+          (json?.source === 'google' || json?.source === 'estimate')
+        ) {
+          setRouteMetrics({
+            distanceMiles: json.distanceMiles,
+            durationText: json.durationText,
+            arrivalEpochMs: json.arrivalEpochMs,
+            source: json.source,
+          });
+        }
+      } catch {
+        // ignore (fallback metrics already cover UI)
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [rideData.dropoff, rideData.pickup]);
 
   // Full vehicle catalog with group models strictly at the end
   const vehicles = useMemo(
@@ -181,42 +227,59 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
   const mapUrl = `https://www.google.com/maps?output=embed&saddr=${encodeURIComponent(rideData.pickup)}&daddr=${encodeURIComponent(rideData.dropoff)}`;
 
   const calculateQuote = (base: number, rate: number) => {
-    return (base + (rate * journeyMetrics.distance)).toFixed(2);
+    return (base + (rate * metrics.distanceMiles)).toFixed(2);
   };
 
+  const arrivalTimeText = useMemo(() => {
+    try {
+      return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(
+        new Date(metrics.arrivalEpochMs),
+      );
+    } catch {
+      return '';
+    }
+  }, [metrics.arrivalEpochMs]);
+
   return (
-    <div className="flex flex-col lg:flex-row h-screen bg-white dark:bg-background-dark overflow-hidden">
-      {/* Sidebar: Journey Information */}
-      <aside className="w-full lg:w-[460px] flex flex-col border-r border-gray-200 dark:border-white/5 bg-slate-50 dark:bg-surface-dark shadow-2xl z-20">
-        <div className="p-10 overflow-y-auto flex-grow custom-scrollbar">
-          <button onClick={onBack} className="flex items-center gap-2 text-slate-500 hover:text-primary mb-12 text-[10px] font-black uppercase tracking-[0.3em] transition-all">
+    <div className="flex flex-col lg:flex-row h-[100svh] bg-white dark:bg-background-dark overflow-hidden">
+      {/* Left: Vehicles + Trip Summary */}
+      <aside className="w-full lg:w-[560px] flex flex-col border-r border-gray-200 dark:border-white/5 bg-slate-50 dark:bg-surface-dark shadow-2xl z-20">
+        <div className="p-6 sm:p-10 border-b border-gray-200 dark:border-white/5">
+          <button onClick={onBack} className="flex items-center gap-2 text-slate-500 hover:text-primary mb-8 text-[10px] font-black uppercase tracking-[0.3em] transition-all">
             <span className="material-symbols-outlined text-sm">arrow_back</span> {t.back}
           </button>
-          
-          <div className="mb-10">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full text-primary text-[10px] font-black uppercase tracking-widest mb-6 border border-primary/20">
+
+          <div className="mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full text-primary text-[10px] font-black uppercase tracking-widest mb-5 border border-primary/20">
               <span className="material-symbols-outlined text-sm">route</span> {t.badge}
             </div>
-            <h1 className="text-5xl font-black leading-[0.85] tracking-tighter text-slate-900 dark:text-white">
-              {t.title.split(' ').slice(0, -1).join(' ')} <br/>
+            <h1 className="text-4xl sm:text-5xl font-black leading-[0.9] tracking-tighter text-slate-900 dark:text-white">
+              {t.title.split(' ').slice(0, -1).join(' ')} <br />
               <span className="italic font-display text-primary">{t.title.split(' ').slice(-1)}</span>
             </h1>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-10">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="p-6 bg-white dark:bg-white/5 rounded-[32px] border border-gray-200 dark:border-white/10 shadow-sm">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t.dist}</p>
               <p className="text-3xl font-black text-slate-900 dark:text-white font-display">
-                {journeyMetrics.distance} <span className="text-xs text-primary font-sans uppercase">{t.miles}</span>
+                {metrics.distanceMiles}{' '}
+                <span className="text-xs text-primary font-sans uppercase">{t.miles}</span>
               </p>
+              {metrics.source === 'google' && (
+                <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Google Maps</p>
+              )}
             </div>
             <div className="p-6 bg-white dark:bg-white/5 rounded-[32px] border border-gray-200 dark:border-white/10 shadow-sm">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t.time}</p>
-              <p className="text-xl font-black text-slate-900 dark:text-white mt-1">{journeyMetrics.duration}</p>
+              <p className="text-xl font-black text-slate-900 dark:text-white mt-1">{metrics.durationText}</p>
+              {arrivalTimeText && (
+                <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-slate-400">ETA {arrivalTimeText}</p>
+              )}
             </div>
           </div>
 
-          <div className="space-y-4 mb-8">
+          <div className="space-y-3">
             <div className="flex items-start gap-4 p-5 bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
               <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-primary">my_location</span>
@@ -237,34 +300,18 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
             </div>
           </div>
 
-          <div className="p-6 bg-primary/5 rounded-[24px] border border-primary/10 flex items-start gap-4">
-             <span className="material-symbols-outlined text-primary text-xl">verified</span>
-             <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 leading-relaxed italic">
-               {t.priceNote.replace('{miles}', journeyMetrics.distance.toString())}
-             </p>
+          <div className="mt-6 p-6 bg-primary/5 rounded-[24px] border border-primary/10 flex items-start gap-4">
+            <span className="material-symbols-outlined text-primary text-xl">verified</span>
+            <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 leading-relaxed italic">
+              {t.priceNote.replace('{miles}', metrics.distanceMiles.toString())}
+            </p>
           </div>
         </div>
 
-        <div className="h-[300px] w-full relative">
-          <iframe
-            title="Journey Route Preview"
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            loading="lazy"
-            allowFullScreen
-            src={mapUrl}
-            className="grayscale-[0.1] contrast-[1.1] brightness-[0.9]"
-          ></iframe>
-          <div className="absolute inset-0 pointer-events-none border-t border-gray-200 dark:border-white/5 shadow-[inset_0_20px_20px_-20px_rgba(0,0,0,0.1)]"></div>
-        </div>
-      </aside>
-
-      <main className="flex-1 overflow-y-auto bg-slate-100 dark:bg-background-dark p-8 lg:p-16 custom-scrollbar">
-        <div className="w-full">
-          <header className="mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
+        <div className="p-6 sm:p-10 overflow-y-auto flex-grow custom-scrollbar bg-slate-100 dark:bg-background-dark">
+          <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
             <div>
-              <h2 className="text-4xl font-black tracking-tighter text-slate-900 dark:text-white">{t.chooseVehicle}</h2>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-slate-900 dark:text-white">{t.chooseVehicle}</h2>
               {(rideData.persons > 4 || rideData.luggage > 4) && (
                 <div className="mt-3 flex items-center gap-2 text-primary">
                   <span className="material-symbols-outlined text-sm">info</span>
@@ -272,12 +319,12 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-3 px-6 py-3 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl">
                 <span className="material-symbols-outlined text-primary">group</span>
                 <span className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">{rideData.persons} {t.passengers}</span>
               </div>
-              <div className="flex items-center gap-3 px-6 py-3 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl">
+              <div className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl">
                 <span className="material-symbols-outlined text-primary">luggage</span>
                 <span className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">{rideData.luggage} {t.items}</span>
               </div>
@@ -347,7 +394,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
                         <button 
                           onClick={(e) => { 
                             e.stopPropagation(); 
-                            onSelect({...v, price: `£${totalPrice}`, miles: journeyMetrics.distance}); 
+                            onSelect({ ...v, price: `£${totalPrice}`, miles: metrics.distanceMiles }); 
                           }}
                           className={`px-12 py-5 font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl transition-all shadow-2xl hover:scale-105 active:scale-95 ${
                             selectedId === v.id 
@@ -374,12 +421,25 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
             )}
           </div>
           
-          <footer className="mt-20 text-center border-t border-gray-200 dark:border-white/5 pt-16 mb-20">
+          <footer className="mt-16 text-center border-t border-gray-200 dark:border-white/5 pt-12 pb-8">
             <p className="text-slate-400 dark:text-slate-200 text-[10px] font-black leading-relaxed max-w-2xl mx-auto uppercase tracking-[0.3em]">
-              {t.footerNote.replace('{miles}', journeyMetrics.distance.toString())}
+              {t.footerNote.replace('{miles}', metrics.distanceMiles.toString())}
             </p>
           </footer>
         </div>
+      </aside>
+
+      {/* Right: Big Google Map */}
+      <main className="flex-1 relative bg-slate-900">
+        <iframe
+          title="Journey Route"
+          src={mapUrl}
+          className="absolute inset-0 h-full w-full"
+          style={{ border: 0 }}
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/25 via-transparent to-transparent" />
       </main>
     </div>
   );

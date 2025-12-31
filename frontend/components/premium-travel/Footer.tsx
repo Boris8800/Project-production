@@ -99,7 +99,7 @@ const Footer: React.FC<FooterProps> = ({ onHomeClick, onCategoryChange }) => {
         <div className="border-t border-surface-dark-lighter pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-slate-300 text-xs font-medium">{t.rights}</p>
           <div className="flex gap-8 text-xs text-slate-300 font-medium">
-            <a className="hover:text-white transition-colors" href="#">{t.privacy}</a>
+            <Link className="hover:text-white transition-colors" href="/privacy">{t.privacy}</Link>
             <Link className="hover:text-white transition-colors" href="/terms">{t.terms}</Link>
             <a className="hover:text-white transition-colors" href="#">{t.sitemap}</a>
           </div>
