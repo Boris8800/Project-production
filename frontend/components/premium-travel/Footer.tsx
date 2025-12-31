@@ -56,8 +56,8 @@ const Footer: React.FC<FooterProps> = ({ onHomeClick, onCategoryChange }) => {
               onClick={onHomeClick}
               className="flex items-center gap-3 text-white mb-8 hover:opacity-80 transition-opacity cursor-pointer text-left"
             >
-              <BrandLogo size={40} />
-              <h2 className="text-xl font-bold font-display">TransferLane</h2>
+              <BrandLogo size={52} />
+              <h2 className="text-2xl font-bold font-display">TransferLane</h2>
             </button>
             <p className="text-slate-300 text-sm max-w-xs mb-8 leading-relaxed">
               {t.desc}

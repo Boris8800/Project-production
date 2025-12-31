@@ -26,7 +26,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ className = '', size = 40 }) => {
           width={size}
           height={size}
           sizes={`${size}px`}
-          className="block w-full h-full object-contain"
+          className="block w-full h-full object-contain scale-[1.15] transform-gpu"
           onError={() => setImgError(true)}
         />
       ) : (

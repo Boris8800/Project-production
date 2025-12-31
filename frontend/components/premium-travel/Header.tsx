@@ -81,7 +81,7 @@ const Header: React.FC<HeaderProps> = ({
           onClick={onHomeClick}
           className="flex items-center gap-4 text-slate-900 dark:text-white hover:opacity-80 transition-opacity cursor-pointer text-left"
         >
-          <BrandLogo size={44} />
+          <BrandLogo size={52} />
           <h2 className="text-xl md:text-2xl font-bold leading-tight tracking-[-0.015em] font-display">TransferLane</h2>
         </button>
 
