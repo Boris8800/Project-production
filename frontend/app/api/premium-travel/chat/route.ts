@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   if (!apiKey) {
     return NextResponse.json(
       { text: 'AI concierge is not configured on this environment.' },
-      { status: 500 },
+      { status: 200 },
     );
   }
 

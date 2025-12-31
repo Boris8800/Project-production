@@ -8,10 +8,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { href: '/tenants/admin', label: 'Dashboard', icon: '🏠' },
-    { href: '/(admin)/trips', label: 'Trip Management', icon: '🚗' },
-    { href: '/(admin)/security', label: 'Security', icon: '🔒' },
-    { href: '/(admin)/drivers', label: 'Drivers', icon: '👨‍✈️' },
-    { href: '/(admin)/analytics', label: 'Analytics', icon: '📊' },
+    { href: '/trips', label: 'Trip Management', icon: '🚗' },
+    { href: '/security', label: 'Security', icon: '🔒' },
   ];
 
   return (

@@ -28,6 +28,15 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
+
+  const openNativeDatePicker = () => {
+    const el = dateInputRef.current;
+    if (!el) return;
+
+    (el as unknown as { showPicker?: () => void }).showPicker?.();
+    if (document.activeElement !== el) el.focus();
+  };
 
   const translations = {
     [Language.EN]: {
@@ -213,6 +222,9 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                         value={date} 
                         min={getTodayDate()}
                         onChange={(e) => setDate(e.target.value)} 
+                        ref={dateInputRef}
+                        onClick={openNativeDatePicker}
+                        onFocus={openNativeDatePicker}
                         className="w-full pl-12 md:pl-16 pr-3 md:pr-4 py-3 md:py-5 rounded-[16px] md:rounded-[24px] bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 text-xs md:text-sm font-bold text-slate-900 dark:text-white transition-all outline-none cursor-pointer" 
                       />
                     </div>

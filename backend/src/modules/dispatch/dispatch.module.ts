@@ -9,6 +9,7 @@ import { UserEntity } from '../../database/entities/user.entity';
 import { RedisModule } from '../../shared/redis/redis.module';
 import { EmailService } from '../../utils/email.service';
 import { DispatchController } from './dispatch.controller';
+import { DispatchGateway } from './dispatch.gateway';
 import { DispatchService } from './dispatch.service';
 
 @Module({
@@ -17,7 +18,7 @@ import { DispatchService } from './dispatch.service';
     TypeOrmModule.forFeature([BookingEntity, BookingLocationEntity, TripEntity, DriverLocationEntity, UserEntity]),
   ],
   controllers: [DispatchController],
-  providers: [DispatchService, EmailService],
+  providers: [DispatchService, DispatchGateway, EmailService],
   exports: [DispatchService],
 })
 export class DispatchModule {}

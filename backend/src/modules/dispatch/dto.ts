@@ -10,6 +10,16 @@ export class DispatchLinkRequestDto {
   email?: string;
 }
 
+export class DispatchDriverLinkRequestDto {
+  @IsString()
+  @MinLength(8)
+  bookingId!: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+}
+
 export class DispatchMagicLinkRequestDto {
   @IsEmail()
   email!: string;
@@ -17,4 +27,10 @@ export class DispatchMagicLinkRequestDto {
   @IsOptional()
   @IsString()
   bookingNumber?: string;
+}
+
+export class DispatchStatusUpdateDto {
+  @IsString()
+  @MinLength(2)
+  status!: string;
 }

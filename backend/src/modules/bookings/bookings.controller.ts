@@ -16,7 +16,7 @@ export class BookingsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Customer)
+  @Roles(Role.Customer, Role.Admin, Role.SuperAdmin)
   async create(@Req() req: Request & { user?: unknown }, @Body() dto: CreateBookingDto) {
     const user = req.user as { id: string };
     return this.bookings.createBooking(user.id, dto);

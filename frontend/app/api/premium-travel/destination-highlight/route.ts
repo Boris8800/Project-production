@@ -13,7 +13,14 @@ export async function GET(req: Request) {
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
+    return NextResponse.json(
+      {
+        title: destination,
+        description: `Experience the unique charm and heritage of ${destination}.`,
+        imageUrl: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&q=85&w=2400',
+      },
+      { status: 200 },
+    );
   }
 
   try {

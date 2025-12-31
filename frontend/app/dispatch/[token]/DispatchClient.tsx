@@ -6,48 +6,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Header from '../../../components/premium-travel/Header';
 import Footer from '../../../components/premium-travel/Footer';
 import { apiGet } from '../../../lib/api';
+import { createDispatchSocket } from '../../../lib/dispatch-socket';
+import type { DispatchSummaryResponse, DispatchUpdatesResponse, LiveLocation } from '../../../lib/dispatch-types';
 
 const DispatchMap = dynamic(() => import('../../../components/dispatch/DispatchMap'), { ssr: false });
-
-type LatLon = { lat: number; lon: number };
-
-type DispatchSummaryResponse = {
-  ok: true;
-  updatedAt: string;
-  booking: {
-    id: string;
-    bookingNumber: string | null;
-    status: string;
-    scheduledPickupAt: string | null;
-    estimatedDistanceM: number | null;
-    estimatedDurationS: number | null;
-  };
-  locations: {
-    pickup: { address: string; lat: number | null; lon: number | null };
-    dropoff: { address: string; lat: number | null; lon: number | null };
-  };
-  trip: {
-    id: string;
-    status: string;
-    startedAt: string | null;
-    completedAt: string | null;
-  } | null;
-  route: Array<LatLon> | null;
-  driver: {
-    id: string;
-    location: (LatLon & { heading: number | null; speedMps: number | null; accuracyM: number | null; recordedAt: string }) | null;
-  } | null;
-};
-
-type DispatchUpdatesResponse = {
-  ok: true;
-  updatedAt: string;
-  booking: { id: string; status: string };
-  trip: { id: string; status: string; startedAt: string | null; completedAt: string | null } | null;
-  eta: string | null;
-  driver: { id: string; location: (LatLon & { heading: number | null; speedMps: number | null; accuracyM: number | null; recordedAt: string }) | null } | null;
-  telemetry: { distanceKm: number | null; durationMin: number | null };
-};
 
 function formatTime(iso: string | null) {
   if (!iso) return '—';
@@ -83,6 +45,49 @@ export default function DispatchClient({
   const [updates, setUpdates] = useState<DispatchUpdatesResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notifyEnabled, setNotifyEnabled] = useState(false);
+
+  useEffect(() => {
+    const socket = createDispatchSocket(token);
+
+    function applyDriverLocation(loc: LiveLocation) {
+      setUpdates((prev) => {
+        if (!prev) return prev;
+        if (!prev.driver) return prev;
+        return { ...prev, driver: { ...prev.driver, location: loc } };
+      });
+
+      setSummary((prev) => {
+        if (!prev) return prev;
+        if (!prev.driver) return prev;
+        return { ...prev, driver: { ...prev.driver, location: loc } };
+      });
+    }
+
+    socket.on('dispatch.driver.location', (loc: LiveLocation) => {
+      applyDriverLocation(loc);
+    });
+
+    socket.on('dispatch.driver.status', (journeyStatus: { status: string; updatedAt: string }) => {
+      setUpdates((prev) => (prev ? { ...prev, journeyStatus } : prev));
+      setSummary((prev) => (prev ? { ...prev, journeyStatus } : prev));
+    });
+
+    socket.on('dispatch.customer.location', (loc: LiveLocation) => {
+      setUpdates((prev) => {
+        if (!prev) return prev;
+        return { ...prev, customer: { location: loc } };
+      });
+    });
+
+    socket.on('connect_error', () => {
+      // Keep silent; polling still works as fallback.
+    });
+
+    return () => {
+      socket.removeAllListeners();
+      socket.disconnect();
+    };
+  }, [token]);
 
   const prevStatusRef = useRef<string | null>(null);
   const prevTripStatusRef = useRef<string | null>(null);

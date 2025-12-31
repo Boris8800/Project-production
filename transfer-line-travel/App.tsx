@@ -18,8 +18,14 @@ import Press from './components/Press';
 
 const App: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<BookingCategory>(BookingCategory.INTERCITY);
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [language, setLanguage] = useState<Language>(Language.EN);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : true;
+  });
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem('language');
+    return (saved as Language) || Language.EN;
+  });
   const [currentView, setCurrentView] = useState<'home' | 'selection' | 'completed' | 'about' | 'terms' | 'safety' | 'help' | 'press'>('home');
   const [rideData, setRideData] = useState<RideData | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
@@ -31,7 +37,12 @@ const App: React.FC = () => {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
   }, [isDarkMode]);
+
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
 
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 

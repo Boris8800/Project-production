@@ -1,11 +1,20 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Providers } from './providers';
-import { Inter, Source_Serif_4 } from 'next/font/google';
+import localFont from 'next/font/local';
 import { materialSymbolsOutlined } from './materialSymbolsFont';
 
-const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
-const sourceSerif = Source_Serif_4({ subsets: ['latin'], display: 'swap', variable: '--font-display' });
+const inter = localFont({
+  src: [{ path: '../public/fonts/inter-latin-wght-normal.woff2', weight: '100 900', style: 'normal' }],
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+const sourceSerif = localFont({
+  src: [{ path: '../public/fonts/source-serif-4-latin-wght-normal.woff2', weight: '200 900', style: 'normal' }],
+  display: 'swap',
+  variable: '--font-display',
+});
 
 export const metadata: Metadata = {
   title: 'TransferLane',

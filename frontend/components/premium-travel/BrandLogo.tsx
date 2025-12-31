@@ -13,11 +13,14 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ className = '', size = 40 }) => {
   const logoSrc = '/brand/transferline-logo.png';
 
   return (
-    <div
-      className={`rounded-xl flex items-center justify-center overflow-hidden ${className}`}
+    <a
+      href={logoSrc}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`rounded-xl flex items-center justify-center overflow-hidden cursor-pointer ${className}`}
       style={{ width: size, height: size }}
-      aria-label="TransferLane"
-      role="img"
+      aria-label="Open TransferLane logo"
+      title="Open logo"
     >
       {!imgError ? (
         <Image
@@ -26,7 +29,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ className = '', size = 40 }) => {
           width={size}
           height={size}
           sizes={`${size}px`}
-          className="block w-full h-full object-contain scale-[1.15] transform-gpu"
+          className="block w-full h-full object-contain scale-[1.25] transform-gpu"
           onError={() => setImgError(true)}
         />
       ) : (
@@ -54,7 +57,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ className = '', size = 40 }) => {
           <circle cx="32" cy="32" r="2" className="fill-primary" />
         </svg>
       )}
-    </div>
+    </a>
   );
 };
 

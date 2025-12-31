@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import BrandLogo from './BrandLogo';
 import { BookingCategory, Language } from '../types';
 
@@ -24,6 +24,20 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
+  const langMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
+        setShowLangMenu(false);
+      }
+    };
+
+    if (showLangMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showLangMenu]);
 
   const translations = {
     [Language.EN]: { intercity: 'Intercity', airport: 'Airport', about: 'About', login: 'Log In', book: 'Book Now' },
@@ -69,7 +83,7 @@ const Header: React.FC<HeaderProps> = ({
           </button>
 
           {/* Lang Switcher */}
-          <div className="relative">
+          <div className="relative" ref={langMenuRef}>
             <button onClick={() => setShowLangMenu(!showLangMenu)} className="flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 dark:hover:bg-white/10 transition-all text-slate-600 dark:text-slate-400">
               <span className="material-symbols-outlined text-sm md:text-base">language</span>
               <span className="hidden sm:inline">{language.toUpperCase()}</span>

@@ -33,7 +33,35 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
 
   const pickupInputRef = useRef<HTMLInputElement | null>(null);
   const dropoffInputRef = useRef<HTMLInputElement | null>(null);
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
+  const timeInputRef = useRef<HTMLInputElement | null>(null);
   const placesBoundRef = useRef(false);
+
+  const openNativeDatePicker = () => {
+    const el = dateInputRef.current;
+    if (!el) return;
+
+    // `showPicker` is supported in Chromium browsers; fall back to focus for others.
+    try {
+      (el as unknown as { showPicker?: () => void }).showPicker?.();
+    } catch {
+      // Some browsers require a direct user gesture; ignore and rely on default behavior.
+    }
+    el.focus();
+  };
+
+  const openNativeTimePicker = () => {
+    const el = timeInputRef.current;
+    if (!el) return;
+
+    // Same user-gesture restriction can apply to time pickers too.
+    try {
+      (el as unknown as { showPicker?: () => void }).showPicker?.();
+    } catch {
+      // Ignore and rely on default browser behavior.
+    }
+    el.focus();
+  };
 
 
   const minTimeForSelectedDate = useMemo(() => {
@@ -266,26 +294,26 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
           </div>
         </div>
 
-        <div className="w-full max-w-[650px] bg-white dark:bg-surface-dark/95 backdrop-blur-2xl rounded-[40px] shadow-2xl p-8 lg:p-14 border border-gray-200 dark:border-white/10 transform transition-all">
-          <div className="flex border-b border-gray-200 dark:border-white/5 mb-10">
+        <div className="w-full max-w-[520px] bg-white dark:bg-surface-dark/95 backdrop-blur-2xl rounded-[32px] shadow-2xl p-6 lg:p-11 border border-gray-200 dark:border-white/10 transform transition-all">
+          <div className="flex border-b border-gray-200 dark:border-white/5 mb-8">
             {[BookingCategory.INTERCITY, BookingCategory.AIRPORT].map((cat) => (
               <button 
                 key={cat} 
                 onClick={() => setActiveCategory(cat)} 
-                className={`flex-1 pb-6 text-lg font-black transition-all ${activeCategory === cat ? 'border-b-4 border-primary text-primary' : 'text-slate-400 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white'}`}
+                className={`flex-1 pb-5 text-base font-black transition-all ${activeCategory === cat ? 'border-b-4 border-primary text-primary' : 'text-slate-400 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 {cat === BookingCategory.INTERCITY ? t.intercity : t.airport}
               </button>
             ))}
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             <div className="flex p-2 bg-slate-50 dark:bg-background-dark/50 rounded-2xl border border-slate-200 dark:border-white/5">
               {[TripType.ONE_WAY, TripType.ROUND_TRIP].map((type) => (
                 <button 
                   key={type} 
                   onClick={() => setTripType(type)} 
-                  className={`flex-1 py-4 text-sm font-black rounded-xl transition-all ${tripType === type ? 'bg-white dark:bg-surface-dark-lighter shadow-lg text-primary scale-[1.02]' : 'text-slate-400 dark:text-slate-200 hover:text-primary'}`}
+                  className={`flex-1 py-3 text-sm font-black rounded-xl transition-all ${tripType === type ? 'bg-white dark:bg-surface-dark-lighter shadow-lg text-primary scale-[1.02]' : 'text-slate-400 dark:text-slate-200 hover:text-primary'}`}
                 >
                   {type === TripType.ONE_WAY ? t.oneWay : t.roundTrip}
                 </button>
@@ -300,7 +328,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                   value={pickup} 
                   onChange={(e) => setPickup(e.target.value)} 
                   ref={pickupInputRef}
-                  className={`w-full pl-16 pr-8 py-6 rounded-[24px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-lg'}`}
+                  className={`w-full pl-16 pr-8 py-5 rounded-[22px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-base'}`}
                   placeholder={t.pickupPl} 
                   autoComplete="off"
                 />
@@ -313,7 +341,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                   value={dropoff} 
                   onChange={(e) => setDropoff(e.target.value)} 
                   ref={dropoffInputRef}
-                  className={`w-full pl-16 pr-8 py-6 rounded-[24px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-lg'}`}
+                  className={`w-full pl-16 pr-8 py-5 rounded-[22px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-base'}`}
                   placeholder={t.dropoffPl} 
                   autoComplete="off"
                 />
@@ -328,6 +356,8 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                     value={date} 
                     onChange={(e) => setDate(e.target.value)} 
                     min={minAllowedDate}
+                    ref={dateInputRef}
+                    onClick={openNativeDatePicker}
                     className="w-full pl-14 pr-4 py-5 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-sm font-bold transition-all outline-none text-slate-900 dark:text-white" 
                   />
                 </div>
@@ -340,6 +370,8 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
                     min={minTimeForSelectedDate}
+                    ref={timeInputRef}
+                    onClick={openNativeTimePicker}
                     className="w-full pl-14 pr-4 py-5 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-sm font-bold transition-all outline-none text-slate-900 dark:text-white"
                   />
                 </div>
@@ -399,15 +431,15 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
             <button 
               onClick={handleSearch} 
               disabled={loading || !canSubmit} 
-              className={`group relative w-full overflow-hidden p-7 bg-primary text-white font-black rounded-[24px] shadow-2xl shadow-primary/40 hover:bg-primary-dark transition-all transform active:scale-[0.98] disabled:opacity-50 ${language === Language.DE ? 'text-base' : 'text-xl'}`}
+              className={`group relative w-full overflow-hidden p-6 bg-primary text-white font-black rounded-[22px] shadow-2xl shadow-primary/40 hover:bg-primary-dark transition-all transform active:scale-[0.98] disabled:opacity-50 ${language === Language.DE ? 'text-base' : 'text-lg'}`}
             >
               <div className="relative z-10 flex items-center justify-center gap-4">
                 {loading ? (
-                   <span className="animate-spin material-symbols-outlined text-2xl">sync</span>
+                   <span className="animate-spin material-symbols-outlined text-xl">sync</span>
                 ) : (
                   <>
                     <span>{t.quote}</span>
-                    <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform text-2xl">arrow_forward</span>
+                    <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform text-xl">arrow_forward</span>
                   </>
                 )}
               </div>

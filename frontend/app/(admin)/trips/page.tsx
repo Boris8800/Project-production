@@ -1,7 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+
+import { getSocket } from '../../../lib/socket';
 
 interface Trip {
   id: string;
@@ -52,6 +54,10 @@ export default function AdminTripsPage() {
   const [filter, setFilter] = useState<string>('all');
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [liveConnected, setLiveConnected] = useState(false);
+  const [lastLiveEventAt, setLastLiveEventAt] = useState<string | null>(null);
+
+  const refreshTimerRef = useRef<number | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -102,9 +108,57 @@ export default function AdminTripsPage() {
     }
   }, [filter, router]);
 
+  const scheduleRefresh = useCallback(() => {
+    if (refreshTimerRef.current) window.clearTimeout(refreshTimerRef.current);
+    refreshTimerRef.current = window.setTimeout(() => {
+      void loadData();
+    }, 500);
+  }, [loadData]);
+
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+
+    const socket = getSocket(token);
+
+    setLiveConnected(socket.connected);
+
+    const onConnect = () => setLiveConnected(true);
+    const onDisconnect = () => setLiveConnected(false);
+
+    const onAnyDispatchUpdate = () => {
+      setLastLiveEventAt(new Date().toISOString());
+      scheduleRefresh();
+    };
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+
+    socket.on('dispatch.journey.status', onAnyDispatchUpdate);
+    socket.on('dispatch.journey.driver.location', onAnyDispatchUpdate);
+    socket.on('dispatch.journey.customer.location', onAnyDispatchUpdate);
+    socket.on('dispatch.link.connected', onAnyDispatchUpdate);
+    socket.on('dispatch.link.disconnected', onAnyDispatchUpdate);
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off('dispatch.journey.status', onAnyDispatchUpdate);
+      socket.off('dispatch.journey.driver.location', onAnyDispatchUpdate);
+      socket.off('dispatch.journey.customer.location', onAnyDispatchUpdate);
+      socket.off('dispatch.link.connected', onAnyDispatchUpdate);
+      socket.off('dispatch.link.disconnected', onAnyDispatchUpdate);
+
+      if (refreshTimerRef.current) {
+        window.clearTimeout(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
+    };
+  }, [scheduleRefresh]);
 
   const getBookingForTrip = (tripId: string, bookingId: string) => {
     return bookings.find(b => b.id === bookingId);
@@ -178,8 +232,15 @@ export default function AdminTripsPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center gap-2 bg-primary/20 px-6 py-2 rounded-full mb-6">
+          <div className="inline-flex items-center gap-3 bg-primary/20 px-6 py-2 rounded-full mb-6">
             <span className="text-[11px] font-black text-primary tracking-[0.2em] uppercase">Admin Panel</span>
+            <span className="h-4 w-px bg-white/20" />
+            <span
+              className={`text-[11px] font-black tracking-[0.2em] uppercase ${liveConnected ? 'text-green-300' : 'text-slate-300'}`}
+              title={lastLiveEventAt ? `Last event: ${new Date(lastLiveEventAt).toLocaleString()}` : 'No live events yet'}
+            >
+              Live updates: {liveConnected ? 'On' : 'Off'}
+            </span>
           </div>
           <h1 className="text-5xl md:text-6xl font-black text-white mb-4 leading-[0.9] tracking-tighter">
             Trip Management
