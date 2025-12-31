@@ -9,7 +9,6 @@ import Fleet from './Fleet';
 import Routes from './Routes';
 import CTA from './CTA';
 import Footer from './Footer';
-import AIConcierge from './AIConcierge';
 import RideCompleted from './RideCompleted';
 import VehicleSelection from './VehicleSelection';
 
@@ -64,7 +63,6 @@ const PremiumTravelApp: React.FC = () => {
             onBack={() => setCurrentView('home')} 
           />
         </main>
-        <AIConcierge />
       </div>
     );
   }
@@ -77,7 +75,6 @@ const PremiumTravelApp: React.FC = () => {
           selectedVehicle={selectedVehicle}
           onBack={() => setCurrentView('selection')} 
         />
-        <AIConcierge />
       </div>
     );
   }
@@ -98,7 +95,6 @@ const PremiumTravelApp: React.FC = () => {
         <CTA onBookClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
       </main>
       <Footer onHomeClick={handleHome} onCategoryChange={handleCategoryChange} />
-      <AIConcierge />
     </div>
   );
 };

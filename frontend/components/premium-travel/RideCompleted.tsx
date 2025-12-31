@@ -47,19 +47,19 @@ const RideCompleted: React.FC<RideCompletedProps> = ({ rideData, selectedVehicle
 
   if (bookingConfirmed) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-white dark:bg-background-dark p-12 text-center animate-in fade-in zoom-in duration-500">
-        <div className="size-24 bg-green-500 rounded-full flex items-center justify-center text-white mb-8 shadow-2xl shadow-green-500/30">
+      <div className="flex flex-col items-center justify-center min-h-[100svh] bg-white dark:bg-background-dark px-4 py-10 sm:p-12 text-center animate-in fade-in zoom-in duration-500">
+        <div className="size-20 sm:size-24 bg-green-500 rounded-full flex items-center justify-center text-white mb-6 sm:mb-8 shadow-2xl shadow-green-500/30">
           <span className="material-symbols-outlined text-5xl">check_circle</span>
         </div>
-        <h2 className="text-5xl font-black mb-4 tracking-tighter">Booking Confirmed!</h2>
-        <p className="text-text-muted text-xl max-w-lg mx-auto mb-10 font-medium">
+        <h2 className="text-3xl sm:text-5xl font-black mb-3 sm:mb-4 tracking-tighter">Booking Confirmed!</h2>
+        <p className="text-text-muted text-base sm:text-xl max-w-lg mx-auto mb-8 sm:mb-10 font-medium">
           Your chauffeur has been dispatched. They will arrive at {rideData.pickup} on {rideData.date} for your {selectedVehicle?.miles || 'point-to-point'} mile journey to {rideData.dropoff}.
         </p>
-        <div className="flex gap-4">
-          <button onClick={() => window.location.reload()} className="px-10 py-5 bg-primary text-white font-black rounded-2xl shadow-2xl shadow-primary/30 hover:scale-105 transition-transform">
+        <div className="flex w-full max-w-lg flex-col sm:flex-row gap-3 sm:gap-4">
+          <button onClick={() => window.location.reload()} className="w-full sm:w-auto px-6 sm:px-10 py-4 sm:py-5 bg-primary text-white font-black rounded-2xl shadow-2xl shadow-primary/30 sm:hover:scale-105 transition-transform">
             Return to Dashboard
           </button>
-          <button className="px-10 py-5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 font-black rounded-2xl hover:bg-gray-50 transition-colors">
+          <button className="w-full sm:w-auto px-6 sm:px-10 py-4 sm:py-5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 font-black rounded-2xl hover:bg-gray-50 transition-colors">
             Share Receipt
           </button>
         </div>
@@ -68,15 +68,15 @@ const RideCompleted: React.FC<RideCompletedProps> = ({ rideData, selectedVehicle
   }
 
   return (
-    <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-background-light dark:bg-background-dark">
-      <aside className="w-full lg:w-[440px] bg-white dark:bg-surface-dark p-10 border-r border-white/5 flex flex-col h-full overflow-y-auto">
-        <button onClick={onBack} className="flex items-center gap-2 text-text-muted hover:text-primary mb-12 text-xs font-black uppercase tracking-widest transition-colors">
+    <div className="flex flex-col lg:flex-row min-h-[100svh] overflow-hidden bg-background-light dark:bg-background-dark">
+      <aside className="w-full lg:w-[440px] bg-white dark:bg-surface-dark px-4 py-6 sm:p-10 border-r border-white/5 flex flex-col overflow-y-auto">
+        <button onClick={onBack} className="flex items-center gap-2 text-text-muted hover:text-primary mb-8 sm:mb-12 text-xs font-black uppercase tracking-widest transition-colors">
           <span className="material-symbols-outlined text-sm">arrow_back</span> Return to Selection
         </button>
         
-        <div className="mb-10">
+        <div className="mb-8 sm:mb-10">
           <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black rounded uppercase tracking-[0.2em] border border-primary/20">Final Review</span>
-          <h1 className="text-5xl font-black mt-4 leading-tight tracking-tighter">Secure <br/>Your Seat.</h1>
+          <h1 className="text-3xl sm:text-5xl font-black mt-4 leading-tight tracking-tighter">Secure <br/>Your Seat.</h1>
         </div>
 
         <div className="space-y-8 mb-10">
@@ -98,14 +98,14 @@ const RideCompleted: React.FC<RideCompletedProps> = ({ rideData, selectedVehicle
             </div>
           )}
 
-          <div className="bg-gray-50 dark:bg-white/5 p-8 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm">
-             <div className="flex items-center gap-6 mb-6">
+           <div className="bg-gray-50 dark:bg-white/5 p-6 sm:p-8 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm">
+             <div className="flex items-center gap-4 sm:gap-6 mb-6">
                 <div className="relative">
                   <img src="https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&q=80&w=200" className="size-20 rounded-full border-2 border-primary object-cover shadow-xl" alt="Driver" />
                   <div className="absolute -bottom-1 -right-1 size-6 bg-green-500 border-2 border-white dark:border-surface-dark rounded-full shadow-lg"></div>
                 </div>
                 <div>
-                   <h3 className="font-black text-xl text-slate-900 dark:text-white">Marcus Sterling</h3>
+                 <h3 className="font-black text-lg sm:text-xl text-slate-900 dark:text-white">Marcus Sterling</h3>
                    <p className="text-xs text-text-muted font-bold tracking-wide mt-1">Senior Chauffeur • 4.9/5 Rating</p>
                 </div>
              </div>
@@ -149,7 +149,7 @@ const RideCompleted: React.FC<RideCompletedProps> = ({ rideData, selectedVehicle
           <button 
             onClick={handlePayment}
             disabled={isProcessing}
-            className="group w-full py-6 bg-primary text-white font-black rounded-[24px] shadow-3xl shadow-primary/30 transition-all hover:bg-primary-dark hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-4 disabled:opacity-70 text-sm uppercase tracking-widest"
+            className="group w-full py-5 sm:py-6 bg-primary text-white font-black rounded-[24px] shadow-3xl shadow-primary/30 transition-all hover:bg-primary-dark sm:hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-4 disabled:opacity-70 text-sm uppercase tracking-widest"
           >
             {isProcessing ? (
                <span className="animate-spin material-symbols-outlined">sync</span>
@@ -163,12 +163,12 @@ const RideCompleted: React.FC<RideCompletedProps> = ({ rideData, selectedVehicle
         </div>
       </aside>
 
-      <main className="flex-1 bg-gray-50 dark:bg-black relative overflow-hidden">
+      <main className="flex-1 bg-gray-50 dark:bg-black relative overflow-hidden min-h-[50svh]">
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background-light dark:bg-background-dark z-20">
             <div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-8"></div>
-            <h2 className="text-2xl font-black tracking-tight animate-pulse text-slate-900 dark:text-white font-display">Crafting your arrival...</h2>
-            <p className="text-text-muted text-sm mt-2 font-medium">Securing regional insights for {rideData.dropoff}</p>
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight animate-pulse text-slate-900 dark:text-white font-display">Crafting your arrival...</h2>
+            <p className="text-text-muted text-sm mt-2 font-medium px-6 text-center">Securing regional insights for {rideData.dropoff}</p>
           </div>
         ) : highlight ? (
           <div className="h-full w-full relative animate-in fade-in duration-1000">
@@ -179,35 +179,35 @@ const RideCompleted: React.FC<RideCompletedProps> = ({ rideData, selectedVehicle
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
             
-            <div className="absolute top-10 right-10 z-10 flex gap-4">
+            <div className="absolute top-4 right-4 sm:top-10 sm:right-10 z-10 flex gap-4">
                <a 
                 href={mapLink} 
                 target="_blank" 
                 rel="noreferrer"
-                className="flex items-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/25 transition-all shadow-2xl"
+                className="flex items-center gap-3 px-5 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/25 transition-all shadow-2xl"
               >
                 <span className="material-symbols-outlined text-lg">explore</span>
                 View Journey Map
               </a>
             </div>
 
-            <div className="absolute bottom-16 left-16 max-w-2xl">
+            <div className="absolute bottom-6 left-4 right-4 sm:bottom-16 sm:left-16 sm:right-auto max-w-2xl">
               <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-primary rounded-full text-white text-[10px] font-black uppercase tracking-widest mb-8 shadow-2xl">
                 <span className="material-symbols-outlined text-[14px]">auto_awesome</span>
                 Elite Destination Preview
               </div>
-              <h2 className="text-6xl md:text-8xl font-black text-white font-display mb-8 leading-tight drop-shadow-2xl">
+              <h2 className="text-4xl sm:text-6xl md:text-8xl font-black text-white font-display mb-6 sm:mb-8 leading-tight drop-shadow-2xl">
                 {highlight.title}
               </h2>
-              <p className="text-white/90 text-xl md:text-2xl font-medium leading-relaxed drop-shadow-lg mb-10 max-w-xl">
+              <p className="text-white/90 text-base sm:text-xl md:text-2xl font-medium leading-relaxed drop-shadow-lg mb-8 sm:mb-10 max-w-xl">
                 {highlight.description}
               </p>
               
-              <div className="flex gap-6">
-                <button className="px-10 py-5 bg-white text-black font-black text-[11px] uppercase tracking-[0.2em] rounded-2xl hover:bg-primary hover:text-white transition-all shadow-2xl">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
+                <button className="px-8 sm:px-10 py-4 sm:py-5 bg-white text-black font-black text-[11px] uppercase tracking-[0.2em] rounded-2xl hover:bg-primary hover:text-white transition-all shadow-2xl">
                   Local Concierge Guide
                 </button>
-                <button className="px-10 py-5 bg-white/10 border border-white/30 text-white font-black text-[11px] uppercase tracking-[0.2em] rounded-2xl hover:bg-white/20 transition-all backdrop-blur-xl">
+                <button className="px-8 sm:px-10 py-4 sm:py-5 bg-white/10 border border-white/30 text-white font-black text-[11px] uppercase tracking-[0.2em] rounded-2xl hover:bg-white/20 transition-all backdrop-blur-xl">
                   Live Updates
                 </button>
               </div>
