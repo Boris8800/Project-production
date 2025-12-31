@@ -27,7 +27,6 @@ export class EmailService {
     const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASS;
-    const smtpFrom = process.env.SMTP_FROM || 'noreply@transferlane.com';
 
     if (!smtpHost || !smtpUser || !smtpPass) {
       this.logger.warn('SMTP credentials not configured. Email sending will be disabled.');

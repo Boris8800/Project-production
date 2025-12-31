@@ -66,7 +66,6 @@ export class SecurityMonitoringService {
 
     // Also add to a sorted set for easy retrieval
     const listKey = 'login:attempts:list';
-    const score = Date.now();
     await this.redis.set(`${listKey}:${attempt.id}`, value, 'EX', 7 * 24 * 60 * 60);
   }
 
@@ -75,20 +74,22 @@ export class SecurityMonitoringService {
    */
   async getLoginAttempts(limit = 100, date?: Date): Promise<LoginAttempt[]> {
     const attempts: LoginAttempt[] = [];
-    const pattern = date
-      ? `login:attempts:${date.toISOString().split('T')[0]}`
-      : 'login:attempts:*';
 
     // Since we can't use SCAN with the current RedisLike interface,
     // we'll store attempts in a more queryable format
     const keys: string[] = [];
-    
-    // Get all attempt keys for the last 7 days
-    for (let i = 0; i < 7; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateKey = `login:attempts:${d.toISOString().split('T')[0]}`;
+
+    if (date) {
+      const dateKey = `login:attempts:${date.toISOString().split('T')[0]}`;
       keys.push(dateKey);
+    } else {
+      // Get all attempt keys for the last 7 days
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateKey = `login:attempts:${d.toISOString().split('T')[0]}`;
+        keys.push(dateKey);
+      }
     }
 
     for (const key of keys) {
@@ -96,7 +97,7 @@ export class SecurityMonitoringService {
       if (data) {
         try {
           attempts.push(JSON.parse(data));
-        } catch (e) {
+        } catch {
           // Skip invalid JSON
         }
       }
@@ -158,7 +159,7 @@ export class SecurityMonitoringService {
               failed: attempt.success ? 0 : 1,
             });
           }
-        } catch (e) {
+        } catch {
           // Skip invalid JSON
         }
       }
@@ -186,7 +187,7 @@ export class SecurityMonitoringService {
       try {
         const manualBlocks = JSON.parse(manualData);
         blocked.push(...manualBlocks);
-      } catch (e) {
+      } catch {
         // Skip invalid JSON
       }
     }
