@@ -3,6 +3,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useLanguage, Language } from '../../lib/language';
 
 interface VehicleCardProps {
   vehicle: {
@@ -19,9 +20,19 @@ interface VehicleCardProps {
 }
 
 const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible }) => {
+  const { language } = useLanguage();
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [imgLoaded, setImgLoaded] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const translations = {
+    [Language.EN]: { seats: 'Seats', bags: 'Bags', book: 'Book This Experience' },
+    [Language.ES]: { seats: 'Asientos', bags: 'Maletas', book: 'Reservar Esta Experiencia' },
+    [Language.FR]: { seats: 'Sièges', bags: 'Bagages', book: 'Réserver' },
+    [Language.DE]: { seats: 'Sitze', bags: 'Gepäck', book: 'Buchen' },
+  } as const;
+
+  const t = translations[language];
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -78,23 +89,23 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible }) =>
           <h3 className="text-3xl font-black text-slate-900 dark:text-white leading-tight font-display">{vehicle.model}</h3>
         </div>
         
-        <p className="text-sm text-text-muted mb-8 leading-relaxed font-medium">
+        <p className="text-sm text-text-muted dark:text-slate-200 mb-8 leading-relaxed font-medium">
           {vehicle.sub}
         </p>
         
         <div className="flex gap-4 mb-10">
           <div className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 group-hover:bg-primary/5 transition-colors">
             <span className="material-symbols-outlined text-primary mb-2 text-2xl">airline_seat_recline_normal</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">Seats: {vehicle.seats}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-text-muted dark:text-slate-200">{t.seats}: {vehicle.seats}</span>
           </div>
           <div className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 group-hover:bg-primary/5 transition-colors">
             <span className="material-symbols-outlined text-primary mb-2 text-2xl">luggage</span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">Bags: {vehicle.bags}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-text-muted dark:text-slate-200">{t.bags}: {vehicle.bags}</span>
           </div>
         </div>
 
         <button className="relative overflow-hidden mt-auto w-full py-5 rounded-[20px] bg-slate-900 dark:bg-primary text-white font-black text-xs uppercase tracking-[0.3em] shadow-2xl transition-all transform hover:scale-[1.02] active:scale-95 group-hover:bg-primary group-hover:text-white">
-          <span className="relative z-10">Book This Experience</span>
+          <span className="relative z-10">{t.book}</span>
           <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
         </button>
       </div>
@@ -169,7 +180,7 @@ const Fleet: React.FC = () => {
   const displayedVehicles = showAll ? vehicles : vehicles.slice(0, 3);
 
   return (
-    <section ref={sectionRef} className="py-32 bg-background-light dark:bg-background-dark relative">
+    <section ref={sectionRef} className="py-32 bg-background-light dark:bg-background-dark relative overflow-hidden">
       <div className="w-full px-6">
         <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-12">
           <div className="max-w-3xl text-left">
@@ -181,7 +192,7 @@ const Fleet: React.FC = () => {
               Bespoke <br/>
               <span className="text-primary italic font-display">Fleet</span>
             </h2>
-            <p className="text-text-muted text-xl md:text-2xl font-medium leading-relaxed max-w-2xl">
+            <p className="text-text-muted dark:text-slate-200 text-xl md:text-2xl font-medium leading-relaxed max-w-2xl">
               Our curated collection features a hand-picked selection of prestigious vehicles, ensuring every mile is traveled in absolute refinement and cinematic comfort.
             </p>
           </div>

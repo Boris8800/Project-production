@@ -210,7 +210,7 @@ export default function DriverRoot() {
               {!token ? (
                 <section className="grid gap-6 max-w-2xl mx-auto">
                   <div className="grid gap-2">
-                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-text-muted">
+                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-200">
                       Email
                     </label>
                     <div className="relative group">
@@ -225,7 +225,7 @@ export default function DriverRoot() {
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-text-muted">
+                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-200">
                       Password
                     </label>
                     <div className="relative group">
@@ -260,9 +260,9 @@ export default function DriverRoot() {
               ) : (
                 <section className="grid gap-10">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="text-sm font-bold text-slate-700 dark:text-text-muted">
+                    <div className="text-sm font-bold text-slate-700 dark:text-slate-200">
                       Signed in as <span className="text-slate-900 dark:text-white">{me?.email ?? '(unknown)'}</span>{' '}
-                      {me?.role ? <span className="text-slate-700 dark:text-text-muted">({me.role})</span> : null}
+                      {me?.role ? <span className="text-slate-700 dark:text-slate-200">({me.role})</span> : null}
                     </div>
                     <div className="flex flex-wrap gap-3">
                       <button
@@ -311,7 +311,7 @@ export default function DriverRoot() {
                       My trips
                     </h2>
                     {trips.length === 0 ? (
-                      <p className="text-sm text-slate-600 dark:text-text-muted font-medium">No trips assigned yet.</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-200 font-medium">No trips assigned yet.</p>
                     ) : (
                       <div className="grid gap-3">
                         {trips.map((t) => (

@@ -68,7 +68,7 @@ export default function CustomerMagicLoginClient() {
             <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white mb-6 font-display tracking-tight">
               TransferLane
             </h1>
-            <p className="text-xl text-slate-600 dark:text-text-muted max-w-2xl mx-auto font-medium leading-relaxed">
+            <p className="text-xl text-slate-600 dark:text-slate-200 max-w-2xl mx-auto font-medium leading-relaxed">
               Magic link sign-in
             </p>
 
@@ -81,7 +81,7 @@ export default function CustomerMagicLoginClient() {
                   <div className="mt-3 text-lg font-black text-slate-900 dark:text-white font-display">
                     {status}
                   </div>
-                  <p className="mt-3 text-sm text-slate-600 dark:text-text-muted font-medium leading-relaxed">
+                  <p className="mt-3 text-sm text-slate-600 dark:text-slate-200 font-medium leading-relaxed">
                     If you were redirected here automatically, please keep this page open for a moment.
                   </p>
                 </div>

@@ -17,9 +17,37 @@ export class BookingsService {
     private readonly realtime: RealtimeGateway,
   ) {}
 
+  /**
+   * Generate a unique booking number in format B203, B204, etc.
+   * Only called when payment is confirmed.
+   */
+  private async generateBookingNumber(): Promise<string> {
+    // Find the last booking number that starts with 'B'
+    // Only count bookings that have been paid (status >= Confirmed)
+    const lastBooking = await this.bookings
+      .createQueryBuilder('booking')
+      .where("booking.booking_number LIKE 'B%'")
+      .andWhere("booking.booking_number IS NOT NULL")
+      .orderBy('booking.booking_number', 'DESC')
+      .getOne();
+
+    let nextNumber = 203; // Start from B203 as requested
+    if (lastBooking?.bookingNumber) {
+      // Extract number from B203 -> 203
+      const currentNumber = parseInt(lastBooking.bookingNumber.substring(1), 10);
+      if (!isNaN(currentNumber)) {
+        nextNumber = currentNumber + 1;
+      }
+    }
+
+    return `B${nextNumber}`;
+  }
+
   async createBooking(customerId: string, dto: CreateBookingDto) {
+    // Don't generate booking number yet - wait for payment confirmation
     const booking = this.bookings.create({
       customerId,
+      bookingNumber: null, // Will be assigned after payment
       status: BookingStatus.Created,
       scheduledPickupAt: dto.scheduledPickupAt ? new Date(dto.scheduledPickupAt) : null,
       notes: dto.notes ?? null,
@@ -122,5 +150,39 @@ export class BookingsService {
     const byBookingId = new Map(locations.map((l) => [l.bookingId, l] as const));
 
     return bookings.map((b) => ({ ...b, location: byBookingId.get(b.id) ?? null }));
+  }
+
+  /**
+   * Assign a booking number when payment is confirmed.
+   * This ensures sequential numbering without gaps from unpaid bookings.
+   */
+  async assignBookingNumberOnPayment(bookingId: string): Promise<BookingEntity> {
+    const booking = await this.bookings.findOne({ where: { id: bookingId } });
+    if (!booking) throw new NotFoundException('Booking not found');
+
+    // Only assign if booking doesn't have a number yet
+    if (!booking.bookingNumber) {
+      booking.bookingNumber = await this.generateBookingNumber();
+      await this.bookings.save(booking);
+    }
+
+    return booking;
+  }
+
+  /**
+   * Update booking status and assign booking number if confirming payment.
+   */
+  async updateBookingStatus(bookingId: string, status: BookingStatus): Promise<BookingEntity> {
+    const booking = await this.bookings.findOne({ where: { id: bookingId } });
+    if (!booking) throw new NotFoundException('Booking not found');
+
+    booking.status = status;
+
+    // Assign booking number when payment is confirmed
+    if (status === BookingStatus.Confirmed && !booking.bookingNumber) {
+      booking.bookingNumber = await this.generateBookingNumber();
+    }
+
+    return this.bookings.save(booking);
   }
 }

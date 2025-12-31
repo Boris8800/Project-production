@@ -4,12 +4,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { randomBytes, randomUUID } from 'crypto';
+import type { Request } from 'express';
 import { Role } from '../../shared/enums/roles.enum';
 import { UserStatus } from '../../shared/enums/user-status.enum';
 import { UserEntity } from '../../database/entities/user.entity';
 import { REDIS_CLIENT, type RedisLike } from '../../shared/redis/redis.constants';
 import { parseExpiresInToSeconds } from '../../utils/duration';
 import { LoginDto, MagicLinkConsumeDto, MagicLinkRequestDto, RefreshDto, RegisterDto } from './dto';
+import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
 
 type PublicUser = {
   id: string;
@@ -31,7 +33,32 @@ export class AuthService {
     private readonly jwt: JwtService,
     @InjectRepository(UserEntity) private readonly users: Repository<UserEntity>,
     @Inject(REDIS_CLIENT) private readonly redis: RedisLike,
+    private readonly rateLimit: RateLimitGuard,
   ) {}
+
+  /**
+   * Log a login attempt to Redis for security monitoring
+   */
+  private async logLoginAttempt(
+    email: string,
+    ip: string,
+    success: boolean,
+    userAgent?: string,
+  ): Promise<void> {
+    const attempt = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      email: email.toLowerCase(),
+      ip,
+      success,
+      timestamp: new Date().toISOString(),
+      userAgent,
+    };
+
+    const dateKey = new Date().toISOString().split('T')[0];
+    const key = `login:attempt:${dateKey}:${attempt.id}`;
+    
+    await this.redis.set(key, JSON.stringify(attempt), 'EX', 7 * 24 * 60 * 60);
+  }
 
   me(user: unknown) {
     return user;
@@ -56,15 +83,44 @@ export class AuthService {
     return this.issueTokens({ id: created.id, email: created.email ?? email, role: created.role });
   }
 
-  async loginWithPassword(dto: LoginDto) {
+  async loginWithPassword(dto: LoginDto, req?: Request) {
     const email = dto.email.trim().toLowerCase();
+    const ip = this.getClientIp(req);
+    const userAgent = req?.headers['user-agent'];
 
     const user = await this.users.findOne({ where: { email } });
-    if (!user || !user.passwordHash) throw new UnauthorizedException('Invalid credentials');
-    if (user.status !== UserStatus.Active) throw new UnauthorizedException('User is not active');
+    if (!user || !user.passwordHash) {
+      // Log failed attempt
+      if (ip) {
+        await this.logLoginAttempt(email, ip, false, userAgent);
+        await this.rateLimit.recordFailedAttempt(ip);
+      }
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    
+    if (user.status !== UserStatus.Active) {
+      if (ip) {
+        await this.logLoginAttempt(email, ip, false, userAgent);
+        await this.rateLimit.recordFailedAttempt(ip);
+      }
+      throw new UnauthorizedException('User is not active');
+    }
 
     const ok = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!ok) throw new UnauthorizedException('Invalid credentials');
+    if (!ok) {
+      // Log failed attempt
+      if (ip) {
+        await this.logLoginAttempt(email, ip, false, userAgent);
+        await this.rateLimit.recordFailedAttempt(ip);
+      }
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Log successful login
+    if (ip) {
+      await this.logLoginAttempt(email, ip, true, userAgent);
+      await this.rateLimit.clearAttempts(ip);
+    }
 
     user.lastLoginAt = new Date();
     await this.users.save(user);
@@ -184,5 +240,17 @@ export class AuthService {
 
   private magicKey(token: string) {
     return `magic:${token}`;
+  }
+
+  private getClientIp(req?: Request): string | null {
+    if (!req) return null;
+    
+    const ip =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      (req.headers['x-real-ip'] as string) ||
+      req.socket?.remoteAddress ||
+      null;
+
+    return ip;
   }
 }

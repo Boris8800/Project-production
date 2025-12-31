@@ -20,6 +20,7 @@ type User = {
 
 type Booking = {
   id: string;
+  bookingNumber?: string | null;
   customerId: string;
   assignedDriverId: string | null;
   status: string;
@@ -348,9 +349,9 @@ export default function AdminRoot() {
                 ) : (
                   <section className="grid gap-10 mt-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <div className="text-sm font-bold text-slate-700 dark:text-text-muted">
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-200">
                         Signed in as <span className="text-slate-900 dark:text-white">{me?.email ?? '(unknown)'}</span>{' '}
-                        {me?.role ? <span className="text-slate-700 dark:text-text-muted">({me.role})</span> : null}
+                        {me?.role ? <span className="text-slate-700 dark:text-slate-200">({me.role})</span> : null}
                       </div>
                       <div className="flex flex-wrap gap-3">
                         <button
@@ -427,7 +428,7 @@ export default function AdminRoot() {
                       <div className="grid gap-3">
                         <h2 className="text-2xl font-black text-slate-900 dark:text-white">Drivers</h2>
                         {drivers.length === 0 ? (
-                          <p className="text-sm text-slate-600 dark:text-text-muted font-medium">No drivers.</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-200 font-medium">No drivers.</p>
                         ) : (
                           <div className="grid gap-3">
                             {drivers.map((d) => (
@@ -436,7 +437,7 @@ export default function AdminRoot() {
                                 className="p-6 rounded-[28px] bg-slate-50 dark:bg-background-dark/40 border border-slate-200 dark:border-white/10"
                               >
                                 <div className="text-sm font-black text-slate-900 dark:text-white">{d.id}</div>
-                                <div className="mt-2 text-sm text-slate-600 dark:text-text-muted font-medium">
+                                <div className="mt-2 text-sm text-slate-600 dark:text-slate-200 font-medium">
                                   {d.email ?? '(no email)'} | {d.role} | {d.status}
                                 </div>
                               </div>
@@ -448,7 +449,7 @@ export default function AdminRoot() {
                       <div className="grid gap-3">
                         <h2 className="text-2xl font-black text-slate-900 dark:text-white">Bookings</h2>
                         {bookings.length === 0 ? (
-                          <p className="text-sm text-slate-600 dark:text-text-muted font-medium">No bookings.</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-200 font-medium">No bookings.</p>
                         ) : (
                           <div className="grid gap-3">
                             {bookings.map((b) => (
@@ -457,11 +458,13 @@ export default function AdminRoot() {
                                 className="p-6 rounded-[28px] bg-slate-50 dark:bg-background-dark/40 border border-slate-200 dark:border-white/10"
                               >
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                                  <div className="text-sm font-black text-slate-900 dark:text-white">{b.id}</div>
+                                  <div className="text-sm font-black text-slate-900 dark:text-white">
+                                    {b.bookingNumber || b.id}
+                                  </div>
                                   <div className="text-xs font-black uppercase tracking-[0.2em] text-primary">{b.status}</div>
                                 </div>
-                                <div className="mt-3 text-sm text-slate-600 dark:text-text-muted font-medium">Customer: {b.customerId}</div>
-                                <div className="text-sm text-slate-600 dark:text-text-muted font-medium">Driver: {b.assignedDriverId ?? '-'}</div>
+                                <div className="mt-3 text-sm text-slate-600 dark:text-slate-200 font-medium">Customer: {b.customerId}</div>
+                                <div className="text-sm text-slate-600 dark:text-slate-200 font-medium">Driver: {b.assignedDriverId ?? '-'}</div>
                               </div>
                             ))}
                           </div>

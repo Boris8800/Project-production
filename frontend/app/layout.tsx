@@ -9,6 +9,10 @@ const sourceSerif = Source_Serif_4({ subsets: ['latin'], display: 'swap', variab
 export const metadata: Metadata = {
   title: 'TransferLane',
   description: 'TransferLane',
+  icons: {
+    icon: '/brand/transferline-logo.png',
+    apple: '/brand/transferline-logo.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

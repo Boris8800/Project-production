@@ -66,7 +66,7 @@ export default function HelpPage() {
           <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white mb-6 font-display tracking-tight">
             Help Center
           </h1>
-          <p className="text-xl text-slate-600 dark:text-text-muted max-w-2xl mx-auto font-medium leading-relaxed">
+          <p className="text-xl text-slate-600 dark:text-slate-200 max-w-2xl mx-auto font-medium leading-relaxed">
             Answers to common questions about bookings, pickups, and service standards.
           </p>
         </section>
@@ -88,7 +88,7 @@ export default function HelpPage() {
                     </span>
                   </div>
                 </summary>
-                <div className="mt-4 text-slate-600 dark:text-text-muted font-medium leading-relaxed">
+                <div className="mt-4 text-slate-600 dark:text-slate-200 font-medium leading-relaxed">
                   {item.answer}
                 </div>
               </details>

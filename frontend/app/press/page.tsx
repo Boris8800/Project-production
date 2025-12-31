@@ -69,7 +69,7 @@ export default function PressPage() {
             <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white mb-6 font-display tracking-tight">
               Press
             </h1>
-            <p className="text-xl text-slate-600 dark:text-text-muted max-w-2xl mx-auto font-medium leading-relaxed">
+            <p className="text-xl text-slate-600 dark:text-slate-200 max-w-2xl mx-auto font-medium leading-relaxed">
               Updates, announcements, and stories about TransferLane.
             </p>
           </div>
@@ -88,7 +88,7 @@ export default function PressPage() {
                 <h2 className="mt-4 text-2xl font-black text-slate-900 dark:text-white font-display">
                   {item.title}
                 </h2>
-                <p className="mt-4 text-slate-600 dark:text-text-muted font-medium leading-relaxed">
+                <p className="mt-4 text-slate-600 dark:text-slate-200 font-medium leading-relaxed">
                   {item.description}
                 </p>
               </article>

@@ -11,7 +11,7 @@ export default function CustomerMagicLoginPage() {
             <h1 className="mt-4 text-3xl md:text-4xl font-black text-slate-900 dark:text-white font-display">
               Magic link sign-in
             </h1>
-            <p className="mt-4 text-sm text-slate-600 dark:text-text-muted font-medium">Signing in…</p>
+            <p className="mt-4 text-sm text-slate-600 dark:text-slate-200 font-medium">Signing in…</p>
           </div>
         </main>
       }

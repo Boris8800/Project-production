@@ -106,7 +106,7 @@ const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-2 md:gap-4">
             <button 
               onClick={toggleDarkMode}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-surface-dark-lighter text-slate-600 dark:text-text-muted transition-all"
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-surface-dark-lighter text-slate-600 dark:text-slate-200 transition-all"
               aria-label="Toggle theme"
             >
               <span className="material-symbols-outlined">
@@ -117,7 +117,7 @@ const Header: React.FC<HeaderProps> = ({
             <div className="relative">
               <button
                 onClick={() => setShowLangMenu((v) => !v)}
-                className="flex items-center gap-1 px-3 py-2 rounded-xl bg-gray-100/70 dark:bg-surface-dark-lighter/40 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-surface-dark-lighter transition-all text-slate-700 dark:text-text-muted"
+                className="flex items-center gap-1 px-3 py-2 rounded-xl bg-gray-100/70 dark:bg-surface-dark-lighter/40 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-surface-dark-lighter transition-all text-slate-700 dark:text-slate-200"
                 aria-label="Change language"
               >
                 <span className="material-symbols-outlined text-base">language</span>
@@ -132,7 +132,7 @@ const Header: React.FC<HeaderProps> = ({
                         setLanguage(lang);
                         setShowLangMenu(false);
                       }}
-                      className={`w-full text-left px-5 py-4 text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 dark:hover:bg-white/5 transition-colors ${language === lang ? 'text-primary' : 'text-slate-700 dark:text-text-muted'}`}
+                      className={`w-full text-left px-5 py-4 text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 dark:hover:bg-white/5 transition-colors ${language === lang ? 'text-primary' : 'text-slate-700 dark:text-slate-200'}`}
                     >
                       {lang.toUpperCase()}
                     </button>

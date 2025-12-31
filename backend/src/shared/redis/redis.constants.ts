@@ -5,4 +5,5 @@ export type RedisLike = {
 	// Matches ioredis usage in this codebase: set(key, value, 'EX', seconds)
 	set(key: string, value: string, mode?: string, durationType?: string | number, duration?: number): Promise<unknown>;
 	del(key: string): Promise<number>;
+	ttl(key: string): Promise<number>;
 };

@@ -170,7 +170,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
               <button 
                 key={cat} 
                 onClick={() => setActiveCategory(cat)} 
-                className={`flex-1 pb-6 text-lg font-black transition-all ${activeCategory === cat ? 'border-b-4 border-primary text-primary' : 'text-slate-400 dark:text-text-muted hover:text-slate-900 dark:hover:text-white'}`}
+                className={`flex-1 pb-6 text-lg font-black transition-all ${activeCategory === cat ? 'border-b-4 border-primary text-primary' : 'text-slate-400 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 {cat === BookingCategory.INTERCITY ? t.intercity : t.airport}
               </button>
@@ -183,7 +183,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                 <button 
                   key={type} 
                   onClick={() => setTripType(type)} 
-                  className={`flex-1 py-4 text-sm font-black rounded-xl transition-all ${tripType === type ? 'bg-white dark:bg-surface-dark-lighter shadow-lg text-primary scale-[1.02]' : 'text-slate-400 dark:text-text-muted hover:text-primary'}`}
+                  className={`flex-1 py-4 text-sm font-black rounded-xl transition-all ${tripType === type ? 'bg-white dark:bg-surface-dark-lighter shadow-lg text-primary scale-[1.02]' : 'text-slate-400 dark:text-slate-200 hover:text-primary'}`}
                 >
                   {type === TripType.ONE_WAY ? t.oneWay : t.roundTrip}
                 </button>
@@ -197,7 +197,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                   type="text" 
                   value={pickup} 
                   onChange={(e) => setPickup(e.target.value)} 
-                  className="w-full pl-16 pr-8 py-6 rounded-[24px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-lg font-bold transition-all outline-none text-slate-900 dark:text-white" 
+                  className={`w-full pl-16 pr-8 py-6 rounded-[24px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-lg'}`}
                   placeholder={t.pickupPl} 
                 />
               </div>
@@ -208,7 +208,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                   type="text" 
                   value={dropoff} 
                   onChange={(e) => setDropoff(e.target.value)} 
-                  className="w-full pl-16 pr-8 py-6 rounded-[24px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-lg font-bold transition-all outline-none text-slate-900 dark:text-white" 
+                  className={`w-full pl-16 pr-8 py-6 rounded-[24px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-lg'}`}
                   placeholder={t.dropoffPl} 
                 />
               </div>
@@ -228,7 +228,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                 {/* Passengers Counter */}
                 <div className="flex items-center justify-between px-5 py-3 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent">
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-text-muted">{t.passengers}</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-200">{t.passengers}</span>
                     <div className="flex items-center gap-1">
                       <span className="material-symbols-outlined text-primary text-lg">person</span>
                       <span className="text-sm font-black text-slate-900 dark:text-white">{persons}</span>
@@ -253,7 +253,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                 {/* Bags Counter */}
                 <div className="flex items-center justify-between px-5 py-3 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent">
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-text-muted">{t.bags}</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-200">{t.bags}</span>
                     <div className="flex items-center gap-1">
                       <span className="material-symbols-outlined text-primary text-lg">luggage</span>
                       <span className="text-sm font-black text-slate-900 dark:text-white">{luggage}</span>
@@ -280,7 +280,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
             <button 
               onClick={handleSearch} 
               disabled={loading || !pickup || !dropoff} 
-              className="group relative w-full overflow-hidden p-7 bg-primary text-white font-black text-xl rounded-[24px] shadow-2xl shadow-primary/40 hover:bg-primary-dark transition-all transform active:scale-[0.98] disabled:opacity-50"
+              className={`group relative w-full overflow-hidden p-7 bg-primary text-white font-black rounded-[24px] shadow-2xl shadow-primary/40 hover:bg-primary-dark transition-all transform active:scale-[0.98] disabled:opacity-50 ${language === Language.DE ? 'text-base' : 'text-xl'}`}
             >
               <div className="relative z-10 flex items-center justify-center gap-4">
                 {loading ? (
@@ -295,7 +295,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
             </button>
             
-            <p className="text-center text-[11px] text-slate-500 dark:text-text-muted font-bold uppercase tracking-[0.2em] mt-6">
+            <p className="text-center text-[11px] text-slate-500 dark:text-slate-200 font-bold uppercase tracking-[0.2em] mt-6">
               {t.fixedPricing}
             </p>
           </div>

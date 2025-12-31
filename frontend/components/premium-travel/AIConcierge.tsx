@@ -64,7 +64,7 @@ const AIConcierge: React.FC = () => {
                 )}
               </div>
             ))}
-            {isTyping && <div className="text-xs text-text-muted animate-pulse">Typing...</div>}
+            {isTyping && <div className="text-xs text-text-muted dark:text-slate-200 animate-pulse">Typing...</div>}
             <div ref={chatEndRef} />
           </div>
           <div className="p-4 border-t border-white/5 flex gap-2">

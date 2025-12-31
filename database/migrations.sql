@@ -199,6 +199,7 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 -- Bookings
 CREATE TABLE IF NOT EXISTS bookings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_number varchar(20) UNIQUE,
   customer_id uuid NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
   assigned_driver_id uuid REFERENCES users(id) ON DELETE SET NULL,
   vehicle_id uuid REFERENCES vehicles(id) ON DELETE SET NULL,

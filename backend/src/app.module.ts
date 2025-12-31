@@ -18,6 +18,9 @@ import { BookingsModule } from './modules/bookings/bookings.module';
 import { DriversModule } from './modules/drivers/drivers.module';
 import { TripsModule } from './modules/trips/trips.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { InvoicesModule } from './modules/invoices/invoices.module';
+import { SecurityMonitoringModule } from './modules/security/security-monitoring.module';
+import { DispatchModule } from './modules/dispatch/dispatch.module';
 import { AppController } from './app.controller';
 
 const dbEnabled = process.env.SKIP_DB !== 'true';
@@ -44,7 +47,7 @@ const databaseImports = dbEnabled
   : [];
 
 const featureModules = dbEnabled
-  ? [AuthModule, RealtimeModule, BookingsModule, DriversModule, TripsModule, AdminModule]
+  ? [AuthModule, RealtimeModule, BookingsModule, DriversModule, TripsModule, AdminModule, InvoicesModule, DispatchModule, SecurityMonitoringModule]
   : [];
 
 @Module({

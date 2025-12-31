@@ -18,7 +18,7 @@ const Routes: React.FC = () => {
             <span className="text-xs font-bold text-primary tracking-wide uppercase">Popular UK Routes</span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-8">Seamless Connectivity</h2>
-          <p className="text-text-muted mb-10 leading-relaxed text-lg">
+          <p className="text-text-muted dark:text-slate-200 mb-10 leading-relaxed text-lg">
             Reliable chauffeur services across the United Kingdom. We navigate the motorway network so you don&apos;t have to.
           </p>
           
@@ -35,12 +35,12 @@ const Routes: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 dark:text-white text-lg">
-                      {r.from} <span className="text-text-muted px-2 font-medium">to</span> {r.to}
+                      {r.from} <span className="text-text-muted dark:text-slate-200 px-2 font-medium">to</span> {r.to}
                     </h4>
-                    <p className="text-xs text-text-muted font-medium mt-1">Est. {r.time} • Fixed at {r.price}</p>
+                    <p className="text-xs text-text-muted dark:text-slate-200 font-medium mt-1">Est. {r.time} • Fixed at {r.price}</p>
                   </div>
                 </div>
-                <span className="material-symbols-outlined text-text-muted group-hover:text-primary group-hover:translate-x-1 transition-all duration-300">chevron_right</span>
+                <span className="material-symbols-outlined text-text-muted dark:text-slate-200 group-hover:text-primary group-hover:translate-x-1 transition-all duration-300">chevron_right</span>
               </a>
             ))}
           </div>
@@ -60,7 +60,7 @@ const Routes: React.FC = () => {
               </div>
               <div>
                 <h5 className="text-white font-bold text-base">Route Knowledge</h5>
-                <p className="text-text-muted text-xs mt-2 leading-relaxed">
+                <p className="text-slate-200 text-xs mt-2 leading-relaxed">
                   Our chauffeurs possess expert knowledge of UK road networks, Congestion Charge zones, and optimal routes for timely arrival.
                 </p>
               </div>

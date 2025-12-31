@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserEntity } from '../../database/entities/user.entity';
 import { RedisModule } from '../../shared/redis/redis.module';
+import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { RedisModule } from '../../shared/redis/redis.module';
     RedisModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
+  providers: [AuthService, JwtStrategy, RateLimitGuard],
+  exports: [AuthService, RateLimitGuard],
 })
 export class AuthModule {}

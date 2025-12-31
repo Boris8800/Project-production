@@ -54,7 +54,7 @@ export default function AboutPage() {
               <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-8 tracking-tight font-display">
                 The TransferLane Story
               </h2>
-              <div className="space-y-6 text-slate-600 dark:text-text-muted text-lg leading-relaxed">
+              <div className="space-y-6 text-slate-600 dark:text-slate-200 text-lg leading-relaxed">
                 <p>
                   TransferLane was born from a simple observation: intercity travel often lacks the personal touch and refinement that travellers deserve.
                 </p>
@@ -66,13 +66,13 @@ export default function AboutPage() {
               <div className="mt-12 grid grid-cols-2 gap-8">
                 <div>
                   <p className="text-4xl font-black text-primary font-display mb-1">10k+</p>
-                  <p className="text-[10px] font-black text-slate-400 dark:text-text-muted uppercase tracking-[0.2em]">
+                  <p className="text-[10px] font-black text-slate-400 dark:text-slate-200 uppercase tracking-[0.2em]">
                     Journeys Completed
                   </p>
                 </div>
                 <div>
                   <p className="text-4xl font-black text-primary font-display mb-1">99.9%</p>
-                  <p className="text-[10px] font-black text-slate-400 dark:text-text-muted uppercase tracking-[0.2em]">
+                  <p className="text-[10px] font-black text-slate-400 dark:text-slate-200 uppercase tracking-[0.2em]">
                     On-Time Reliability
                   </p>
                 </div>
@@ -106,7 +106,7 @@ export default function AboutPage() {
               <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4 font-display">
                 Our Core Values
               </h2>
-              <p className="text-text-muted max-w-xl mx-auto font-medium">
+              <p className="text-text-muted dark:text-slate-200 max-w-xl mx-auto font-medium">
                 The pillars that define every single mile we travel with you.
               </p>
             </div>
@@ -137,7 +137,7 @@ export default function AboutPage() {
                     <span className="material-symbols-outlined text-3xl">{v.icon}</span>
                   </div>
                   <h3 className="text-xl font-black text-slate-900 dark:text-white mb-4">{v.title}</h3>
-                  <p className="text-slate-500 dark:text-text-muted text-sm leading-relaxed font-medium">{v.desc}</p>
+                  <p className="text-slate-500 dark:text-slate-200 text-sm leading-relaxed font-medium">{v.desc}</p>
                 </div>
               ))}
             </div>

@@ -14,6 +14,9 @@ export class BookingEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  @Column({ name: 'booking_number', type: 'varchar', length: 20, unique: true, nullable: true })
+  bookingNumber!: string | null;
+
   @Index()
   @Column({ name: 'customer_id', type: 'uuid' })
   customerId!: string;

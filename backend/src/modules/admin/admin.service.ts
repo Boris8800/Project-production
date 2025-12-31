@@ -11,6 +11,7 @@ import { UserStatus } from '../../shared/enums/user-status.enum';
 import { BookingStatus } from '../../shared/enums/booking-status.enum';
 import { TripStatus } from '../../shared/enums/trip-status.enum';
 import { BootstrapDto, CreateUserDto } from './dto';
+import { BookingsService } from '../bookings/bookings.service';
 
 @Injectable()
 export class AdminService {
@@ -18,6 +19,7 @@ export class AdminService {
     @InjectRepository(UserEntity) private readonly users: Repository<UserEntity>,
     @InjectRepository(BookingEntity) private readonly bookings: Repository<BookingEntity>,
     @InjectRepository(TripEntity) private readonly trips: Repository<TripEntity>,
+    private readonly bookingsService: BookingsService,
   ) {}
 
   async bootstrapSuperadmin(dto: BootstrapDto) {
@@ -110,10 +112,7 @@ export class AdminService {
   }
 
   async setBookingStatus(bookingId: string, status: BookingStatus) {
-    const booking = await this.bookings.findOne({ where: { id: bookingId } });
-    if (!booking) throw new BadRequestException('Booking not found');
-
-    booking.status = status;
-    return this.bookings.save(booking);
+    // Use BookingsService to handle status update and booking number assignment
+    return this.bookingsService.updateBookingStatus(bookingId, status);
   }
 }
