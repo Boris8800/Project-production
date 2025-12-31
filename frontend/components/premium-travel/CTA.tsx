@@ -141,20 +141,20 @@ const CTA: React.FC<CTAProps> = ({ onBookClick }) => {
         </div>
 
         {/* Decorative stats bar */}
-        <div className="mt-24 pt-12 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-12">
-          <div className="text-center md:text-left">
+        <div className="mt-24 pt-12 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-12 max-w-5xl mx-auto justify-items-center">
+          <div className="text-center">
             <p className="text-4xl font-black text-white mb-1 font-display tracking-tight">{t.stat1_val}</p>
             <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">{t.stat1_lbl}</p>
           </div>
-          <div className="text-center md:text-left">
+          <div className="text-center">
             <p className="text-4xl font-black text-white mb-1 font-display tracking-tight">{t.stat2_val}</p>
             <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">{t.stat2_lbl}</p>
           </div>
-          <div className="text-center md:text-left">
+          <div className="text-center">
             <p className="text-4xl font-black text-white mb-1 font-display tracking-tight">{t.stat3_val}</p>
             <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">{t.stat3_lbl}</p>
           </div>
-          <div className="text-center md:text-left">
+          <div className="text-center">
             <p className="text-4xl font-black text-white mb-1 font-display tracking-tight">{t.stat4_val}</p>
             <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">{t.stat4_lbl}</p>
           </div>

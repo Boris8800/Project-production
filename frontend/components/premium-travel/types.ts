@@ -31,6 +31,7 @@ export interface RideData {
   pickup: string;
   dropoff: string;
   date: string;
+  time: string;
   persons: number;
   luggage: number;
 }

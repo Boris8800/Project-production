@@ -21,6 +21,22 @@ const RideCompleted: React.FC<RideCompletedProps> = ({ rideData, selectedVehicle
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const pickupDateTimeText = (() => {
+    try {
+      const d = new Date(`${rideData.date}T${rideData.time}:00`);
+      if (Number.isNaN(d.getTime())) return `${rideData.date} ${rideData.time}`.trim();
+      return new Intl.DateTimeFormat(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(d);
+    } catch {
+      return `${rideData.date} ${rideData.time}`.trim();
+    }
+  })();
+
   const translations = {
     [Language.EN]: {
       confirmed: 'Booking Confirmed!',
@@ -118,7 +134,7 @@ const RideCompleted: React.FC<RideCompletedProps> = ({ rideData, selectedVehicle
         <p className="text-text-muted dark:text-slate-200 text-base sm:text-xl max-w-lg mx-auto mb-8 sm:mb-10 font-medium">
           {t.dispatched
             .replace('{pickup}', rideData.pickup)
-            .replace('{date}', rideData.date)
+            .replace('{date}', pickupDateTimeText)
             .replace('{miles}', selectedVehicle?.miles?.toString() || 'point-to-point')
             .replace('{dropoff}', rideData.dropoff)}
         </p>

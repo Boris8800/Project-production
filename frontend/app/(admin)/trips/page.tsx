@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface Trip {
@@ -53,11 +53,7 @@ export default function AdminTripsPage() {
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, [filter]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -104,7 +100,11 @@ export default function AdminTripsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, router]);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
 
   const getBookingForTrip = (tripId: string, bookingId: string) => {
     return bookings.find(b => b.id === bookingId);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface LoginAttempt {
@@ -57,16 +57,7 @@ export default function SecurityMonitoringPage() {
   const [blockReason, setBlockReason] = useState('');
   const [blockDuration, setBlockDuration] = useState('60');
 
-  useEffect(() => {
-    loadData();
-    
-    if (autoRefresh) {
-      const interval = setInterval(loadData, 10000); // Refresh every 10 seconds
-      return () => clearInterval(interval);
-    }
-  }, [autoRefresh]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setError('');
       
@@ -112,7 +103,19 @@ export default function SecurityMonitoringPage() {
       setError(err instanceof Error ? err.message : 'Failed to load data');
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    void loadData();
+
+    if (!autoRefresh) return;
+
+    const interval = setInterval(() => {
+      void loadData();
+    }, 10000); // Refresh every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [autoRefresh, loadData]);
 
   const blockIP = async () => {
     if (!blockIpInput.trim()) {

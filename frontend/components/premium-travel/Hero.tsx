@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Script from 'next/script';
 import { BookingCategory, RideData, TripType } from './types';
 import { useLanguage, Language } from '../../lib/language';
 
@@ -13,20 +14,113 @@ interface HeroProps {
 const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstimate }) => {
   const { language } = useLanguage();
 
+  const leadTimeMs = 5 * 60 * 60 * 1000;
+  const minAllowed = useMemo(() => new Date(Date.now() + leadTimeMs), [leadTimeMs]);
+  const minAllowedDate = useMemo(() => minAllowed.toISOString().split('T')[0], [minAllowed]);
+  const minAllowedTime = useMemo(() => minAllowed.toTimeString().slice(0, 5), [minAllowed]);
+
   const [tripType, setTripType] = useState<TripType>(TripType.ONE_WAY);
   const [pickup, setPickup] = useState('');
   const [dropoff, setDropoff] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(() => minAllowedDate);
+  const [time, setTime] = useState(() => minAllowedTime);
   const [persons, setPersons] = useState(1);
   const [luggage, setLuggage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const today = new Date().toISOString().split('T')[0];
+  const [formError, setFormError] = useState<string | null>(null);
+  const [placesReady, setPlacesReady] = useState(false);
+
+  const pickupInputRef = useRef<HTMLInputElement | null>(null);
+  const dropoffInputRef = useRef<HTMLInputElement | null>(null);
+  const placesBoundRef = useRef(false);
+
+
+  const minTimeForSelectedDate = useMemo(() => {
+    return date === minAllowedDate ? minAllowedTime : undefined;
+  }, [date, minAllowedDate, minAllowedTime]);
+
+  const canSubmit = Boolean(pickup.trim() && dropoff.trim() && date && time);
+
+  type GooglePlaceResult = {
+    formatted_address?: string;
+    name?: string;
+    place_id?: string;
+  };
+
+  type GoogleAutocomplete = {
+    addListener: (eventName: 'place_changed', handler: () => void) => void;
+    getPlace: () => GooglePlaceResult;
+  };
+
+  type GoogleMapsPlaces = {
+    maps: {
+      places: {
+        Autocomplete: new (
+          input: HTMLInputElement,
+          opts?: {
+            fields?: string[];
+            types?: string[];
+            componentRestrictions?: { country?: string | string[] };
+          },
+        ) => GoogleAutocomplete;
+      };
+    };
+  };
+
+  const mapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  useEffect(() => {
+    if (!mapsKey) return;
+    if (!placesReady) return;
+    if (placesBoundRef.current) return;
+    if (!pickupInputRef.current || !dropoffInputRef.current) return;
+
+    const googleObj = (window as unknown as { google?: GoogleMapsPlaces }).google;
+    const AutocompleteCtor = googleObj?.maps?.places?.Autocomplete;
+    if (!AutocompleteCtor) return;
+
+    const commonOptions = {
+      fields: ['formatted_address', 'name', 'place_id'],
+      types: ['geocode'],
+      componentRestrictions: { country: 'uk' },
+    };
+
+    const pickupAutocomplete = new AutocompleteCtor(pickupInputRef.current, commonOptions);
+    pickupAutocomplete.addListener('place_changed', () => {
+      const place = pickupAutocomplete.getPlace();
+      const value = place.formatted_address || place.name;
+      if (value) setPickup(value);
+    });
+
+    const dropoffAutocomplete = new AutocompleteCtor(dropoffInputRef.current, commonOptions);
+    dropoffAutocomplete.addListener('place_changed', () => {
+      const place = dropoffAutocomplete.getPlace();
+      const value = place.formatted_address || place.name;
+      if (value) setDropoff(value);
+    });
+
+    placesBoundRef.current = true;
+  }, [mapsKey, placesReady]);
 
   const handleSearch = async () => {
-    if (!pickup || !dropoff) return;
+    setFormError(null);
+    if (!pickup.trim() || !dropoff.trim()) return;
+
+    if (!date || !time) {
+      setFormError('Please choose a pickup date and time.');
+      return;
+    }
+
+    const pickupAt = new Date(`${date}T${time}:00`);
+    const earliestAllowed = Date.now() + leadTimeMs;
+    if (Number.isNaN(pickupAt.getTime()) || pickupAt.getTime() < earliestAllowed) {
+      setFormError('Pickup date/time must be at least 5 hours from now.');
+      return;
+    }
+
     setLoading(true);
-    const rideData: RideData = { pickup, dropoff, date: date || today, persons, luggage };
+    const rideData: RideData = { pickup: pickup.trim(), dropoff: dropoff.trim(), date, time, persons, luggage };
     await new Promise(resolve => setTimeout(resolve, 800));
     setLoading(false);
     if (onEstimate) onEstimate(rideData);
@@ -123,6 +217,14 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
 
   return (
     <section className="relative w-full min-h-screen flex items-center justify-center px-4 md:px-12 overflow-hidden bg-background-dark">
+      {mapsKey ? (
+        <Script
+          id="google-maps-places"
+          strategy="afterInteractive"
+          src={`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(mapsKey)}&libraries=places&v=weekly`}
+          onLoad={() => setPlacesReady(true)}
+        />
+      ) : null}
       {/* Background with deeper overlay for better text contrast */}
       <div 
         className="absolute -inset-px z-0 bg-cover bg-center hero-bg-animate" 
@@ -197,8 +299,10 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                   type="text" 
                   value={pickup} 
                   onChange={(e) => setPickup(e.target.value)} 
+                  ref={pickupInputRef}
                   className={`w-full pl-16 pr-8 py-6 rounded-[24px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-lg'}`}
                   placeholder={t.pickupPl} 
+                  autoComplete="off"
                 />
               </div>
 
@@ -208,12 +312,14 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                   type="text" 
                   value={dropoff} 
                   onChange={(e) => setDropoff(e.target.value)} 
+                  ref={dropoffInputRef}
                   className={`w-full pl-16 pr-8 py-6 rounded-[24px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-lg'}`}
                   placeholder={t.dropoffPl} 
+                  autoComplete="off"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {/* Date Selection */}
                 <div className="relative group md:col-span-1">
                   <span className="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary text-xl">calendar_month</span>
@@ -221,7 +327,20 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                     type="date" 
                     value={date} 
                     onChange={(e) => setDate(e.target.value)} 
+                    min={minAllowedDate}
                     className="w-full pl-14 pr-4 py-5 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-sm font-bold transition-all outline-none text-slate-900 dark:text-white" 
+                  />
+                </div>
+
+                {/* Time Selection */}
+                <div className="relative group md:col-span-1">
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary text-xl">schedule</span>
+                  <input
+                    type="time"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    min={minTimeForSelectedDate}
+                    className="w-full pl-14 pr-4 py-5 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-sm font-bold transition-all outline-none text-slate-900 dark:text-white"
                   />
                 </div>
                 
@@ -279,7 +398,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
 
             <button 
               onClick={handleSearch} 
-              disabled={loading || !pickup || !dropoff} 
+              disabled={loading || !canSubmit} 
               className={`group relative w-full overflow-hidden p-7 bg-primary text-white font-black rounded-[24px] shadow-2xl shadow-primary/40 hover:bg-primary-dark transition-all transform active:scale-[0.98] disabled:opacity-50 ${language === Language.DE ? 'text-base' : 'text-xl'}`}
             >
               <div className="relative z-10 flex items-center justify-center gap-4">
@@ -294,6 +413,12 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
             </button>
+
+            {formError ? (
+              <p className="text-center text-xs font-bold text-red-600 dark:text-red-300 mt-4">
+                {formError}
+              </p>
+            ) : null}
             
             <p className="text-center text-[11px] text-slate-500 dark:text-slate-200 font-bold uppercase tracking-[0.2em] mt-6">
               {t.fixedPricing}
