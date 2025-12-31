@@ -158,10 +158,6 @@ const CTA: React.FC<CTAProps> = ({ onBookClick }) => {
             <p className="text-4xl font-black text-white mb-1 font-display tracking-tight">{t.stat4_val}</p>
             <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">{t.stat4_lbl}</p>
           </div>
-          <div className="text-center md:text-left">
-            <p className="text-4xl font-black text-white mb-1 font-display tracking-tight">24/7</p>
-            <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Support</p>
-          </div>
         </div>
       </div>
       

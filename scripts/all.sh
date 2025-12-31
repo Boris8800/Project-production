@@ -68,7 +68,7 @@ if supports_color; then
   C_RED="${_ESC}[91m"
   C_GREEN="${_ESC}[92m"
   C_YELLOW="${_ESC}[93m"
-  C_BLUE="${_ESC}[94m"
+  C_BLUE="${_ESC}[96m"
   C_CYAN="${_ESC}[93m"
 else
   C_RESET=""
@@ -1920,7 +1920,7 @@ if supports_color; then
   C_BOLD="${_ESC}[1m"
   C_RED="${_ESC}[91m"
   C_YELLOW="${_ESC}[93m"
-  C_BLUE="${_ESC}[94m"
+  C_BLUE="${_ESC}[96m"
   C_CYAN="${_ESC}[93m"
 else
   C_RESET=""
@@ -3332,6 +3332,152 @@ detect_public_ip() {
   fi
 }
 
+show_deployment_summary() {
+  local mode="${1:-unknown}"
+  
+  print
+  print "=========================================="
+  print "   INSTALLATION COMPLETE - SUMMARY"
+  print "=========================================="
+  print
+  
+  # Detect IP
+  local server_ip
+  server_ip="$(detect_public_ip || echo '<unknown>')"
+  
+  # Load env to get domain info if available
+  local domain_root=""
+  if [ -f "${INSTALL_DIR}/.env.production" ]; then
+    domain_root="$(grep -E '^DOMAIN_ROOT=' "${INSTALL_DIR}/.env.production" 2>/dev/null | cut -d= -f2- || true)"
+    if [ -z "${domain_root}" ]; then
+      domain_root="$(grep -E '^DOMAIN=' "${INSTALL_DIR}/.env.production" 2>/dev/null | cut -d= -f2- || true)"
+    fi
+  fi
+  
+  print "SERVER INFO:"
+  print "  IP Address: ${server_ip}"
+  [ -n "${domain_root}" ] && print "  Domain: ${domain_root}"
+  print
+  
+  if [ "${mode}" = "ip" ]; then
+    print "WEB SERVICES (HTTP - IP Mode):"
+    print "  Frontend:        http://${server_ip}:3000"
+    print "  Backend API:     http://${server_ip}:4000"
+    print "  Nginx Proxy:     http://${server_ip}:80"
+    print "  Nginx (alt):     http://${server_ip}:1000"
+    print
+  elif [ "${mode}" = "domain" ] && [ -n "${domain_root}" ]; then
+    print "WEB SERVICES (HTTPS - Domain Mode):"
+    print "  Main Site:       https://${domain_root}"
+    print "  WWW:             https://www.${domain_root}"
+    print "  Driver Portal:   https://driver.${domain_root}"
+    print "  Admin Portal:    https://admin.${domain_root}"
+    print "  Backend API:     https://api.${domain_root}"
+    print
+    print "  HTTP (redirect): http://${domain_root}"
+    print
+  else
+    print "WEB SERVICES:"
+    print "  (Mode detection failed - check manually)"
+    print
+  fi
+  
+  print "DOCKER SERVICES STATUS:"
+  if command -v docker >/dev/null 2>&1; then
+    cd "${INSTALL_DIR}" 2>/dev/null || true
+    if [ "${mode}" = "ip" ]; then
+      docker compose -f docker-compose.yml ps 2>/dev/null || print "  Could not get container status"
+    else
+      docker compose -f docker-compose.production.yml ps 2>/dev/null || print "  Could not get container status"
+    fi
+  else
+    print "  Docker not available"
+  fi
+  print
+  
+  print "HEALTH CHECKS:"
+  print "  Checking service health..."
+  print
+  
+  # Check nginx
+  print "  [Nginx Proxy]"
+  if command -v curl >/dev/null 2>&1; then
+    if curl -fsS --max-time 5 "http://localhost/health" >/dev/null 2>&1; then
+      print "    ✓ Healthy (http://localhost/health)"
+    else
+      print "    ✗ Failed to reach nginx health endpoint"
+    fi
+  fi
+  
+  # Check backend
+  print "  [Backend API]"
+  if [ "${mode}" = "ip" ]; then
+    if command -v curl >/dev/null 2>&1; then
+      if curl -fsS --max-time 5 "http://localhost:4000/v1/health" >/dev/null 2>&1; then
+        print "    ✓ Healthy (http://localhost:4000/v1/health)"
+      else
+        print "    ✗ Failed to reach backend health endpoint"
+      fi
+    fi
+  else
+    if docker exec Project-backend-api wget -q -O- http://localhost:4000/v1/health >/dev/null 2>&1; then
+      print "    ✓ Healthy (container internal check)"
+    else
+      print "    ✗ Failed to reach backend health endpoint"
+    fi
+  fi
+  
+  # Check frontend
+  print "  [Frontend]"
+  if systemctl is-active --quiet project-frontend 2>/dev/null; then
+    print "    ✓ Systemd service running"
+    if command -v curl >/dev/null 2>&1; then
+      if curl -fsS --max-time 5 "http://localhost:3000/" >/dev/null 2>&1; then
+        print "    ✓ Responding (http://localhost:3000)"
+      else
+        print "    ⚠ Service running but not responding yet (may still be starting)"
+      fi
+    fi
+  else
+    print "    ✗ Systemd service not running"
+  fi
+  
+  # Check database
+  print "  [PostgreSQL]"
+  if docker exec Project-postgres pg_isready >/dev/null 2>&1; then
+    print "    ✓ Healthy"
+  else
+    print "    ✗ Not responding"
+  fi
+  
+  # Check redis
+  print "  [Redis]"
+  if docker exec Project-redis redis-cli ping >/dev/null 2>&1; then
+    print "    ✓ Healthy"
+  else
+    print "    ✗ Not responding"
+  fi
+  
+  print
+  print "PORTS IN USE:"
+  if command -v ss >/dev/null 2>&1; then
+    ss -ltnp 2>/dev/null | awk 'NR==1 || $4 ~ /:80$|:443$|:3000$|:4000$|:5432$|:6379$/' | head -n 20 || true
+  elif command -v netstat >/dev/null 2>&1; then
+    netstat -lntp 2>/dev/null | awk 'NR==1 || $4 ~ /:80$|:443$|:3000$|:4000$|:5432$|:6379$/' | head -n 20 || true
+  else
+    print "  (ss/netstat not available)"
+  fi
+  
+  print
+  print "=========================================="
+  print "NEXT STEPS:"
+  print "  • View logs:    sudo docker compose -f docker-compose.production.yml logs -f"
+  print "  • Check status: sudo bash scripts/all.sh menu status"
+  print "  • Access menu:  sudo bash scripts/all.sh menu"
+  print "=========================================="
+  print
+}
+
 auto_set_skip_letsencrypt() {
   # Respect explicit user choice
   if [ -n "${SKIP_LETSENCRYPT+x}" ]; then
@@ -3989,6 +4135,9 @@ run_clean_install() {
     cd "${INSTALL_DIR}"
     SERVICE_USER="${DEPLOY_USER}" bash scripts/all.sh deploy-ip
     chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${INSTALL_DIR}" || true
+    
+    # Show summary for IP mode
+    show_deployment_summary "ip"
   else
     print "[fresh] Deploying app as ${DEPLOY_USER} (domain mode)"
     # Run app-level steps (docker compose + SSL bootstrap) as the deploy user.
@@ -3998,6 +4147,9 @@ run_clean_install() {
     print "[fresh] Building/restarting host frontend (Next.js)"
     cd "${INSTALL_DIR}"
     SERVICE_USER="${DEPLOY_USER}" REPO_ROOT="${INSTALL_DIR}" ENV_FILE="${INSTALL_DIR}/.env.production" bash scripts/all.sh setup-frontend-host
+    
+    # Show summary for domain mode
+    show_deployment_summary "domain"
   fi
 }
 
@@ -4020,12 +4172,18 @@ run_update_only() {
     cd "${INSTALL_DIR}"
     SERVICE_USER="${DEPLOY_USER}" bash scripts/all.sh deploy-ip
     chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${INSTALL_DIR}" || true
+    
+    # Show summary for IP mode
+    show_deployment_summary "ip"
   else
     sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; AUTO_GENERATE_SECRETS=true bash scripts/all.sh deploy"
 
     print "[fresh] Building/restarting host frontend (Next.js)"
     cd "${INSTALL_DIR}"
     SERVICE_USER="${DEPLOY_USER}" REPO_ROOT="${INSTALL_DIR}" ENV_FILE="${INSTALL_DIR}/.env.production" bash scripts/all.sh setup-frontend-host
+    
+    # Show summary for domain mode
+    show_deployment_summary "domain"
   fi
 }
 
@@ -4111,6 +4269,11 @@ run_ssl_setup() {
   
   print
   print "[fresh] Domain & SSL setup complete!"
+  
+  # Show deployment summary
+  show_deployment_summary "domain"
+  
+  print
   print "Your app should now be available at:"
   print "  - https://${domain}"
   print "  - https://driver.${domain}"
