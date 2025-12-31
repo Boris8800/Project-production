@@ -4039,6 +4039,68 @@ ensure_env_kv() {
   fi
 }
 
+detect_public_ip() {
+  # Best-effort: only used when VPS_IP isn't provided.
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsS https://api.ipify.org || true
+  fi
+}
+
+show_deployment_summary() {
+  local mode="${1:-unknown}"
+
+  print
+  print "=========================================="
+  print "   INSTALLATION COMPLETE - SUMMARY"
+  print "=========================================="
+  print
+
+  local server_ip
+  server_ip="$(detect_public_ip || true)"
+  server_ip="${server_ip:-<unknown>}"
+
+  local domain_root=""
+  if [ -f "${INSTALL_DIR}/.env.production" ]; then
+    domain_root="$(grep -E '^DOMAIN_ROOT=' "${INSTALL_DIR}/.env.production" 2>/dev/null | cut -d= -f2- || true)"
+    if [ -z "${domain_root}" ]; then
+      domain_root="$(grep -E '^DOMAIN=' "${INSTALL_DIR}/.env.production" 2>/dev/null | cut -d= -f2- || true)"
+    fi
+  fi
+
+  print "SERVER INFO:"
+  print "  IP Address: ${server_ip}"
+  [ -n "${domain_root}" ] && print "  Domain: ${domain_root}"
+  print
+
+  if [ "${mode}" = "ip" ]; then
+    print "WEB SERVICES (HTTP - IP Mode):"
+    print "  Frontend:    http://${server_ip}:3000"
+    print "  Backend API: http://${server_ip}:4000"
+    print
+    print "NOTE: admin/driver subdomains require a real domain + production compose."
+    print
+  elif [ "${mode}" = "domain" ] && [ -n "${domain_root}" ]; then
+    print "WEB SERVICES (HTTPS - Domain Mode):"
+    print "  Main Site:     https://${domain_root}"
+    print "  Driver Portal: https://driver.${domain_root}"
+    print "  Admin Portal:  https://admin.${domain_root}"
+    print "  Backend API:   https://api.${domain_root}"
+    print
+  else
+    print "WEB SERVICES:"
+    print "  (Mode detection failed - check manually)"
+    print
+  fi
+
+  print "STATUS COMMANDS:"
+  print "  Menu:   sudo bash scripts/all.sh menu"
+  print "  Status: sudo bash scripts/all.sh menu status"
+  print "  Health: sudo bash scripts/all.sh menu health"
+  print
+  print "=========================================="
+  print
+}
+
 clone_or_update_repo() {
   reset_install_dir_if_requested
 
