@@ -319,9 +319,9 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Date Selection */}
-                <div className="relative group md:col-span-1">
+                <div className="relative group">
                   <span className="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary text-xl">calendar_month</span>
                   <input 
                     type="date" 
@@ -333,7 +333,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                 </div>
 
                 {/* Time Selection */}
-                <div className="relative group md:col-span-1">
+                <div className="relative group">
                   <span className="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary text-xl">schedule</span>
                   <input
                     type="time"
