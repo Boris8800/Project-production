@@ -63,9 +63,9 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible }) =>
             alt={`${vehicle.name} ${vehicle.model}`}
             onLoad={() => setImgLoaded(true)}
             loading="lazy"
-            className={`absolute -inset-5 object-cover transition-all duration-1000 ease-out will-change-transform transform-gpu ${imgLoaded ? 'opacity-100 scale-100 grayscale-[0.2] group-hover:grayscale-0' : 'opacity-0 scale-110'}`}
+            className={`absolute inset-0 block w-full h-full object-cover transition-all duration-1000 ease-out will-change-transform transform-gpu ${imgLoaded ? 'opacity-100 grayscale-[0.2] group-hover:grayscale-0' : 'opacity-0'}`}
             style={{ 
-              transform: `translate3d(${offset.x}px, ${offset.y}px, 0)`
+              transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${imgLoaded ? 1.08 : 1.14})`
             }}
           />
         )}
