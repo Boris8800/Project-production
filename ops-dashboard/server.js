@@ -148,14 +148,15 @@ function badge(ok) {
 }
 
 function card(title, bodyHtml) {
-  return `
-    <section class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-semibold">${title}</h2>
-      </div>
-      <div class="mt-3 text-sm text-slate-200">${bodyHtml}</div>
-    </section>
-  `;
+  return (
+    '\n' +
+    '    <section class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">\n' +
+    '      <div class="flex items-center justify-between">\n' +
+    '        <h2 class="text-lg font-semibold">' + title + '</h2>\n' +
+    '      </div>\n' +
+    '      <div class="mt-3 text-sm text-slate-200">' + bodyHtml + '</div>\n' +
+    '    </section>\n'
+  );
 }
 
 async function load() {
@@ -167,38 +168,46 @@ async function load() {
   const res = await fetch('/api/status');
   const data = await res.json();
 
-  const links = `
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-      <a class="underline" href="${data.urls.customer}" target="_blank">Customer: ${data.urls.customer}</a>
-      <a class="underline" href="${data.urls.api}" target="_blank">API: ${data.urls.api}</a>
-      <a class="underline" href="${data.urls.driver}" target="_blank">Driver: ${data.urls.driver}</a>
-      <a class="underline" href="${data.urls.admin}" target="_blank">Admin: ${data.urls.admin}</a>
-    </div>
-  `;
+  const links =
+    '<div class="grid grid-cols-1 md:grid-cols-2 gap-2">' +
+      '<a class="underline" href="' + data.urls.customer + '" target="_blank">Customer: ' + data.urls.customer + '</a>' +
+      '<a class="underline" href="' + data.urls.api + '" target="_blank">API: ' + data.urls.api + '</a>' +
+      '<a class="underline" href="' + data.urls.driver + '" target="_blank">Driver: ' + data.urls.driver + '</a>' +
+      '<a class="underline" href="' + data.urls.admin + '" target="_blank">Admin: ' + data.urls.admin + '</a>' +
+    '</div>';
 
   const checks = Object.entries(data.checks).map(([k,v]) => {
     const ok = v && v.ok;
-    const details = ok ? `HTTP ${v.status} • ${v.ms}ms` : (v && v.error ? v.error : 'unreachable');
-    return `<div class="flex items-center justify-between gap-3"><div class="text-slate-300">${k}</div><div class="flex items-center gap-2">${badge(ok)}<span class="text-slate-400">${details}</span></div></div>`;
+    const details = ok ? ('HTTP ' + v.status + ' • ' + v.ms + 'ms') : (v && v.error ? v.error : 'unreachable');
+    return (
+      '<div class="flex items-center justify-between gap-3">' +
+        '<div class="text-slate-300">' + k + '</div>' +
+        '<div class="flex items-center gap-2">' + badge(ok) + '<span class="text-slate-400">' + details + '</span></div>' +
+      '</div>'
+    );
   }).join('');
 
   const integrations = Object.values(data.integrations).map(v => {
-    return `<div class="flex items-center justify-between gap-3"><div class="text-slate-300">${v.key}</div><div class="flex items-center gap-2">${badge(v.set)}<span class="text-slate-400">${v.masked}</span></div></div>`;
+    return (
+      '<div class="flex items-center justify-between gap-3">' +
+        '<div class="text-slate-300">' + v.key + '</div>' +
+        '<div class="flex items-center gap-2">' + badge(v.set) + '<span class="text-slate-400">' + v.masked + '</span></div>' +
+      '</div>'
+    );
   }).join('');
 
   const ssl = data.ssl.map(s => {
-    if (!s.present) return `<div class="flex items-center justify-between"><div class="text-slate-300">${s.domain}</div><div class="text-slate-400">no cert</div></div>`;
-    if (s.error) return `<div class="flex items-center justify-between"><div class="text-slate-300">${s.domain}</div><div class="text-red-300">${s.error}</div></div>`;
-    return `<div class="flex items-center justify-between"><div class="text-slate-300">${s.domain}</div><div class="text-slate-400">expires: ${s.notAfter}</div></div>`;
+    if (!s.present) return '<div class="flex items-center justify-between"><div class="text-slate-300">' + s.domain + '</div><div class="text-slate-400">no cert</div></div>';
+    if (s.error) return '<div class="flex items-center justify-between"><div class="text-slate-300">' + s.domain + '</div><div class="text-red-300">' + s.error + '</div></div>';
+    return '<div class="flex items-center justify-between"><div class="text-slate-300">' + s.domain + '</div><div class="text-slate-400">expires: ' + s.notAfter + '</div></div>';
   }).join('');
 
-  const apiInfo = `
-    <div class="space-y-2">
-      <div class="text-slate-300">Backend base: <span class="text-slate-100">${data.apiInfo.backend.base}</span></div>
-      <div class="text-slate-300">Backend endpoints: <span class="text-slate-100">${data.apiInfo.backend.endpoints.join(', ')}</span></div>
-      <div class="text-slate-300">Frontend AI routes: <span class="text-slate-100">${data.apiInfo.frontendAiRoutes.endpoints.join(', ')}</span></div>
-    </div>
-  `;
+  const apiInfo =
+    '<div class="space-y-2">' +
+      '<div class="text-slate-300">Backend base: <span class="text-slate-100">' + data.apiInfo.backend.base + '</span></div>' +
+      '<div class="text-slate-300">Backend endpoints: <span class="text-slate-100">' + data.apiInfo.backend.endpoints.join(', ') + '</span></div>' +
+      '<div class="text-slate-300">Frontend AI routes: <span class="text-slate-100">' + data.apiInfo.frontendAiRoutes.endpoints.join(', ') + '</span></div>' +
+    '</div>';
 
   content.innerHTML =
     card('Links', links) +

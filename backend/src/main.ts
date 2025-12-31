@@ -60,16 +60,25 @@ async function bootstrap() {
     .build();
 
   // Run migrations if TypeORM is enabled/present
-  try {
-    const dataSource = app.get(DataSource);
-    if (dataSource) {
-      Logger.log('Starting database migrations...', 'Bootstrap');
-      await dataSource.runMigrations();
-      Logger.log('Migrations executed successfully', 'Bootstrap');
+  if (process.env.SKIP_DB === 'true') {
+    Logger.warn('Skipping migrations: SKIP_DB=true', 'Bootstrap');
+  } else {
+    let dataSource: DataSource | undefined;
+    try {
+      dataSource = app.get(DataSource, { strict: false });
+    } catch (error) {
+      Logger.warn(`Skipping migrations: ${error instanceof Error ? error.message : error}`, 'Bootstrap');
     }
-  } catch (error) {
-    // If DataSource is not found (e.g. SKIP_DB=true) or migration fails
-    Logger.warn(`Skipping migrations: ${error instanceof Error ? error.message : error}`, 'Bootstrap');
+
+    if (dataSource) {
+      try {
+        Logger.log('Starting database migrations...', 'Bootstrap');
+        await dataSource.runMigrations();
+        Logger.log('Migrations executed successfully', 'Bootstrap');
+      } catch (error) {
+        Logger.warn(`Skipping migrations: ${error instanceof Error ? error.message : error}`, 'Bootstrap');
+      }
+    }
   }
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
