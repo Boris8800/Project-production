@@ -1,9 +1,4 @@
 
-export enum TripType {
-  ONE_WAY = 'One-way',
-  ROUND_TRIP = 'Round-trip'
-}
-
 export enum BookingCategory {
   INTERCITY = 'Intercity',
   AIRPORT = 'Airport Transfer'
@@ -30,10 +25,14 @@ export interface Recommendation {
 export interface RideData {
   pickup: string;
   dropoff: string;
-  date: string;
-  time: string;
-  persons: number;
-  luggage: number;
+  stops?: string[];
+  date?: string;
+  time?: string;
+  persons?: number;
+  luggage?: number;
+  distance?: number;
+  duration?: number;
+  selectedVehicleClass?: string;
 }
 
 export interface VehicleOption {

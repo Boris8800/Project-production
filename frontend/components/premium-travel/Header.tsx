@@ -3,15 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import BrandLogo from './BrandLogo';
-import { BookingCategory } from './types';
 import { useLanguage } from '../../lib/language';
+import { BookingCategory } from './types';
 
 interface HeaderProps {
   toggleDarkMode: () => void;
   isDarkMode: boolean;
   onHomeClick?: () => void;
-  onCategoryChange?: (cat: BookingCategory) => void;
   showNav?: boolean;
+  onCategoryChange?: (category: BookingCategory) => void;
   showLoginLink?: boolean;
   loginHref?: string;
   showBookNowButton?: boolean;
@@ -21,9 +21,8 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({
   toggleDarkMode,
   isDarkMode,
-  onHomeClick,
-  onCategoryChange,
   showNav = true,
+  onCategoryChange,
   showLoginLink = true,
   loginHref = '/tenants/customer',
   showBookNowButton = true,
@@ -76,33 +75,16 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-surface-dark-lighter bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
-      <div className="w-full px-4 md:px-10 py-3 flex items-center justify-between">
-        <button 
-          onClick={onHomeClick}
-          className="flex items-center gap-4 text-slate-900 dark:text-white hover:opacity-80 transition-opacity cursor-pointer text-left"
+      <div className="w-full px-4 md:px-10 py-2 flex items-center justify-between">
+        <Link 
+          href="/"
+          className="flex items-center gap-2 md:gap-3 text-slate-900 dark:text-white hover:opacity-80 transition-opacity cursor-pointer text-left"
         >
           <BrandLogo size={52} />
           <h2 className="text-xl md:text-2xl font-bold leading-tight tracking-[-0.015em] font-display">TransferLane</h2>
-        </button>
+        </Link>
 
         <div className="flex items-center gap-2 md:gap-6">
-          {showNav ? (
-            <nav className="hidden md:flex items-center gap-6 lg:gap-9">
-              <button 
-                onClick={() => onCategoryChange?.(BookingCategory.INTERCITY)}
-                className="text-sm font-medium hover:text-primary transition-colors"
-              >
-                {t.intercity}
-              </button>
-              <button 
-                onClick={() => onCategoryChange?.(BookingCategory.AIRPORT)}
-                className="text-sm font-medium hover:text-primary transition-colors"
-              >
-                {t.airport}
-              </button>
-            </nav>
-          ) : null}
-
           <div className="flex items-center gap-2 md:gap-4">
             <button 
               onClick={toggleDarkMode}
@@ -161,8 +143,14 @@ const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={() => setShowMobileNav((v) => !v)}
-              className="md:hidden p-2 text-slate-900 dark:text-white"
+              className={`md:hidden p-2 rounded-full text-slate-900 dark:text-white transition-colors ${
+                showMobileNav
+                  ? 'bg-gray-200 dark:bg-surface-dark-lighter'
+                  : 'hover:bg-gray-200 dark:hover:bg-surface-dark-lighter'
+              }`}
               aria-label={showMobileNav ? 'Close menu' : 'Open menu'}
+              aria-expanded={showMobileNav}
+              aria-controls="mobile-nav"
             >
               <span className="material-symbols-outlined">{showMobileNav ? 'close' : 'menu'}</span>
             </button>
@@ -171,7 +159,7 @@ const Header: React.FC<HeaderProps> = ({
       </div>
 
       {showMobileNav ? (
-        <div className="md:hidden absolute top-full left-0 w-full bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-surface-dark-lighter shadow-2xl">
+        <div id="mobile-nav" className="md:hidden absolute top-full left-0 w-full bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-surface-dark-lighter shadow-2xl">
           <nav className="flex flex-col p-4 gap-2">
             {showNav ? (
               <>

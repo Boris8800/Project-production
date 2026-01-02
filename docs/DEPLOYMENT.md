@@ -17,21 +17,13 @@ Recommended: `/opt/Project-production`
 3. Run:
    - `sudo bash scripts/all.sh deploy`
 
-## Frontend runs on the host (outside Docker)
-Production `docker-compose.production.yml` no longer starts the Next.js frontend container.
-Nginx (in Docker) proxies web traffic to a host process at `http://127.0.0.1:3000`.
-
-On the VPS, run the frontend on the host:
-1. Install Node.js (recommended: Node 22 LTS-compatible).
-2. From the repo root:
-   - `cd frontend`
-   - `npm ci`
-   - `npm run build`
-   - `npm run start`  (listens on port 3000)
+## Frontend runs in Docker (production)
+Production `docker-compose.production.yml` includes the Next.js frontend as a container.
+Nginx (in Docker) proxies web traffic to the `frontend` service on port `3000`.
 
 Notes:
-- Keep the frontend running (systemd/pm2 are typical on Linux).
-- If nginx is up but the frontend process is down, you will see 502 errors on the web domains.
+- You do not need Node.js installed on the VPS for the frontend.
+- If the frontend container is down, you will see 502 errors on the web domains.
 
 ## Fresh VPS deploy (from scratch)
 On a clean Ubuntu/Debian VPS, this installs prerequisites, clones into `/opt/Project-production`, prepares `.env.production`, then deploys:

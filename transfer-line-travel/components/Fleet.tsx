@@ -188,7 +188,7 @@ const Fleet: React.FC<FleetProps> = ({ onSelect, language }) => {
     },
     {
       name: t.v2_name, model: 'Mitsubishi Outlander', sub: t.v2_sub, seats: 4, bags: 4,
-      img: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=85&w=1600&auto=format&fit=crop',
+      img: '/images/vehicles/mitsubishi-outlander.png',
       tag: t.v2_tag, category: BookingCategory.INTERCITY
     },
     {
@@ -198,7 +198,7 @@ const Fleet: React.FC<FleetProps> = ({ onSelect, language }) => {
     },
     {
       name: t.v4_name, model: 'Mercedes-Benz V-Class', sub: t.v4_sub, seats: 7, bags: 6,
-      img: 'https://images.unsplash.com/photo-1601362840469-51e4d8d59085?q=85&w=1600&auto=format&fit=crop',
+      img: '/images/vehicles/mercedes-v-class.jpg',
       tag: t.v4_tag, category: BookingCategory.AIRPORT
     },
     {
@@ -227,8 +227,8 @@ const Fleet: React.FC<FleetProps> = ({ onSelect, language }) => {
               {t.sub}
             </p>
           </div>
-          
-          <button 
+
+          <button
             onClick={() => setShowAll(!showAll)}
             className="group flex items-center gap-4 md:gap-8 px-8 md:px-12 py-4 md:py-6 rounded-2xl md:rounded-[24px] border border-primary text-primary font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[9px] md:text-[10px] hover:bg-primary hover:text-white transition-all active:scale-95"
           >
@@ -250,6 +250,18 @@ const Fleet: React.FC<FleetProps> = ({ onSelect, language }) => {
               language={language}
             />
           ))}
+        </div>
+
+        <div className="mt-10 md:mt-14 flex justify-center">
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="group flex items-center gap-4 md:gap-8 px-8 md:px-12 py-4 md:py-6 rounded-2xl md:rounded-[24px] border border-primary text-primary font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[9px] md:text-[10px] hover:bg-primary hover:text-white transition-all active:scale-95"
+          >
+            {showAll ? t.collapse : t.viewAll}
+            <span className={`material-symbols-outlined transition-transform duration-500 ${showAll ? 'rotate-180' : 'group-hover:translate-x-2'}`}>
+              {showAll ? 'expand_less' : 'arrow_forward'}
+            </span>
+          </button>
         </div>
       </div>
     </section>

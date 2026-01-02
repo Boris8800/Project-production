@@ -77,18 +77,21 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
   const t = translations[language];
 
   const fallbackJourneyMetrics = useMemo(() => {
-    const seed = rideData.pickup.length + rideData.dropoff.length;
-    const miles = Math.floor(seed * 1.8 + 20);
+    const stopsCount = rideData.stops?.length || 0;
+    const seed = rideData.pickup.length + rideData.dropoff.length + (rideData.stops?.join('').length || 0);
+    const miles = Math.floor(seed * 1.8 + 20 + (stopsCount * 5));
     const speedAverage = 55;
-    const hours = Math.floor(miles / speedAverage);
-    const mins = Math.floor(((miles % speedAverage) / speedAverage) * 60);
+    const totalMins = Math.floor((miles / speedAverage) * 60) + (stopsCount * 15);
+    const hours = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+
     return {
       distanceMiles: miles,
       durationText: `${hours > 0 ? `${hours}h ` : ''}${mins}m`,
-      arrivalEpochMs: Date.now() + (hours * 3600 + mins * 60) * 1000,
+      arrivalEpochMs: Date.now() + totalMins * 60 * 1000,
       source: 'estimate' as const,
     };
-  }, [rideData.dropoff.length, rideData.pickup.length]);
+  }, [rideData.dropoff.length, rideData.pickup.length, rideData.stops]);
 
   const metrics = routeMetrics ?? fallbackJourneyMetrics;
 
@@ -100,6 +103,9 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
         const url = new URL('/api/premium-travel/route-metrics', window.location.origin);
         url.searchParams.set('pickup', rideData.pickup);
         url.searchParams.set('dropoff', rideData.dropoff);
+        if (rideData.stops && rideData.stops.length > 0) {
+          url.searchParams.set('stops', rideData.stops.join('|'));
+        }
 
         const res = await fetch(url.toString(), { cache: 'no-store' });
         if (!res.ok) return;
@@ -128,7 +134,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
     return () => {
       cancelled = true;
     };
-  }, [rideData.dropoff, rideData.pickup]);
+  }, [rideData.dropoff, rideData.pickup, rideData.stops]);
 
   // Full vehicle catalog with group models strictly at the end
   const vehicles = useMemo(
@@ -153,7 +159,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
       ratePerMile: 2.75,
       seats: 4,
       bags: 4,
-      img: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=85&w=1600&auto=format&fit=crop',
+      img: '/images/vehicles/mitsubishi-outlander.png',
       tag: 'Family Favorite',
       desc: 'Spacious and commanding. Ideal for families with luggage.'
     },
@@ -165,7 +171,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
       ratePerMile: 3.40,
       seats: 3,
       bags: 3,
-      img: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=85&w=1600&auto=format&fit=crop',
+      img: '/images/vehicles/mercedes-s-class.png',
       tag: 'Executive Choice',
       desc: 'The global benchmark in premium chauffeur travel.'
     },
@@ -189,7 +195,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
       ratePerMile: 3.20,
       seats: 7,
       bags: 6,
-      img: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=85&w=1600&auto=format&fit=crop',
+      img: '/images/vehicles/mercedes-v-class.jpg',
       tag: '7-Seater Luxury',
       desc: 'Sophisticated group travel with conference seating and leather upholstery.',
       isBigCar: true
@@ -212,16 +218,28 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
   );
 
   // Specific logic: > 4 passengers or > 4 bags triggers "Bigger Car" only view
+  // Also filter by selectedVehicleClass if provided from Fleet
   const availableVehicles = useMemo(() => {
-    const needsBigCar = rideData.persons > 4 || rideData.luggage > 4;
+    const persons = rideData.persons ?? 0;
+    const luggage = rideData.luggage ?? 0;
+    const needsBigCar = persons > 4 || luggage > 4;
+    
+    let filtered = vehicles;
+
+    // If a specific vehicle class was selected from Fleet, try to show that class
+    if (rideData.selectedVehicleClass) {
+      const classFiltered = vehicles.filter(v => v.name === rideData.selectedVehicleClass);
+      // If selected class exists, use it; otherwise show all vehicles
+      filtered = classFiltered.length > 0 ? classFiltered : vehicles;
+    }
     
     if (needsBigCar) {
       // Return only the group models (7 & 8 seaters)
-      return vehicles.filter(v => v.isBigCar && v.seats >= rideData.persons && v.bags >= rideData.luggage);
+      return filtered.filter(v => v.isBigCar && v.seats >= persons && v.bags >= luggage);
     }
     
     // Default filtering based on capacity, showing all eligible vehicles
-    return vehicles.filter(v => v.seats >= rideData.persons && v.bags >= rideData.luggage);
+    return filtered.filter(v => v.seats >= persons && v.bags >= luggage);
   }, [rideData, vehicles]);
 
   const mapUrl = `https://www.google.com/maps?output=embed&saddr=${encodeURIComponent(rideData.pickup)}&daddr=${encodeURIComponent(rideData.dropoff)}`;
@@ -312,7 +330,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
           <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
             <div>
               <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-slate-900 dark:text-white">{t.chooseVehicle}</h2>
-              {(rideData.persons > 4 || rideData.luggage > 4) && (
+              {((rideData.persons ?? 0) > 4 || (rideData.luggage ?? 0) > 4) && (
                 <div className="mt-3 flex items-center gap-2 text-primary">
                   <span className="material-symbols-outlined text-sm">info</span>
                   <p className="text-xs font-black uppercase tracking-widest">{t.bigCarInfo}</p>
@@ -322,11 +340,11 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl">
                 <span className="material-symbols-outlined text-primary">group</span>
-                <span className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">{rideData.persons} {t.passengers}</span>
+                <span className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">{rideData.persons ?? 0} {t.passengers}</span>
               </div>
               <div className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl">
                 <span className="material-symbols-outlined text-primary">luggage</span>
-                <span className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">{rideData.luggage} {t.items}</span>
+                <span className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">{rideData.luggage ?? 0} {t.items}</span>
               </div>
             </div>
           </header>
@@ -345,7 +363,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
                         : 'border-gray-100 dark:border-white/5 hover:border-primary/40'
                     }`}
                   >
-                    <div className="w-full md:w-[400px] h-72 md:h-auto overflow-hidden relative bg-slate-900">
+                    <div className="w-full md:w-[380px] h-72 md:h-auto overflow-hidden relative bg-slate-900">
                       <img src={v.img} alt={v.model} className="block w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110" />
                       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent"></div>
                       <div className="absolute top-8 left-8 bg-primary/95 backdrop-blur-md px-4 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-widest border border-white/20 shadow-xl">
@@ -353,7 +371,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
                       </div>
                     </div>
 
-                    <div className="flex-1 p-10 lg:p-14 flex flex-col">
+                    <div className="flex-1 p-9.5 lg:p-13 flex flex-col">
                       <div className="flex flex-col xl:flex-row justify-between items-start gap-6 mb-8">
                         <div className="flex-1">
                           <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-2">{v.name}</p>
@@ -414,7 +432,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
                 <span className="material-symbols-outlined text-6xl text-primary mb-6">info</span>
                 <h3 className="text-2xl font-black mb-4">{t.noVehicles}</h3>
                 <p className="text-text-muted dark:text-slate-200 max-w-sm mx-auto">
-                  {t.noVehiclesDesc.replace('{persons}', rideData.persons.toString()).replace('{luggage}', rideData.luggage.toString())}
+                  {t.noVehiclesDesc.replace('{persons}', (rideData.persons ?? 0).toString()).replace('{luggage}', (rideData.luggage ?? 0).toString())}
                 </p>
                 <button onClick={onBack} className="mt-10 px-10 py-4 bg-primary text-white font-black rounded-xl">{t.adjust}</button>
               </div>

@@ -16,8 +16,8 @@ images/
 | Filename | Description | Status |
 |----------|-------------|--------|
 | `tesla-model-s.jpg` | Tesla Model S (Saloon Experience) | ✅ Downloaded |
-| `mitsubishi-outlander.jpg` | Mitsubishi Outlander (SUV Excellence) | ✅ Downloaded |
-| `mercedes-s-class.jpg` | Mercedes-Benz S-Class (Elite Class) | ✅ Downloaded |
+| `mitsubishi-outlander.png` | Mitsubishi Outlander (SUV Excellence) | ✅ Downloaded |
+| `mercedes-s-class.png` | Mercedes-Benz S-Class (Elite Class) | ✅ Downloaded |
 | `rolls-royce-phantom.jpg` | Rolls-Royce Phantom (First Class Royale) | ✅ Downloaded |
 | `mercedes-v-class.jpg` | Mercedes-Benz V-Class (Executive MPV) | ✅ Downloaded |
 | `mercedes-vito.jpg` | Mercedes-Benz Vito Tourer (Elite Group) | ⚠️ Needs replacement |
@@ -45,10 +45,12 @@ images/
 
 ## 🔄 How to Replace Images
 
+**Supported image formats:** `.jpg`, `.jpeg`, `.png`
+
 ### 1. **Replace an Existing Image:**
    - Simply replace the file with your new image
    - **Keep the same filename** to avoid code changes
-   - Recommended format: JPG (for photos)
+   - Recommended format: JPG or PNG (for photos)
    - Recommended size: 
      - Vehicles: 1600x1200px
      - Backgrounds: 2400x1600px
@@ -56,7 +58,7 @@ images/
 
 ### 2. **Add a New Image:**
    - Add your image to the appropriate folder
-   - Update the code to reference: `/images/folder/your-image.jpg`
+   - Update the code to reference: `/images/folder/your-image.jpg` or `/images/folder/your-image.png`
 
 ### 3. **Replace Missing Images (marked with ⚠️):**
    - Find a suitable replacement image
@@ -66,7 +68,7 @@ images/
 ## 💡 Image Optimization Tips
 
 1. **Size:** Keep images under 500KB for faster loading
-2. **Format:** Use JPG for photos, PNG for logos
+2. **Format:** Use JPG for photos, PNG for logos (and photos are also fine as PNG)
 3. **Resolution:** Use 2x resolution for retina displays
 4. **Compression:** Use tools like TinyPNG or ImageOptim
 5. **Naming:** Use descriptive, lowercase names with hyphens
@@ -88,6 +90,11 @@ Images are referenced in two main ways:
 1. **Direct `<img>` tags:**
    ```tsx
    <img src="/images/vehicles/tesla-model-s.jpg" alt="Tesla Model S" />
+   ```
+
+   PNG works the same way:
+   ```tsx
+   <img src="/images/vehicles/mitsubishi-outlander.png" alt="Mitsubishi Outlander" />
    ```
 
 2. **CSS background images:**

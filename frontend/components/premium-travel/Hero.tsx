@@ -2,16 +2,14 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Script from 'next/script';
-import { BookingCategory, RideData, TripType } from './types';
+import { RideData } from './types';
 import { useLanguage, Language } from '../../lib/language';
 
 interface HeroProps {
-  activeCategory: BookingCategory;
-  setActiveCategory: (cat: BookingCategory) => void;
   onEstimate?: (data: RideData) => void;
 }
 
-const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstimate }) => {
+const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
   const { language } = useLanguage();
 
   const leadTimeMs = 5 * 60 * 60 * 1000;
@@ -19,23 +17,34 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
   const minAllowedDate = useMemo(() => minAllowed.toISOString().split('T')[0], [minAllowed]);
   const minAllowedTime = useMemo(() => minAllowed.toTimeString().slice(0, 5), [minAllowed]);
 
-  const [tripType, setTripType] = useState<TripType>(TripType.ONE_WAY);
   const [pickup, setPickup] = useState('');
   const [dropoff, setDropoff] = useState('');
-  const [date, setDate] = useState(() => minAllowedDate);
-  const [time, setTime] = useState(() => minAllowedTime);
+  const [stops, setStops] = useState<string[]>([]);
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
   const [persons, setPersons] = useState(1);
   const [luggage, setLuggage] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  const [heroCardIndex, setHeroCardIndex] = useState(0);
+
   const [formError, setFormError] = useState<string | null>(null);
   const [placesReady, setPlacesReady] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setDate(minAllowedDate);
+    setTime(minAllowedTime);
+  }, [minAllowedDate, minAllowedTime]);
 
   const pickupInputRef = useRef<HTMLInputElement | null>(null);
   const dropoffInputRef = useRef<HTMLInputElement | null>(null);
+  const stopInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const dateInputRef = useRef<HTMLInputElement | null>(null);
   const timeInputRef = useRef<HTMLInputElement | null>(null);
   const placesBoundRef = useRef(false);
+  const stopPlacesBoundRef = useRef<boolean[]>([false, false]);
 
   const openNativeDatePicker = () => {
     const el = dateInputRef.current;
@@ -101,8 +110,6 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
   useEffect(() => {
     if (!mapsKey) return;
     if (!placesReady) return;
-    if (placesBoundRef.current) return;
-    if (!pickupInputRef.current || !dropoffInputRef.current) return;
 
     const googleObj = (window as unknown as { google?: GoogleMapsPlaces }).google;
     const AutocompleteCtor = googleObj?.maps?.places?.Autocomplete;
@@ -114,22 +121,43 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
       componentRestrictions: { country: 'uk' },
     };
 
-    const pickupAutocomplete = new AutocompleteCtor(pickupInputRef.current, commonOptions);
-    pickupAutocomplete.addListener('place_changed', () => {
-      const place = pickupAutocomplete.getPlace();
-      const value = place.formatted_address || place.name;
-      if (value) setPickup(value);
-    });
+    if (!placesBoundRef.current && pickupInputRef.current && dropoffInputRef.current) {
+      const pickupAutocomplete = new AutocompleteCtor(pickupInputRef.current, commonOptions);
+      pickupAutocomplete.addListener('place_changed', () => {
+        const place = pickupAutocomplete.getPlace();
+        const value = place.formatted_address || place.name;
+        if (value) setPickup(value);
+      });
 
-    const dropoffAutocomplete = new AutocompleteCtor(dropoffInputRef.current, commonOptions);
-    dropoffAutocomplete.addListener('place_changed', () => {
-      const place = dropoffAutocomplete.getPlace();
-      const value = place.formatted_address || place.name;
-      if (value) setDropoff(value);
-    });
+      const dropoffAutocomplete = new AutocompleteCtor(dropoffInputRef.current, commonOptions);
+      dropoffAutocomplete.addListener('place_changed', () => {
+        const place = dropoffAutocomplete.getPlace();
+        const value = place.formatted_address || place.name;
+        if (value) setDropoff(value);
+      });
 
-    placesBoundRef.current = true;
-  }, [mapsKey, placesReady]);
+      placesBoundRef.current = true;
+    }
+
+    // Bind stops
+    stops.forEach((_, index) => {
+      if (!stopPlacesBoundRef.current[index] && stopInputRefs.current[index]) {
+        const stopAutocomplete = new AutocompleteCtor(stopInputRefs.current[index]!, commonOptions);
+        stopAutocomplete.addListener('place_changed', () => {
+          const place = stopAutocomplete.getPlace();
+          const value = place.formatted_address || place.name;
+          if (value) {
+            setStops(prev => {
+              const next = [...prev];
+              next[index] = value;
+              return next;
+            });
+          }
+        });
+        stopPlacesBoundRef.current[index] = true;
+      }
+    });
+  }, [mapsKey, placesReady, stops]);
 
   const handleSearch = async () => {
     setFormError(null);
@@ -148,7 +176,15 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
     }
 
     setLoading(true);
-    const rideData: RideData = { pickup: pickup.trim(), dropoff: dropoff.trim(), date, time, persons, luggage };
+    const rideData: RideData = { 
+      pickup: pickup.trim(), 
+      dropoff: dropoff.trim(), 
+      stops: stops.filter(s => s.trim() !== ''),
+      date, 
+      time, 
+      persons, 
+      luggage 
+    };
     await new Promise(resolve => setTimeout(resolve, 800));
     setLoading(false);
     if (onEstimate) onEstimate(rideData);
@@ -162,6 +198,90 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
     if (val > min) setter(val - 1);
   };
 
+  const addStop = () => {
+    if (stops.length < 2) {
+      setStops([...stops, '']);
+    }
+  };
+
+  const removeStop = (index: number) => {
+    const newStops = stops.filter((_, i) => i !== index);
+    setStops(newStops);
+    // Reset bound flags for stops
+    stopPlacesBoundRef.current = [false, false];
+  };
+
+  type HeroCard = {
+    headlineLines: string[];
+    emphasisLineIndex: number;
+    sub: string;
+  };
+
+  const heroCardsByLanguage = useMemo<Record<Language, HeroCard[]>>(
+    () => ({
+      [Language.EN]: [
+        {
+          headlineLines: ['Journey Beyond', 'City Limits'],
+          emphasisLineIndex: 1,
+          sub: 'Dedicated service for long-distance travel and seamless airport transfers. No surge, just certainty.',
+        },
+        {
+          headlineLines: ['Across Britain', 'In Refinement'],
+          emphasisLineIndex: 1,
+          sub: 'Premium intercity travel throughout the UK. Experience superior service without the compromise.',
+        },
+      ],
+      [Language.ES]: [
+        {
+          headlineLines: ['Viaja Más Allá', 'De La Ciudad'],
+          emphasisLineIndex: 1,
+          sub: 'Servicio dedicado para viajes de larga distancia y traslados al aeropuerto sin complicaciones. Sin recargos, solo certeza.',
+        },
+        {
+          headlineLines: ['Por Gran Bretaña', 'Con Refinamiento'],
+          emphasisLineIndex: 1,
+          sub: 'Viajes interurbanos premium por todo el Reino Unido. Un servicio superior sin concesiones.',
+        },
+      ],
+      [Language.FR]: [
+        {
+          headlineLines: ['Au-Delà', 'Des Villes'],
+          emphasisLineIndex: 1,
+          sub: 'Service dédié aux longs trajets et aux transferts aéroport sans effort. Pas de surcoût, juste de la certitude.',
+        },
+        {
+          headlineLines: ['À Travers la Grande-Bretagne', 'Avec Raffinement'],
+          emphasisLineIndex: 1,
+          sub: 'Voyages interurbains premium dans tout le Royaume-Uni. Un service supérieur sans compromis.',
+        },
+      ],
+      [Language.DE]: [
+        {
+          headlineLines: ['Weiter Reisen', 'Über Stadtgrenzen'],
+          emphasisLineIndex: 1,
+          sub: 'Dedizierter Service für Fernfahrten und nahtlose Flughafentransfers. Keine Aufschläge, nur Verlässlichkeit.',
+        },
+        {
+          headlineLines: ['Durch Großbritannien', 'Mit Raffinesse'],
+          emphasisLineIndex: 1,
+          sub: 'Premium-Fernfahrten in ganz Großbritannien. Erstklassiger Service ohne Kompromisse.',
+        },
+      ],
+    }),
+    [],
+  );
+
+  const activeHeroCards = heroCardsByLanguage[language] ?? heroCardsByLanguage[Language.EN];
+
+  useEffect(() => {
+    setHeroCardIndex(0);
+    if (activeHeroCards.length <= 1) return;
+    const intervalId = setInterval(() => {
+      setHeroCardIndex((prev) => (prev + 1) % activeHeroCards.length);
+    }, 10_000);
+    return () => clearInterval(intervalId);
+  }, [language, activeHeroCards.length]);
+
   const translations = {
     [Language.EN]: {
       badge: 'The Elite Standard',
@@ -173,6 +293,8 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
       rated: '5-Star Rated',
       intercity: 'Intercity',
       airport: 'Airport Transfer',
+      addStop: 'Add Stop',
+      stopPl: 'Stop Address',
       oneWay: 'One-way',
       roundTrip: 'Round-trip',
       pickupPl: 'Collection Address',
@@ -192,6 +314,8 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
       rated: '5 Estrellas',
       intercity: 'Interurbano',
       airport: 'Traslado al Aeropuerto',
+      addStop: 'Añadir parada',
+      stopPl: 'Dirección de parada',
       oneWay: 'Solo ida',
       roundTrip: 'Ida y vuelta',
       pickupPl: 'Dirección de recogida',
@@ -211,6 +335,8 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
       rated: '5 Étoiles',
       intercity: 'Interurbain',
       airport: 'Transfert Aéroport',
+      addStop: 'Ajouter un arrêt',
+      stopPl: "Adresse de l'arrêt",
       oneWay: 'Aller simple',
       roundTrip: 'Aller-retour',
       pickupPl: 'Adresse de prise en charge',
@@ -230,6 +356,8 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
       rated: '5-Sterne',
       intercity: 'Fernfahrt',
       airport: 'Flughafentransfer',
+      addStop: 'Zwischenstopp hinzufügen',
+      stopPl: 'Adresse des Zwischenstopps',
       oneWay: 'Einweg',
       roundTrip: 'Hin & zurück',
       pickupPl: 'Abholadresse',
@@ -244,7 +372,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
   const t = translations[language];
 
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center px-4 md:px-12 overflow-hidden bg-background-dark">
+    <section className="relative w-full min-h-screen flex items-center justify-center px-4 pt-6 md:pt-0 md:px-12 overflow-hidden bg-background-dark">
       {mapsKey ? (
         <Script
           id="google-maps-places"
@@ -270,13 +398,44 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
             </span>
             <span className="text-[11px] font-black text-primary tracking-[0.2em] uppercase">{t.badge}</span>
           </div>
-          <h1 className="text-6xl lg:text-[110px] font-black text-white mb-8 leading-[0.85] tracking-tighter">
-            {t.headlineA}<br/>
-            <span className="text-primary italic font-display">{t.headlineB}</span>
-          </h1>
-          <p className="text-slate-300 text-xl lg:text-2xl max-w-2xl mx-auto lg:mx-0 leading-relaxed font-medium">
-            {t.sub}
-          </p>
+
+          <div className="w-full max-w-3xl mx-auto lg:mx-0 h-[420px] lg:h-[520px]">
+            <div className="relative h-full">
+              {activeHeroCards.map((card, idx) => {
+                const isActive = idx === heroCardIndex;
+                return (
+                  <div
+                    key={card.headlineLines.join('|')}
+                    className={`absolute inset-0 flex flex-col justify-center transition-all duration-700 ease-out ${
+                      isActive
+                        ? 'opacity-100 translate-x-0'
+                        : 'opacity-0 translate-x-6 pointer-events-none'
+                    }`}
+                  >
+                    <h1
+                      className="text-6xl sm:text-7xl lg:text-[110px] font-black text-white mb-8 leading-[0.85] tracking-tighter"
+                    >
+                      {card.headlineLines.map((line, lineIndex) => (
+                        <React.Fragment key={line}>
+                          {lineIndex > 0 ? <br /> : null}
+                          {lineIndex === card.emphasisLineIndex ? (
+                            <span className="text-primary italic font-display">{line}</span>
+                          ) : (
+                            line
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </h1>
+                    <p
+                      className="text-slate-300 text-xl lg:text-2xl max-w-2xl mx-auto lg:mx-0 leading-relaxed font-medium"
+                    >
+                      {card.sub}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
           
           <div className="mt-12 flex flex-wrap justify-center lg:justify-start gap-10 opacity-70">
             <div className="flex items-center gap-3">
@@ -295,33 +454,25 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
         </div>
 
         <div className="w-full max-w-[520px] bg-white dark:bg-surface-dark/95 backdrop-blur-2xl rounded-[32px] shadow-2xl p-6 lg:p-11 border border-gray-200 dark:border-white/10 transform transition-all">
-          <div className="flex border-b border-gray-200 dark:border-white/5 mb-8">
-            {[BookingCategory.INTERCITY, BookingCategory.AIRPORT].map((cat) => (
-              <button 
-                key={cat} 
-                onClick={() => setActiveCategory(cat)} 
-                className={`flex-1 pb-5 text-base font-black transition-all ${activeCategory === cat ? 'border-b-4 border-primary text-primary' : 'text-slate-400 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white'}`}
-              >
-                {cat === BookingCategory.INTERCITY ? t.intercity : t.airport}
-              </button>
-            ))}
-          </div>
-
           <div className="space-y-6">
-            <div className="flex p-2 bg-slate-50 dark:bg-background-dark/50 rounded-2xl border border-slate-200 dark:border-white/5">
-              {[TripType.ONE_WAY, TripType.ROUND_TRIP].map((type) => (
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-200">Booking Details</h3>
+              {stops.length < 2 && (
                 <button 
-                  key={type} 
-                  onClick={() => setTripType(type)} 
-                  className={`flex-1 py-3 text-sm font-black rounded-xl transition-all ${tripType === type ? 'bg-white dark:bg-surface-dark-lighter shadow-lg text-primary scale-[1.02]' : 'text-slate-400 dark:text-slate-200 hover:text-primary'}`}
+                  onClick={addStop}
+                  className="text-[10px] font-black uppercase tracking-widest text-primary hover:opacity-80 transition-all flex items-center gap-1.5 bg-primary/10 px-3 py-1.5 rounded-full"
                 >
-                  {type === TripType.ONE_WAY ? t.oneWay : t.roundTrip}
+                  <span className="material-symbols-outlined text-sm">add_circle</span>
+                  {t.addStop}
                 </button>
-              ))}
+              )}
             </div>
 
-            <div className="space-y-6">
-              <div className="relative group">
+            <div className="space-y-6 relative">
+              {/* Vertical connector line */}
+              <div className="absolute left-[31px] top-10 bottom-10 w-0.5 bg-slate-200 dark:bg-white/10 z-0" />
+
+              <div className="relative group z-10">
                 <span className="absolute left-6 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary text-2xl group-focus-within:scale-110 transition-transform">my_location</span>
                 <input 
                   type="text" 
@@ -334,7 +485,32 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                 />
               </div>
 
-              <div className="relative group">
+              {stops.map((stop, index) => (
+                <div key={index} className="relative group z-10">
+                  <span className="absolute left-6 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary text-2xl group-focus-within:scale-110 transition-transform">more_vert</span>
+                  <input 
+                    type="text" 
+                    value={stop} 
+                    onChange={(e) => {
+                      const newStops = [...stops];
+                      newStops[index] = e.target.value;
+                      setStops(newStops);
+                    }} 
+                    ref={el => { stopInputRefs.current[index] = el; }}
+                    className={`w-full pl-16 pr-14 py-5 rounded-[22px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-base'}`}
+                    placeholder={`${t.stopPl} ${index + 1}`} 
+                    autoComplete="off"
+                  />
+                  <button 
+                    onClick={() => removeStop(index)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition-colors"
+                  >
+                    <span className="material-symbols-outlined">cancel</span>
+                  </button>
+                </div>
+              ))}
+
+              <div className="relative group z-10">
                 <span className="absolute left-6 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary text-2xl group-focus-within:scale-110 transition-transform">location_on</span>
                 <input 
                   type="text" 
@@ -346,8 +522,9 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                   autoComplete="off"
                 />
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Date Selection */}
                 <div className="relative group">
                   <span className="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary text-xl">calendar_month</span>
@@ -355,7 +532,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                     type="date" 
                     value={date} 
                     onChange={(e) => setDate(e.target.value)} 
-                    min={minAllowedDate}
+                    min={mounted ? minAllowedDate : undefined}
                     ref={dateInputRef}
                     onClick={openNativeDatePicker}
                     className="w-full pl-14 pr-4 py-5 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-sm font-bold transition-all outline-none text-slate-900 dark:text-white" 
@@ -369,7 +546,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                     type="time"
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
-                    min={minTimeForSelectedDate}
+                    min={mounted ? minTimeForSelectedDate : undefined}
                     ref={timeInputRef}
                     onClick={openNativeTimePicker}
                     className="w-full pl-14 pr-4 py-5 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-sm font-bold transition-all outline-none text-slate-900 dark:text-white"
@@ -426,7 +603,6 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
                   </div>
                 </div>
               </div>
-            </div>
 
             <button 
               onClick={handleSearch} 

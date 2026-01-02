@@ -75,7 +75,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
       ratePerMile: 2.75,
       seats: 4,
       bags: 4,
-      img: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=85&w=1600&auto=format&fit=crop',
+      img: '/images/vehicles/mitsubishi-outlander.png',
       desc: 'Spacious and commanding.'
     },
     {
@@ -86,7 +86,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
       ratePerMile: 3.20,
       seats: 7,
       bags: 6,
-      img: 'https://images.unsplash.com/photo-1601362840469-51e4d8d59085?q=85&w=1600&auto=format&fit=crop',
+      img: '/images/vehicles/mercedes-v-class.jpg',
       desc: '7-seater luxury arrangement.'
     },
     {
@@ -142,9 +142,21 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
               <span className="material-symbols-outlined text-sm">route</span> {t.badge}
             </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-black leading-[0.95] tracking-tighter text-slate-900 dark:text-white">
-              {t.title.split(' ').slice(0, 2).join(' ')} <br/>
-              <span className="italic font-display text-primary">{t.title.split(' ').slice(2).join(' ')}</span>
+              <span className="italic font-display text-primary">{t.title}</span>
             </h1>
+
+            <div className="mt-4 md:mt-6 p-4 md:p-5 rounded-2xl md:rounded-[24px] bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 shadow-sm">
+              <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Route</p>
+              <div className="flex items-start gap-3">
+                <span className="material-symbols-outlined text-primary text-xl">trip_origin</span>
+                <p className="text-[11px] md:text-[12px] font-bold text-slate-900 dark:text-white leading-snug">{rideData.pickup}</p>
+              </div>
+              <div className="my-2 pl-[28px] text-slate-300 dark:text-white/20">—</div>
+              <div className="flex items-start gap-3">
+                <span className="material-symbols-outlined text-primary text-xl">location_on</span>
+                <p className="text-[11px] md:text-[12px] font-bold text-slate-900 dark:text-white leading-snug">{rideData.dropoff}</p>
+              </div>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-2 md:gap-3 mb-6 md:mb-8">
@@ -199,8 +211,15 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
         {/* Floating Bottom Button for Mobile */}
         <div className="fixed bottom-0 left-0 w-full p-4 bg-white/80 dark:bg-background-dark/80 backdrop-blur-lg border-t border-slate-100 dark:border-white/5 z-50 lg:hidden">
           <button 
-            disabled={!selectedId}
-            onClick={() => onSelect({...selectedVehicle, miles: journeyMetrics.distance, price: `£${calculateQuote(selectedVehicle!.baseFare, selectedVehicle!.ratePerMile)}`})}
+            disabled={!selectedVehicle}
+            onClick={() => {
+              if (!selectedVehicle) return;
+              onSelect({
+                ...selectedVehicle,
+                miles: journeyMetrics.distance,
+                price: `£${calculateQuote(selectedVehicle.baseFare, selectedVehicle.ratePerMile)}`,
+              });
+            }}
             className="w-full py-4 bg-primary text-white font-black rounded-xl shadow-2xl shadow-primary/30 active:scale-95 transition-all disabled:opacity-50 text-[10px] uppercase tracking-widest"
           >
             {t.confirm} {selectedVehicle?.model || ''}
@@ -210,8 +229,15 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
         {/* Desktop Sticky Button Area */}
         <div className="hidden lg:block p-10 pt-0 sticky bottom-0 z-10 bg-slate-50 dark:bg-surface-dark">
           <button 
-            disabled={!selectedId}
-            onClick={() => onSelect({...selectedVehicle, miles: journeyMetrics.distance, price: `£${calculateQuote(selectedVehicle!.baseFare, selectedVehicle!.ratePerMile)}`})}
+            disabled={!selectedVehicle}
+            onClick={() => {
+              if (!selectedVehicle) return;
+              onSelect({
+                ...selectedVehicle,
+                miles: journeyMetrics.distance,
+                price: `£${calculateQuote(selectedVehicle.baseFare, selectedVehicle.ratePerMile)}`,
+              });
+            }}
             className="w-full py-5 bg-primary text-white font-black rounded-[20px] shadow-3xl shadow-primary/30 hover:bg-primary-dark transition-all disabled:opacity-50 text-xs uppercase tracking-widest"
           >
             {t.confirm} {selectedVehicle?.model || ''}

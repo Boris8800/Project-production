@@ -11,8 +11,8 @@ const Routes: React.FC = () => {
   ];
 
   return (
-    <section className="py-24 bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-surface-dark-lighter">
-      <div className="w-full px-6 md:px-10 flex flex-col lg:flex-row gap-16">
+    <section className="py-16 md:py-24 bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-surface-dark-lighter">
+      <div className="w-full px-6 md:px-10 flex flex-col lg:flex-row gap-10 md:gap-16">
         <div className="flex-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 dark:bg-surface-dark-lighter mb-6">
             <span className="text-xs font-bold text-primary tracking-wide uppercase">Popular UK Routes</span>
@@ -22,19 +22,19 @@ const Routes: React.FC = () => {
             Reliable chauffeur services across the United Kingdom. We navigate the motorway network so you don&apos;t have to.
           </p>
           
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4 md:gap-5">
             {routes.map((r, i) => (
               <a 
                 key={i} 
-                className="flex items-center justify-between p-6 rounded-2xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-surface-dark-lighter hover:border-primary hover:scale-[1.02] hover:bg-slate-50 dark:hover:bg-surface-dark-lighter/40 hover:shadow-xl dark:hover:shadow-primary/5 group transition-all duration-300 ease-out" 
+                className="flex items-center justify-between p-4 sm:p-5 md:p-6 rounded-2xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-surface-dark-lighter hover:border-primary hover:scale-[1.02] hover:bg-slate-50 dark:hover:bg-surface-dark-lighter/40 hover:shadow-xl dark:hover:shadow-primary/5 group transition-all duration-300 ease-out" 
                 href="#"
               >
-                <div className="flex items-center gap-6">
-                  <div className="size-12 rounded-full bg-gray-100 dark:bg-surface-dark-lighter flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <div className="size-10 sm:size-12 rounded-full bg-gray-100 dark:bg-surface-dark-lighter flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
                     <span className="material-symbols-outlined">east</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white text-lg">
+                    <h4 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">
                       {r.from} <span className="text-text-muted dark:text-slate-200 px-2 font-medium">to</span> {r.to}
                     </h4>
                     <p className="text-xs text-text-muted dark:text-slate-200 font-medium mt-1">Est. {r.time} • Fixed at {r.price}</p>
@@ -46,16 +46,16 @@ const Routes: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex-1 h-[450px] lg:h-auto rounded-3xl overflow-hidden relative shadow-2xl border border-white/5 group">
+        <div className="flex-1 h-[260px] sm:h-[320px] md:h-[450px] lg:h-auto rounded-3xl overflow-hidden relative shadow-2xl border border-white/5 group">
           <div 
             className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] group-hover:scale-110" 
             style={{ backgroundImage: `url('https://images.unsplash.com/photo-1520986606214-8b456906c813?auto=format&fit=crop&q=80&w=800')` }}
           />
           <div className="absolute inset-0 bg-blue-900/30 mix-blend-multiply"></div>
           
-          <div className="absolute bottom-8 left-8 right-8 bg-surface-dark/95 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-2xl">
-            <div className="flex items-start gap-4">
-              <div className="size-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+          <div className="absolute bottom-5 left-5 right-5 md:bottom-8 md:left-8 md:right-8 bg-surface-dark/95 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-white/10 shadow-2xl">
+            <div className="flex items-start gap-3 md:gap-4">
+              <div className="size-9 md:size-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
                 <span className="material-symbols-outlined">explore</span>
               </div>
               <div>

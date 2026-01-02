@@ -1,17 +1,19 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
+import pngToIco from 'png-to-ico';
 
 const projectRoot = path.resolve(process.cwd());
-const inputPath = path.join(projectRoot, 'public', 'brand', 'transferline-logo.png');
+const inputPath = path.join(projectRoot, 'public', 'brand', 'transferline-logo-main.png');
 const outDir = path.join(projectRoot, 'public', 'icons');
 
 const anyIcons = [
   { name: 'icon-192.png', size: 192 },
   { name: 'icon-512.png', size: 512 },
   { name: 'apple-touch-icon.png', size: 180 },
-  { name: 'favicon-16x16.png', size: 16 },
-  { name: 'favicon-32x32.png', size: 32 },
+  { name: 'favicon-16x16.png', size: 16, fit: 'cover' },
+  { name: 'favicon-32x32.png', size: 32, fit: 'cover' },
+  { name: 'favicon-48x48.png', size: 48, fit: 'cover' },
 ];
 
 const maskableIcons = [
@@ -23,12 +25,11 @@ async function ensureDir(dir) {
   await fs.mkdir(dir, { recursive: true });
 }
 
-async function generateContain({ size, outPath }) {
-  // white background keeps transparency safe for PWA contexts
+async function generateContain({ size, outPath, fit = 'contain' }) {
   await sharp(inputPath)
     .resize(size, size, {
-      fit: 'contain',
-      background: { r: 255, g: 255, b: 255, alpha: 1 },
+      fit: fit,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
     })
     .png({ compressionLevel: 9 })
     .toFile(outPath);
@@ -59,16 +60,40 @@ async function generateMaskable({ size, outPath }) {
     .toFile(outPath);
 }
 
+async function generateFaviconIco() {
+  const sizes = [16, 32, 48];
+  const pngBuffers = await Promise.all(
+    sizes.map((size) =>
+      sharp(inputPath)
+        .resize(size, size, {
+          fit: 'cover',
+          background: { r: 0, g: 0, b: 0, alpha: 0 },
+        })
+        .png({ compressionLevel: 9 })
+        .toBuffer(),
+    ),
+  );
+
+  const ico = await pngToIco(pngBuffers);
+  await fs.writeFile(path.join(projectRoot, 'public', 'favicon.ico'), ico);
+}
+
 async function main() {
   await ensureDir(outDir);
 
   for (const icon of anyIcons) {
-    await generateContain({ size: icon.size, outPath: path.join(outDir, icon.name) });
+    await generateContain({ 
+      size: icon.size, 
+      outPath: path.join(outDir, icon.name),
+      fit: icon.fit 
+    });
   }
 
   for (const icon of maskableIcons) {
     await generateMaskable({ size: icon.size, outPath: path.join(outDir, icon.name) });
   }
+
+  await generateFaviconIco();
 
   const manifestPath = path.join(projectRoot, 'public', 'manifest.json');
   const manifestRaw = await fs.readFile(manifestPath, 'utf8');

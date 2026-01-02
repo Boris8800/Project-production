@@ -12,24 +12,77 @@ interface VehicleCardProps {
     sub: string;
     seats: number;
     bags: number;
-    img: string;
+    img: string | string[];
     tag?: string;
   };
   index: number;
   isVisible: boolean;
+  onSelect?: (vehicleName: string) => void;
 }
 
-const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible }) => {
+const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSelect }) => {
   const { language } = useLanguage();
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgIndex, setImgIndex] = useState(0);
+  const images = Array.isArray(vehicle.img) ? vehicle.img : [vehicle.img];
+  const activeImg = images[Math.min(imgIndex, images.length - 1)];
+
+  const [frontImg, setFrontImg] = useState<string>(activeImg);
+  const [backImg, setBackImg] = useState<string>(activeImg);
+  const [showFront, setShowFront] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (!isVisible) return;
+    if (images.length < 2) return;
+
+    const id = setInterval(() => {
+      setImgIndex((prev) => (prev + 1) % images.length);
+    }, 7_000);
+
+    return () => clearInterval(id);
+  }, [isVisible, images.length]);
+
+  useEffect(() => {
+    if (images.length < 2) return;
+    if (isTransitioning) return;
+
+    const currentlyVisible = showFront ? frontImg : backImg;
+    if (activeImg === currentlyVisible) return;
+
+    // Load into the hidden layer, then flip opacity.
+    const nextIsFront = !showFront;
+    if (nextIsFront) setFrontImg(activeImg);
+    else setBackImg(activeImg);
+
+    const img = new Image();
+    img.src = activeImg;
+    img.decoding = 'async';
+
+    const onLoad = () => {
+      setIsTransitioning(true);
+      setShowFront(nextIsFront);
+    };
+
+    img.addEventListener('load', onLoad);
+    return () => {
+      img.removeEventListener('load', onLoad);
+    };
+  }, [activeImg, backImg, frontImg, images.length, isTransitioning, showFront]);
+
+  const handleFadeComplete = (e: React.TransitionEvent<HTMLImageElement>) => {
+    if (e.propertyName !== 'opacity') return;
+    if (!isTransitioning) return;
+    setIsTransitioning(false);
+  };
+
   const translations = {
-    [Language.EN]: { seats: 'Seats', bags: 'Bags', book: 'Book This Experience' },
-    [Language.ES]: { seats: 'Asientos', bags: 'Maletas', book: 'Reservar Esta Experiencia' },
-    [Language.FR]: { seats: 'Sièges', bags: 'Bagages', book: 'Réserver' },
-    [Language.DE]: { seats: 'Sitze', bags: 'Gepäck', book: 'Buchen' },
+    [Language.EN]: { seats: 'Seats', bags: 'Bags', book: 'Get Quote' },
+    [Language.ES]: { seats: 'Asientos', bags: 'Maletas', book: 'Obtener Presupuesto' },
+    [Language.FR]: { seats: 'Sièges', bags: 'Bagages', book: 'Obtenir un Devis' },
+    [Language.DE]: { seats: 'Sitze', bags: 'Gepäck', book: 'Angebot Anfordern' },
   } as const;
 
   const t = translations[language];
@@ -58,16 +111,30 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible }) =>
     >
       <div className="h-72 overflow-hidden relative bg-slate-900">
         {isVisible && (
-           <img 
-            src={vehicle.img}
-            alt={`${vehicle.name} ${vehicle.model}`}
-            onLoad={() => setImgLoaded(true)}
-            loading="lazy"
-            className={`absolute inset-0 block w-full h-full object-cover transition-all duration-1000 ease-out will-change-transform transform-gpu ${imgLoaded ? 'opacity-100 grayscale-[0.2] group-hover:grayscale-0' : 'opacity-0'}`}
-            style={{ 
-              transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${imgLoaded ? 1.08 : 1.14})`
-            }}
-          />
+          <>
+            <img
+              src={frontImg}
+              alt={`${vehicle.name} ${vehicle.model}`}
+              onLoad={() => setImgLoaded(true)}
+              loading="lazy"
+              onTransitionEnd={handleFadeComplete}
+              className={`absolute inset-0 block w-full h-full object-cover transition-opacity duration-700 ease-out will-change-transform transform-gpu ${showFront ? 'opacity-100' : 'opacity-0'} ${imgLoaded ? 'grayscale-[0.2] group-hover:grayscale-0' : ''}`}
+              style={{
+                transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(1.08)`,
+              }}
+            />
+            <img
+              src={backImg}
+              alt={`${vehicle.name} ${vehicle.model}`}
+              onLoad={() => setImgLoaded(true)}
+              loading="lazy"
+              onTransitionEnd={handleFadeComplete}
+              className={`absolute inset-0 block w-full h-full object-cover transition-opacity duration-700 ease-out will-change-transform transform-gpu ${showFront ? 'opacity-0' : 'opacity-100'} ${imgLoaded ? 'grayscale-[0.2] group-hover:grayscale-0' : ''}`}
+              style={{
+                transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(1.08)`,
+              }}
+            />
+          </>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-60"></div>
         
@@ -83,8 +150,8 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible }) =>
         )}
       </div>
 
-      <div className="p-10 flex flex-col flex-grow relative">
-        <div className="mb-6">
+      <div className="p-9 flex flex-col flex-grow relative">
+        <div className="mb-5">
           <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-2">{vehicle.name}</p>
           <h3 className="text-3xl font-black text-slate-900 dark:text-white leading-tight font-display">{vehicle.model}</h3>
         </div>
@@ -104,7 +171,10 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible }) =>
           </div>
         </div>
 
-        <button className="relative overflow-hidden mt-auto w-full py-5 rounded-[20px] bg-slate-900 dark:bg-primary text-white font-black text-xs uppercase tracking-[0.3em] shadow-2xl transition-all transform hover:scale-[1.02] active:scale-95 group-hover:bg-primary group-hover:text-white">
+        <button 
+          onClick={() => onSelect?.(vehicle.name)}
+          className="relative overflow-hidden mt-auto w-full py-5 rounded-[20px] bg-slate-900 dark:bg-primary text-white font-black text-xs uppercase tracking-[0.3em] shadow-2xl transition-all transform hover:scale-[1.02] active:scale-95 group-hover:bg-primary group-hover:text-white"
+        >
           <span className="relative z-10">{t.book}</span>
           <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
         </button>
@@ -113,7 +183,11 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible }) =>
   );
 };
 
-const Fleet: React.FC = () => {
+interface FleetProps {
+  onSelectVehicle?: (vehicleName: string) => void;
+}
+
+const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
@@ -140,7 +214,7 @@ const Fleet: React.FC = () => {
       model: 'Mitsubishi Outlander',
       sub: 'Exceptional space and a commanding view of the road. Perfect for families seeking a safe, versatile, and high-end journey.',
       seats: 4, bags: 4,
-      img: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=85&w=1600&auto=format&fit=crop',
+      img: ['/images/vehicles/mitsubishi-outlander.png', '/images/vehicles/mitsubishi-outlander-2.png'],
       tag: 'Spacious Comfort'
     },
     {
@@ -156,7 +230,7 @@ const Fleet: React.FC = () => {
       model: 'Mercedes-Benz S-Class',
       sub: 'A benchmark in premium travel. Impeccable attention to detail and a smooth-as-glass ride for the most discerning travelers.',
       seats: 3, bags: 2,
-      img: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?q=85&w=1600&auto=format&fit=crop',
+      img: '/images/vehicles/mercedes-s-class.png',
       tag: 'Iconic Excellence'
     },
     {
@@ -164,7 +238,7 @@ const Fleet: React.FC = () => {
       model: 'Mercedes-Benz V-Class',
       sub: 'A masterpiece of versatility and luxury. Perfectly configured for small groups or executive board meetings on the move.',
       seats: 7, bags: 6,
-      img: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=85&w=1600&auto=format&fit=crop',
+      img: '/images/vehicles/mercedes-v-class.jpg',
       tag: '7-Seater Luxury'
     },
     {
@@ -196,8 +270,8 @@ const Fleet: React.FC = () => {
               Our curated collection features a hand-picked selection of prestigious vehicles, ensuring every mile is traveled in absolute refinement and cinematic comfort.
             </p>
           </div>
-          
-          <button 
+
+          <button
             onClick={() => setShowAll(!showAll)}
             className="group flex items-center gap-6 px-10 py-5 rounded-[24px] border border-primary/30 text-primary font-black uppercase tracking-[0.3em] text-[11px] hover:bg-primary hover:text-white transition-all shadow-2xl shadow-primary/5 active:scale-95"
           >
@@ -210,8 +284,20 @@ const Fleet: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {displayedVehicles.map((v, i) => (
-            <FleetCard key={i} vehicle={v} index={i} isVisible={isVisible} />
+            <FleetCard key={i} vehicle={v} index={i} isVisible={isVisible} onSelect={onSelectVehicle} />
           ))}
+        </div>
+
+        <div className="mt-16 flex justify-center">
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="group flex items-center gap-6 px-10 py-5 rounded-[24px] border border-primary/30 text-primary font-black uppercase tracking-[0.3em] text-[11px] hover:bg-primary hover:text-white transition-all shadow-2xl shadow-primary/5 active:scale-95"
+          >
+            {showAll ? 'Collapse' : 'View Full Fleet'}
+            <span className={`material-symbols-outlined transition-transform duration-500 ${showAll ? 'rotate-180' : 'group-hover:translate-x-2'}`}>
+              {showAll ? 'expand_less' : 'arrow_forward'}
+            </span>
+          </button>
         </div>
       </div>
       

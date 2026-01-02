@@ -16,7 +16,7 @@ const CTA: React.FC<CTAProps> = ({ onBookClick }) => {
       sub: 'We provide more than just a ride. Our refined travel options are tailored to the discerning schedules of private individuals and specialized event logistics.',
       button: 'Book Your Experience',
       s1_title: 'Airport Transfers', s1_desc: 'Fixed-rate transfers to all major UK airports with meet & greet service as standard for families and private travelers.',
-      s2_title: 'Intercity Chauffeur', s2_desc: 'Door-to-door nationwide transfers with professional drivers and long experience. Travel in the comfort of our elite fleet.',
+      s2_title: 'Intercity Chauffeur', s2_desc: 'Door-to-door transfers with professional drivers and long experience. Travel in the comfort of our elite fleet.',
       s3_title: 'Special Events', s3_desc: 'Coordinated transport for private gatherings, weddings, and exclusive personal events.',
       stat1_val: '25+', stat1_lbl: 'UK Airports',
       stat2_val: '100%', stat2_lbl: 'Flight Tracking',

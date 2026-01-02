@@ -11,13 +11,13 @@ type DirectionsResponse = {
   }>;
 };
 
-function estimateFromText(pickup: string, dropoff: string) {
-  const seed = pickup.length + dropoff.length;
-  const miles = Math.floor(seed * 1.8 + 20);
+function estimateFromText(pickup: string, dropoff: string, stops: string[] = []) {
+  const stopsCount = stops.length;
+  const seed = pickup.length + dropoff.length + stops.join('').length;
+  const miles = Math.floor(seed * 1.8 + 20 + (stopsCount * 5));
   const speedAverage = 55;
-  const hours = Math.floor(miles / speedAverage);
-  const mins = Math.floor(((miles % speedAverage) / speedAverage) * 60);
-  const durationSeconds = hours * 3600 + mins * 60;
+  const totalMins = Math.floor((miles / speedAverage) * 60) + (stopsCount * 15);
+  const durationSeconds = totalMins * 60;
 
   return { miles, durationSeconds };
 }
@@ -33,6 +33,8 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const pickup = (searchParams.get('pickup') || '').trim();
   const dropoff = (searchParams.get('dropoff') || '').trim();
+  const stopsRaw = searchParams.get('stops');
+  const stops = stopsRaw ? stopsRaw.split('|').filter(Boolean) : [];
 
   if (!pickup || !dropoff) {
     return NextResponse.json(
@@ -51,7 +53,7 @@ export async function GET(req: Request) {
 
   // Fallback estimate if no Google key is configured.
   if (!key) {
-    const est = estimateFromText(pickup, dropoff);
+    const est = estimateFromText(pickup, dropoff, stops);
     return NextResponse.json(
       {
         distanceMiles: est.miles,
@@ -68,6 +70,9 @@ export async function GET(req: Request) {
     const url = new URL('https://maps.googleapis.com/maps/api/directions/json');
     url.searchParams.set('origin', pickup);
     url.searchParams.set('destination', dropoff);
+    if (stops.length > 0) {
+      url.searchParams.set('waypoints', stops.join('|'));
+    }
     url.searchParams.set('mode', 'driving');
     url.searchParams.set('units', 'imperial');
     url.searchParams.set('key', key);
@@ -76,27 +81,33 @@ export async function GET(req: Request) {
     if (!resp.ok) throw new Error('directions_fetch_failed');
 
     const data = (await resp.json()) as DirectionsResponse;
-    const leg = data?.routes?.[0]?.legs?.[0];
+    
+    // When using waypoints, we should sum up all legs
+    const legs = data?.routes?.[0]?.legs || [];
+    let totalMeters = 0;
+    let totalSeconds = 0;
 
-    const meters: number | undefined = typeof leg?.distance?.value === 'number' ? leg.distance.value : undefined;
-    const seconds: number | undefined = typeof leg?.duration?.value === 'number' ? leg.duration.value : undefined;
+    for (const leg of legs) {
+      totalMeters += leg.distance?.value || 0;
+      totalSeconds += leg.duration?.value || 0;
+    }
 
-    if (!meters || !seconds) throw new Error('directions_parse_failed');
+    if (totalMeters === 0 || totalSeconds === 0) throw new Error('directions_parse_failed');
 
-    const miles = Math.round(meters / 1609.344);
+    const miles = Math.round(totalMeters / 1609.344);
 
     return NextResponse.json(
       {
         distanceMiles: miles,
-        durationSeconds: seconds,
-        durationText: durationTextFromSeconds(seconds),
-        arrivalEpochMs: Date.now() + seconds * 1000,
+        durationSeconds: totalSeconds,
+        durationText: durationTextFromSeconds(totalSeconds),
+        arrivalEpochMs: Date.now() + totalSeconds * 1000,
         source: 'google',
       },
       { status: 200 },
     );
   } catch {
-    const est = estimateFromText(pickup, dropoff);
+    const est = estimateFromText(pickup, dropoff, stops);
     return NextResponse.json(
       {
         distanceMiles: est.miles,

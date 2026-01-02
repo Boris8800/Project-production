@@ -2,6 +2,11 @@
 # Project - All-in-one scripts bundle
 # This file contains the full logic for deployment/ops tasks.
 # All functionality is accessed via `bash scripts/all.sh <command>`.
+#
+# NOTE: You may notice repeated/duplicate function names when grepping this file.
+# That's expected: this launcher embeds multiple standalone scripts via heredocs
+# (written to a temp file and executed). Each embedded script defines its own
+# helper functions (e.g., print/die/require_root) in its own shell scope.
 
 set -euo pipefail
 
@@ -22,7 +27,7 @@ Commands:
   setup-ssl            SSL bootstrap/renew
   update-and-deploy    Git update + deploy
   vps-deploy-fresh     Fresh Ubuntu VPS deploy
-  setup-frontend-host  Install/build/run frontend on host
+  setup-frontend-host  (legacy) Install/build/run frontend on host
 EOF
 }
 
@@ -204,14 +209,8 @@ cmd_stack_health() {
   prod exec -T backend-api sh -lc 'wget -q -O- http://localhost:4000/v1/health || curl -fsS http://localhost:4000/v1/health' || true
 
   print
-  print "== frontend (host) =="
-  if command -v curl >/dev/null 2>&1; then
-    curl -fsS http://localhost:3000/ || true
-  elif command -v wget >/dev/null 2>&1; then
-    wget -q -O- http://localhost:3000/ || true
-  else
-    print "curl/wget not installed"
-  fi
+  print "== frontend (container) =="
+  prod exec -T frontend sh -lc 'node -e "const http=require(\"http\");const req=http.request({host:\"127.0.0.1\",port:3000,path:\"/\",timeout:5000},(res)=>{res.resume();process.exit(res.statusCode?0:1);});req.on(\"error\",()=>process.exit(1));req.on(\"timeout\",()=>{req.destroy();process.exit(1);});req.end();"' || true
 }
 
 cmd_stack_troubleshoot() {
@@ -267,6 +266,65 @@ cmd_stack_troubleshoot() {
 
   print "== quick health =="
   cmd_stack_health || true
+}
+
+cmd_enable_https() {
+  require_root
+  require_docker_compose
+  ensure_env_file
+  load_env_if_present
+
+  print "== Enable HTTPS (auto) =="
+  print "- Stops IP-only stack (if running)"
+  print "- Starts production stack (includes port 443)"
+  print "- Runs SSL setup (Let's Encrypt / dummy based on DNS)"
+  print
+
+  if [ -f ./docker-compose.yml ]; then
+    print "[info] stopping IP-only stack (docker-compose.yml --profile ip) ..."
+    # Prefer stop/rm to avoid network removal errors when a container is stuck.
+    docker compose -f docker-compose.yml --profile ip stop || true
+    docker compose -f docker-compose.yml --profile ip rm -f || true
+
+    # Fallback: force-remove known IP-mode container names.
+    # (These names are set via container_name in docker-compose.yml.)
+    docker rm -f \
+      Project-nginx-ip \
+      Project-backend-dev \
+      Project-postgres-dev \
+      Project-redis-dev \
+      >/dev/null 2>&1 || true
+  fi
+
+  print "[info] starting production stack (${COMPOSE_PROD_FILE}) ..."
+  prod up -d --build --remove-orphans
+
+  print
+  local dns_ready=false
+  if prompt_yes_no "Is DNS pointing to this server (A records ready)?" false; then
+    dns_ready=true
+  fi
+  local skip_le=false
+  if [ "${dns_ready}" != "true" ]; then
+    skip_le=true
+  fi
+
+  print
+  print "[info] running SSL setup..."
+  SKIP_LETSENCRYPT="${skip_le}" bash scripts/all.sh setup-ssl
+
+  print
+  print "[info] verifying ports (80/443) ..."
+  if command -v ss >/dev/null 2>&1; then
+    ss -ltnp | awk 'NR==1 || $4 ~ /:80$|:443$/' || true
+  elif command -v netstat >/dev/null 2>&1; then
+    netstat -lntp 2>/dev/null | awk 'NR==1 || $4 ~ /:80$|:443$/' || true
+  else
+    print "ss/netstat not available"
+  fi
+
+  print
+  print "[info] done. If HTTPS still fails, check provider firewall + nginx logs."
 }
 
 cmd_full_check() {
@@ -1416,6 +1474,13 @@ run_first_time_wizard() {
   print
   print "Health check..."
   cmd_stack_health || true
+
+  if [ "${dns_ready}" = "true" ]; then
+    print
+    if prompt_yes_no "Run SSL setup now (Let's Encrypt)?" true; then
+      SKIP_LETSENCRYPT=false bash scripts/all.sh setup-ssl
+    fi
+  fi
   pause
 }
 
@@ -1428,7 +1493,8 @@ run_ssl_menu() {
     print "1) Setup/renew SSL (auto: ask about DNS)"
     print "2) Setup SSL (skip Let's Encrypt / dummy certs)"
     print "3) Setup SSL (request real Let's Encrypt certs)"
-    print "4) Back"
+    print "4) Fix HTTPS automatically (switch from IP-only -> production + SSL)"
+    print "5) Back"
     print
 
     local choice
@@ -1454,7 +1520,11 @@ run_ssl_menu() {
         SKIP_LETSENCRYPT=false bash scripts/all.sh setup-ssl
         pause
         ;;
-      4) break ;;
+      4)
+        cmd_enable_https
+        pause
+        ;;
+      5) break ;;
       *) print "Invalid option" ;;
     esac
   done
@@ -1718,7 +1788,7 @@ run_pro_menu() {
     print " 5) Docker: Prune unused images/volumes (Clean Disk)"
     print " 6) Docker: Force rebuild (no-cache)"
     print " 7) Database: Reset/Wipe (DANGER!)"
-    print " 8) Frontend: Update host-mode frontend"
+    print " 8) Frontend: Rebuild frontend container"
     print " 9) System: View journalctl logs"
     print "10) System: Check open ports (netstat)"
     print " 0) Back to Main Menu"
@@ -1768,7 +1838,7 @@ run_pro_menu() {
         pause
         ;;
       8)
-        bash scripts/all.sh setup-frontend-host
+        prod up -d --build frontend
         pause
         ;;
       9)
@@ -1871,6 +1941,7 @@ main() {
     stop) cmd_stack_stop ;;
     restart) cmd_stack_restart ;;
     troubleshoot) cmd_stack_troubleshoot ;;
+    enable-https|fix-https) cmd_enable_https ;;
     backup) cmd_backup_database ;;
     restore) cmd_restore_database "$@" ;;
     update-system) cmd_update_system_packages ;;
@@ -2599,17 +2670,9 @@ main() {
     set +a
 
   if [ "${SETUP_FRONTEND_HOST:-true}" = "true" ]; then
-    if [ "$(id -u)" -eq 0 ]; then
-      step "Building and restarting host frontend (Next.js)"
-      repo_root="$(pwd -P)"
-      service_user="${SERVICE_USER:-${SUDO_USER:-$(stat -c '%U' "${repo_root}" 2>/dev/null || echo root)}}"
-      SERVICE_USER="${service_user}" REPO_ROOT="${repo_root}" ENV_FILE="${repo_root}/.env.production" bash scripts/all.sh setup-frontend-host
-    else
-      print "[deploy] Not running as root; skipping host-frontend rebuild."
-      print "[deploy] To update frontend: sudo SERVICE_USER=\"${USER}\" ENV_FILE=\"$(pwd -P)/.env.production\" bash scripts/all.sh setup-frontend-host"
-    fi
+    print "[deploy] Frontend is built and run via Docker Compose (service: frontend)"
   else
-    print "[deploy] SETUP_FRONTEND_HOST!=true: skipping host-frontend rebuild"
+    print "[deploy] SETUP_FRONTEND_HOST!=true: skipping legacy host-frontend setup"
   fi
 
   step "Starting database and redis"
@@ -4205,10 +4268,6 @@ run_clean_install() {
     # Run app-level steps (docker compose + SSL bootstrap) as the deploy user.
     # We skip repo sync here because we just cloned.
     sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; APP_ONLY=true AUTO_GENERATE_SECRETS=true SYNC_REPO=false bash scripts/all.sh deploy"
-
-    print "[fresh] Building/restarting host frontend (Next.js)"
-    cd "${INSTALL_DIR}"
-    SERVICE_USER="${DEPLOY_USER}" REPO_ROOT="${INSTALL_DIR}" ENV_FILE="${INSTALL_DIR}/.env.production" bash scripts/all.sh setup-frontend-host
     
     # Show summary for domain mode
     show_deployment_summary "domain"
@@ -4239,10 +4298,6 @@ run_update_only() {
     show_deployment_summary "ip"
   else
     sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; AUTO_GENERATE_SECRETS=true bash scripts/all.sh deploy"
-
-    print "[fresh] Building/restarting host frontend (Next.js)"
-    cd "${INSTALL_DIR}"
-    SERVICE_USER="${DEPLOY_USER}" REPO_ROOT="${INSTALL_DIR}" ENV_FILE="${INSTALL_DIR}/.env.production" bash scripts/all.sh setup-frontend-host
     
     # Show summary for domain mode
     show_deployment_summary "domain"
@@ -4320,14 +4375,9 @@ run_ssl_setup() {
   
   print "[fresh] Stopping IP-mode services..."
   docker compose -f docker-compose.yml down >/dev/null 2>&1 || true
-  systemctl stop project-frontend >/dev/null 2>&1 || true
   
   print "[fresh] Deploying in domain mode with SSL..."
   sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; APP_ONLY=true AUTO_GENERATE_SECRETS=true SKIP_LETSENCRYPT=false bash scripts/all.sh deploy"
-
-  print "[fresh] Building/restarting host frontend (Next.js)"
-  cd "${INSTALL_DIR}"
-  SERVICE_USER="${DEPLOY_USER}" REPO_ROOT="${INSTALL_DIR}" ENV_FILE="${INSTALL_DIR}/.env.production" bash scripts/all.sh setup-frontend-host
   
   print
   print "[fresh] Domain & SSL setup complete!"

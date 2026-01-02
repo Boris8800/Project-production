@@ -24,6 +24,8 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
   const [persons, setPersons] = useState(1);
   const [luggage, setLuggage] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  const [heroCardIndex, setHeroCardIndex] = useState(0);
   
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
@@ -41,7 +43,7 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
   const translations = {
     [Language.EN]: {
       headline: "Across Britain In Refinement",
-      sub: "Executive intercity travel throughout the UK. Experience superior service without compromise.",
+      sub: "Premium intercity travel throughout the UK. Experience superior service without the compromise.",
       pickupPl: "Collection Address",
       dropoffPl: "Destination Address",
       dateLabel: "Date",
@@ -91,6 +93,19 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
 
   const t = translations[language];
 
+  const heroCardsEn = [
+    {
+      headlineLines: ['Across Britain', 'In Refinement'],
+      emphasisLineIndex: 1,
+      sub: 'Premium intercity travel throughout the UK. Experience superior service without the compromise.',
+    },
+    {
+      headlineLines: ['Journey Beyond', 'City Limits', 'In Assured Comfort.'],
+      emphasisLineIndex: 2,
+      sub: 'Dedicated service for long-distance travel and seamless airport transfers. No surge, just certainty.',
+    },
+  ] as const;
+
   useEffect(() => {
     if (prefill) {
       setPickup(prefill.pickup);
@@ -99,6 +114,15 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
     const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
   }, [prefill]);
+
+  useEffect(() => {
+    if (language !== Language.EN) return;
+    setHeroCardIndex(0);
+    const intervalId = setInterval(() => {
+      setHeroCardIndex((prev) => (prev + 1) % heroCardsEn.length);
+    }, 10_000);
+    return () => clearInterval(intervalId);
+  }, [language]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const { clientX, clientY } = e;
@@ -161,14 +185,52 @@ const Hero: React.FC<HeroProps> = ({ activeCategory, setActiveCategory, onEstima
             <span className="text-[10px] md:text-[11px] font-black text-primary tracking-[0.3em] md:tracking-[0.4em] uppercase">Private & Executive</span>
           </div>
           
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[90px] font-black text-white mb-6 md:mb-8 leading-[1] md:leading-[0.85] tracking-tighter">
-            {t.headline.split(' ').slice(0, 2).join(' ')}<br/>
-            <span className="text-primary italic font-display">{t.headline.split(' ').slice(2).join(' ')}</span>
-          </h1>
-          
-          <p className="text-slate-300 text-lg md:text-xl lg:text-2xl max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium px-4 md:px-0">
-            {t.sub}
-          </p>
+          {language === Language.EN ? (
+              <div className="w-full max-w-[690px] mx-auto lg:mx-0 rounded-[40px] border border-white/10 bg-transparent p-8 md:p-10 transform lg:scale-x-[0.9] lg:scale-y-[1.15] lg:origin-left">
+              <div className="relative min-h-[255px] md:min-h-[300px]">
+                {heroCardsEn.map((card, idx) => {
+                  const isActive = idx === heroCardIndex;
+                  return (
+                    <div
+                      key={card.headlineLines.join('|')}
+                      className={`${isActive ? 'relative' : 'absolute inset-0'} transition-all duration-700 ease-out ${
+                        isActive
+                          ? 'opacity-100 translate-x-0'
+                          : 'opacity-0 translate-x-6 pointer-events-none'
+                      }`}
+                    >
+                      <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[72px] font-black text-white mb-5 leading-[0.95] tracking-tighter">
+                        {card.headlineLines.map((line, lineIndex) => (
+                          <React.Fragment key={line}>
+                            {lineIndex > 0 ? <br /> : null}
+                            {lineIndex === card.emphasisLineIndex ? (
+                              <span className="text-primary italic font-display">{line}</span>
+                            ) : (
+                              line
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </h1>
+                      <p className="text-slate-300 text-lg md:text-xl leading-relaxed font-medium">
+                        {card.sub}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[90px] font-black text-white mb-6 md:mb-8 leading-[1] md:leading-[0.85] tracking-tighter">
+                {t.headline.split(' ').slice(0, 2).join(' ')}
+                <br />
+                <span className="text-primary italic font-display">{t.headline.split(' ').slice(2).join(' ')}</span>
+              </h1>
+              <p className="text-slate-300 text-lg md:text-xl lg:text-2xl max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium px-4 md:px-0">
+                {t.sub}
+              </p>
+            </>
+          )}
         </div>
 
         <div className={`w-full max-w-[620px] transition-all duration-1000 delay-500 transform ${isVisible ? 'translate-x-0 opacity-100' : 'translate-y-10 opacity-0'}`}>

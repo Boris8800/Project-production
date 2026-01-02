@@ -211,6 +211,15 @@ const RideCompleted: React.FC<RideCompletedProps> = ({ rideData, selectedVehicle
               <p className="text-[10px] font-black text-text-muted dark:text-slate-200 uppercase tracking-widest mb-1">{t.pickupLabel}</p>
               <p className="text-sm font-bold truncate text-slate-900 dark:text-white">{rideData.pickup}</p>
             </div>
+
+            {rideData.stops?.map((stop, idx) => (
+              <div key={idx} className="relative">
+                <span className="absolute -left-[1.625rem] top-1/2 -translate-y-1/2 size-4 bg-slate-400 rounded-full ring-8 ring-slate-400/10"></span>
+                <p className="text-[10px] font-black text-text-muted dark:text-slate-200 uppercase tracking-widest mb-1">Stop {idx + 1}</p>
+                <p className="text-sm font-bold truncate text-slate-900 dark:text-white">{stop}</p>
+              </div>
+            ))}
+
             <div className="relative">
               <span className="absolute -left-[1.625rem] top-1/2 -translate-y-1/2 size-4 bg-blue-500 rounded-full ring-8 ring-blue-500/10"></span>
               <p className="text-[10px] font-black text-text-muted dark:text-slate-200 uppercase tracking-widest mb-1">{t.destLabel}</p>

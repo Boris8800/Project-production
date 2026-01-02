@@ -7,10 +7,14 @@ Production-ready monorepo scaffold for:
 - **api.yourdomain.com** (NestJS API)
 
 ## What’s in this repo (initial scaffold)
-- Docker Compose (production) for Nginx + API + Postgres + Redis (frontend runs on the host in production)
+- Docker Compose (production) for Nginx + Frontend (Next.js) + API + Postgres + Redis
 - Nginx reverse proxy layout (per-subdomain configs)
 - Env templates for production/development
 - Scripts directory (deploy/SSL/backup to be filled next)
+
+## About the two frontends
+- `frontend/` is the **main** website (Next.js) served on port **3000** and proxied by Nginx for `yourdomain.com`, `admin.yourdomain.com`, and `driver.yourdomain.com`.
+- `transfer-line-travel/` is a **separate Vite prototype** (development/experiments) and is **not** wired into the production Nginx/Docker routing.
 
 ## Next steps (you will run on the VPS)
 1. Point DNS A records to **5.249.164.40** for: `@`, `www`, `api`, `driver`, `admin`.

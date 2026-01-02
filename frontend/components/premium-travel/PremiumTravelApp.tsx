@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { BookingCategory, RideData, SelectedVehicle } from './types';
+import { RideData, SelectedVehicle } from './types';
 import Header from './Header';
 import Hero from './Hero';
 import Features from './Features';
@@ -13,7 +13,6 @@ import RideCompleted from './RideCompleted';
 import VehicleSelection from './VehicleSelection';
 
 const PremiumTravelApp: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState<BookingCategory>(BookingCategory.INTERCITY);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentView, setCurrentView] = useState<'home' | 'selection' | 'completed'>('home');
   const [rideData, setRideData] = useState<RideData | null>(null);
@@ -42,11 +41,6 @@ const PremiumTravelApp: React.FC = () => {
     setCurrentView('completed');
   };
 
-  const handleCategoryChange = (cat: BookingCategory) => {
-    setActiveCategory(cat);
-    handleHome();
-  };
-
   if (currentView === 'selection' && rideData) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -54,7 +48,6 @@ const PremiumTravelApp: React.FC = () => {
           toggleDarkMode={toggleDarkMode} 
           isDarkMode={isDarkMode} 
           onHomeClick={handleHome}
-          onCategoryChange={handleCategoryChange}
         />
         <main className="flex-grow bg-background-light dark:bg-background-dark">
           <VehicleSelection 
@@ -85,16 +78,26 @@ const PremiumTravelApp: React.FC = () => {
         toggleDarkMode={toggleDarkMode} 
         isDarkMode={isDarkMode} 
         onHomeClick={handleHome}
-        onCategoryChange={handleCategoryChange}
       />
       <main className="flex-grow">
-        <Hero activeCategory={activeCategory} setActiveCategory={setActiveCategory} onEstimate={handleEstimate} />
+        <Hero onEstimate={handleEstimate} />
         <Features />
-        <Fleet />
+        <Fleet onSelectVehicle={(vehicleName) => {
+          // When a vehicle from Fleet is selected, store it and show search form
+          setRideData({ 
+            pickup: '', 
+            dropoff: '', 
+            distance: 0, 
+            duration: 0,
+            selectedVehicleClass: vehicleName 
+          });
+          setCurrentView('selection');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }} />
         <Routes />
         <CTA onBookClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
       </main>
-      <Footer onHomeClick={handleHome} onCategoryChange={handleCategoryChange} />
+      <Footer onHomeClick={handleHome} />
     </div>
   );
 };

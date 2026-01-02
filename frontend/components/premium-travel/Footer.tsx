@@ -3,15 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import BrandLogo from './BrandLogo';
-import { BookingCategory } from './types';
 import { useLanguage, Language } from '../../lib/language';
 
 interface FooterProps {
   onHomeClick?: () => void;
-  onCategoryChange?: (cat: BookingCategory) => void;
 }
 
-const Footer: React.FC<FooterProps> = ({ onHomeClick, onCategoryChange }) => {
+const Footer: React.FC<FooterProps> = ({ onHomeClick }) => {
   const { language } = useLanguage();
 
   const translations = {
@@ -75,14 +73,6 @@ const Footer: React.FC<FooterProps> = ({ onHomeClick, onCategoryChange }) => {
               <li><Link href="/about" className="hover:text-primary transition-colors text-left">{t.about}</Link></li>
               <li><button className="hover:text-primary transition-colors text-left">{t.careers}</button></li>
               <li><Link href="/press" className="hover:text-primary transition-colors text-left">{t.press}</Link></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="text-white font-bold mb-6">{t.services}</h4>
-            <ul className="space-y-4 text-sm text-slate-300">
-              <li><button onClick={() => onCategoryChange?.(BookingCategory.INTERCITY)} className="hover:text-primary transition-colors text-left">{t.intercity}</button></li>
-              <li><button onClick={() => onCategoryChange?.(BookingCategory.AIRPORT)} className="hover:text-primary transition-colors text-left">{t.airport}</button></li>
             </ul>
           </div>
           

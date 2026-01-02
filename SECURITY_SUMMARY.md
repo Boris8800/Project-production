@@ -19,10 +19,7 @@
 ✓ Tracking Window:          15 minutes
 ✓ Auto-Clear on Success:    Enabled
 ✓ Storage Backend:          Redis
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-### 3. Security Flow
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ```
 ┌─────────────────────────────────────────────────────┐

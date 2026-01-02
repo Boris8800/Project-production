@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: 'standalone', // Disabled for host deployment (systemd)
+  output: 'standalone',
   reactStrictMode: true,
   poweredByHeader: false,
   images: {
