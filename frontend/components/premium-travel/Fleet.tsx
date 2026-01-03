@@ -238,7 +238,8 @@ const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
       model: 'Mercedes-Benz V-Class',
       sub: 'A masterpiece of versatility and luxury. Perfectly configured for small groups or executive board meetings on the move.',
       seats: 7, bags: 6,
-      img: '/images/vehicles/mercedes-v-class.jpg',
+      // Now uses two frames so the card will animate (similar to Mitsubishi Outlander)
+      img: ['/images/vehicles/mercedes-v-class/uhn.png', '/images/vehicles/mercedes-v-class/uhn2.png'],
       tag: '7-Seater Luxury'
     },
     {
