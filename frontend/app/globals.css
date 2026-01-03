@@ -37,10 +37,84 @@
   will-change: transform;
 }
 
+@keyframes tl-attention-pulse {
+  0% {
+    transform: translateZ(0) scale(1);
+  }
+  4% {
+    transform: translateZ(0) scale(1.02);
+  }
+  8% {
+    transform: translateZ(0) scale(1);
+  }
+  100% {
+    transform: translateZ(0) scale(1);
+  }
+}
+
+.tl-attention-5s {
+  animation: tl-attention-pulse 5s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes tl-shine-sweep {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  15% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+.tl-shine-6s {
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.tl-shine-6s > * {
+  position: relative;
+  z-index: 1;
+}
+
+.tl-shine-6s::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.38),
+    transparent
+  );
+  transform: translateX(-120%);
+  animation: tl-shine-sweep 6s ease-in-out infinite;
+  will-change: transform, opacity;
+  pointer-events: none;
+  z-index: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-bg-animate {
     animation: none;
     transform: scale(1.05);
+  }
+
+  .tl-attention-5s {
+    animation: none;
+  }
+
+  .tl-shine-6s::before {
+    animation: none;
   }
 }
 

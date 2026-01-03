@@ -7,9 +7,10 @@ import { useLanguage, Language } from '../../lib/language';
 
 interface HeroProps {
   onEstimate?: (data: RideData) => void;
+  selectedVehicleClass?: string;
 }
 
-const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
+const Hero: React.FC<HeroProps> = ({ onEstimate, selectedVehicleClass }) => {
   const { language } = useLanguage();
 
   const leadTimeMs = 5 * 60 * 60 * 1000;
@@ -183,7 +184,8 @@ const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
       date, 
       time, 
       persons, 
-      luggage 
+      luggage,
+      ...(selectedVehicleClass ? { selectedVehicleClass } : {}),
     };
     await new Promise(resolve => setTimeout(resolve, 800));
     setLoading(false);
@@ -301,7 +303,7 @@ const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
       dropoffPl: 'Destination Address',
       passengers: 'Passengers',
       bags: 'Bags',
-      quote: 'Generate Instant Quote',
+      quote: 'Get a Quote',
       fixedPricing: 'Fixed pricing. No hidden fees. Guaranteed.',
     },
     [Language.ES]: {
@@ -453,8 +455,8 @@ const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
           </div>
         </div>
 
-        <div className="w-full max-w-[520px] bg-white dark:bg-surface-dark/95 backdrop-blur-2xl rounded-[32px] shadow-2xl p-6 lg:p-11 border border-gray-200 dark:border-white/10 transform transition-all">
-          <div className="space-y-6">
+        <div id="booking-form" className="w-full max-w-[480px] bg-white dark:bg-surface-dark/95 backdrop-blur-2xl rounded-[28px] shadow-2xl p-5 lg:p-8 border border-gray-200 dark:border-white/10 transform transition-all">
+          <div className="space-y-5">
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-200">Booking Details</h3>
               {stops.length < 2 && (
@@ -468,7 +470,7 @@ const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
               )}
             </div>
 
-            <div className="space-y-6 relative">
+            <div className="space-y-5 relative">
               {/* Vertical connector line */}
               <div className="absolute left-[31px] top-10 bottom-10 w-0.5 bg-slate-200 dark:bg-white/10 z-0" />
 
@@ -479,7 +481,7 @@ const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
                   value={pickup} 
                   onChange={(e) => setPickup(e.target.value)} 
                   ref={pickupInputRef}
-                  className={`w-full pl-16 pr-8 py-5 rounded-[22px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-base'}`}
+                  className={`w-full pl-14 pr-7 py-4 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-base'}`}
                   placeholder={t.pickupPl} 
                   autoComplete="off"
                 />
@@ -497,7 +499,7 @@ const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
                       setStops(newStops);
                     }} 
                     ref={el => { stopInputRefs.current[index] = el; }}
-                    className={`w-full pl-16 pr-14 py-5 rounded-[22px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-base'}`}
+                    className={`w-full pl-14 pr-12 py-4 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-base'}`}
                     placeholder={`${t.stopPl} ${index + 1}`} 
                     autoComplete="off"
                   />
@@ -517,14 +519,14 @@ const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
                   value={dropoff} 
                   onChange={(e) => setDropoff(e.target.value)} 
                   ref={dropoffInputRef}
-                  className={`w-full pl-16 pr-8 py-5 rounded-[22px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-base'}`}
+                  className={`w-full pl-14 pr-7 py-4 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 font-bold transition-all outline-none text-slate-900 dark:text-white ${language === Language.DE ? 'text-sm' : 'text-base'}`}
                   placeholder={t.dropoffPl} 
                   autoComplete="off"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 {/* Date Selection */}
                 <div className="relative group">
                   <span className="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary text-xl">calendar_month</span>
@@ -535,7 +537,7 @@ const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
                     min={mounted ? minAllowedDate : undefined}
                     ref={dateInputRef}
                     onClick={openNativeDatePicker}
-                    className="w-full pl-14 pr-4 py-5 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-sm font-bold transition-all outline-none text-slate-900 dark:text-white" 
+                    className="w-full pl-14 pr-4 py-4 rounded-[18px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-sm font-bold transition-all outline-none text-slate-900 dark:text-white" 
                   />
                 </div>
 
@@ -549,12 +551,12 @@ const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
                     min={mounted ? minTimeForSelectedDate : undefined}
                     ref={timeInputRef}
                     onClick={openNativeTimePicker}
-                    className="w-full pl-14 pr-4 py-5 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-sm font-bold transition-all outline-none text-slate-900 dark:text-white"
+                    className="w-full pl-14 pr-4 py-4 rounded-[18px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-sm font-bold transition-all outline-none text-slate-900 dark:text-white"
                   />
                 </div>
                 
                 {/* Passengers Counter */}
-                <div className="flex items-center justify-between px-5 py-3 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent">
+                <div className="flex items-center justify-between px-4 py-3 rounded-[18px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent">
                   <div className="flex flex-col">
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-200">{t.passengers}</span>
                     <div className="flex items-center gap-1">
@@ -579,7 +581,7 @@ const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
                 </div>
 
                 {/* Bags Counter */}
-                <div className="flex items-center justify-between px-5 py-3 rounded-[20px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent">
+                <div className="flex items-center justify-between px-4 py-3 rounded-[18px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent">
                   <div className="flex flex-col">
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-200">{t.bags}</span>
                     <div className="flex items-center gap-1">
@@ -607,7 +609,7 @@ const Hero: React.FC<HeroProps> = ({ onEstimate }) => {
             <button 
               onClick={handleSearch} 
               disabled={loading || !canSubmit} 
-              className={`group relative w-full overflow-hidden p-6 bg-primary text-white font-black rounded-[22px] shadow-2xl shadow-primary/40 hover:bg-primary-dark transition-all transform active:scale-[0.98] disabled:opacity-50 ${language === Language.DE ? 'text-base' : 'text-lg'}`}
+              className={`tl-shine-6s group relative w-full overflow-hidden p-5 bg-primary text-white font-black rounded-[20px] shadow-2xl shadow-primary/40 hover:bg-primary-dark transition-all transform active:scale-[0.98] disabled:opacity-50 ${language === Language.DE ? 'text-base' : 'text-lg'} ${!loading && canSubmit ? 'tl-attention-5s' : ''}`}
             >
               <div className="relative z-10 flex items-center justify-center gap-4">
                 {loading ? (

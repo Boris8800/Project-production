@@ -79,7 +79,7 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSe
   };
 
   const translations = {
-    [Language.EN]: { seats: 'Seats', bags: 'Bags', book: 'Get Quote' },
+    [Language.EN]: { seats: 'Seats', bags: 'Bags', book: 'Get a Quote' },
     [Language.ES]: { seats: 'Asientos', bags: 'Maletas', book: 'Obtener Presupuesto' },
     [Language.FR]: { seats: 'Sièges', bags: 'Bagages', book: 'Obtenir un Devis' },
     [Language.DE]: { seats: 'Sitze', bags: 'Gepäck', book: 'Angebot Anfordern' },
@@ -150,30 +150,30 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSe
         )}
       </div>
 
-      <div className="p-9 flex flex-col flex-grow relative">
-        <div className="mb-5">
+      <div className="p-7 flex flex-col flex-grow relative">
+        <div className="mb-4">
           <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-2">{vehicle.name}</p>
-          <h3 className="text-3xl font-black text-slate-900 dark:text-white leading-tight font-display">{vehicle.model}</h3>
+          <h3 className="text-[26px] font-black text-slate-900 dark:text-white leading-tight font-display">{vehicle.model}</h3>
         </div>
         
-        <p className="text-sm text-text-muted dark:text-slate-200 mb-8 leading-relaxed font-medium">
+        <p className="text-[13px] text-text-muted dark:text-slate-200 mb-6 leading-relaxed font-medium">
           {vehicle.sub}
         </p>
         
-        <div className="flex gap-4 mb-10">
-          <div className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 group-hover:bg-primary/5 transition-colors">
-            <span className="material-symbols-outlined text-primary mb-2 text-2xl">airline_seat_recline_normal</span>
+        <div className="flex gap-4 mb-8">
+          <div className="flex-1 flex flex-col items-center justify-center p-3 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 group-hover:bg-primary/5 transition-colors">
+            <span className="material-symbols-outlined text-primary mb-1.5 text-2xl">airline_seat_recline_normal</span>
             <span className="text-[10px] font-black uppercase tracking-widest text-text-muted dark:text-slate-200">{t.seats}: {vehicle.seats}</span>
           </div>
-          <div className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 group-hover:bg-primary/5 transition-colors">
-            <span className="material-symbols-outlined text-primary mb-2 text-2xl">luggage</span>
+          <div className="flex-1 flex flex-col items-center justify-center p-3 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 group-hover:bg-primary/5 transition-colors">
+            <span className="material-symbols-outlined text-primary mb-1.5 text-2xl">luggage</span>
             <span className="text-[10px] font-black uppercase tracking-widest text-text-muted dark:text-slate-200">{t.bags}: {vehicle.bags}</span>
           </div>
         </div>
 
         <button 
           onClick={() => onSelect?.(vehicle.name)}
-          className="relative overflow-hidden mt-auto w-full py-5 rounded-[20px] bg-slate-900 dark:bg-primary text-white font-black text-xs uppercase tracking-[0.3em] shadow-2xl transition-all transform hover:scale-[1.02] active:scale-95 group-hover:bg-primary group-hover:text-white"
+          className="tl-shine-6s relative overflow-hidden mt-auto w-full py-4 rounded-[18px] bg-slate-900 dark:bg-primary text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-2xl transition-all transform hover:scale-[1.02] active:scale-95 group-hover:bg-primary group-hover:text-white"
         >
           <span className="relative z-10">{t.book}</span>
           <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -273,7 +273,7 @@ const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
 
           <button
             onClick={() => setShowAll(!showAll)}
-            className="group flex items-center gap-6 px-10 py-5 rounded-[24px] border border-primary/30 text-primary font-black uppercase tracking-[0.3em] text-[11px] hover:bg-primary hover:text-white transition-all shadow-2xl shadow-primary/5 active:scale-95"
+            className="tl-shine-6s group flex items-center gap-6 px-10 py-5 rounded-[24px] border border-primary/30 text-primary font-black uppercase tracking-[0.3em] text-[11px] hover:bg-primary hover:text-white transition-all shadow-2xl shadow-primary/5 active:scale-95"
           >
             {showAll ? 'Collapse' : 'View Full Fleet'}
             <span className={`material-symbols-outlined transition-transform duration-500 ${showAll ? 'rotate-180' : 'group-hover:translate-x-2'}`}>
@@ -291,7 +291,7 @@ const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
         <div className="mt-16 flex justify-center">
           <button
             onClick={() => setShowAll(!showAll)}
-            className="group flex items-center gap-6 px-10 py-5 rounded-[24px] border border-primary/30 text-primary font-black uppercase tracking-[0.3em] text-[11px] hover:bg-primary hover:text-white transition-all shadow-2xl shadow-primary/5 active:scale-95"
+            className="tl-shine-6s group flex items-center gap-6 px-10 py-5 rounded-[24px] border border-primary/30 text-primary font-black uppercase tracking-[0.3em] text-[11px] hover:bg-primary hover:text-white transition-all shadow-2xl shadow-primary/5 active:scale-95"
           >
             {showAll ? 'Collapse' : 'View Full Fleet'}
             <span className={`material-symbols-outlined transition-transform duration-500 ${showAll ? 'rotate-180' : 'group-hover:translate-x-2'}`}>

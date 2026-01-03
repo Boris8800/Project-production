@@ -17,6 +17,7 @@ const PremiumTravelApp: React.FC = () => {
   const [currentView, setCurrentView] = useState<'home' | 'selection' | 'completed'>('home');
   const [rideData, setRideData] = useState<RideData | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<SelectedVehicle | null>(null);
+  const [selectedVehicleClass, setSelectedVehicleClass] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (isDarkMode) document.documentElement.classList.add('dark');
@@ -80,22 +81,30 @@ const PremiumTravelApp: React.FC = () => {
         onHomeClick={handleHome}
       />
       <main className="flex-grow">
-        <Hero onEstimate={handleEstimate} />
+        <Hero onEstimate={handleEstimate} selectedVehicleClass={selectedVehicleClass} />
         <Features />
         <Fleet onSelectVehicle={(vehicleName) => {
-          // When a vehicle from Fleet is selected, store it and show search form
-          setRideData({ 
-            pickup: '', 
-            dropoff: '', 
-            distance: 0, 
-            duration: 0,
-            selectedVehicleClass: vehicleName 
+          // When a vehicle from Fleet is selected, jump back to the booking form at the top.
+          setSelectedVehicleClass(vehicleName);
+          setCurrentView('home');
+
+          // Scroll specifically to the booking form card.
+          requestAnimationFrame(() => {
+            const el = document.getElementById('booking-form');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            else window.scrollTo({ top: 0, behavior: 'smooth' });
           });
-          setCurrentView('selection');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
         }} />
         <Routes />
-        <CTA onBookClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
+        <CTA
+          onBookClick={() => {
+            requestAnimationFrame(() => {
+              const el = document.getElementById('booking-form');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              else window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+          }}
+        />
       </main>
       <Footer onHomeClick={handleHome} />
     </div>

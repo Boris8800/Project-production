@@ -259,9 +259,9 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
   }, [metrics.arrivalEpochMs]);
 
   return (
-    <div className="flex flex-col lg:flex-row h-[100svh] bg-white dark:bg-background-dark overflow-hidden">
+    <div className="flex flex-col lg:flex-row min-h-[100svh] lg:h-[100svh] bg-white dark:bg-background-dark overflow-y-auto lg:overflow-hidden">
       {/* Left: Vehicles + Trip Summary */}
-      <aside className="w-full lg:w-[560px] flex flex-col border-r border-gray-200 dark:border-white/5 bg-slate-50 dark:bg-surface-dark shadow-2xl z-20">
+      <aside className="w-full lg:w-[560px] flex flex-col lg:h-full border-r border-gray-200 dark:border-white/5 bg-slate-50 dark:bg-surface-dark shadow-2xl z-20 overflow-visible lg:overflow-y-auto">
         <div className="p-6 sm:p-10 border-b border-gray-200 dark:border-white/5">
           <button onClick={onBack} className="flex items-center gap-2 text-slate-500 hover:text-primary mb-8 text-[10px] font-black uppercase tracking-[0.3em] transition-all">
             <span className="material-symbols-outlined text-sm">arrow_back</span> {t.back}
@@ -326,7 +326,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
           </div>
         </div>
 
-        <div className="p-6 sm:p-10 overflow-y-auto flex-grow custom-scrollbar bg-slate-100 dark:bg-background-dark">
+        <div className="p-6 sm:p-10 custom-scrollbar bg-slate-100 dark:bg-background-dark">
           <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
             <div>
               <h2 className="text-3xl sm:text-4xl font-black tracking-tighter text-slate-900 dark:text-white">{t.chooseVehicle}</h2>
@@ -448,7 +448,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
       </aside>
 
       {/* Right: Big Google Map */}
-      <main className="flex-1 relative bg-slate-900">
+      <main className="relative bg-slate-900 h-[45svh] lg:h-auto lg:flex-1">
         <iframe
           title="Journey Route"
           src={mapUrl}
