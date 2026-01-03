@@ -4440,6 +4440,16 @@ run_ssl_setup() {
     Project-postgres-dev \
     Project-redis-dev \
     >/dev/null 2>&1 || true
+
+  # Let's Encrypt HTTP-01 needs inbound port 80 reachable from the internet.
+  # Domain mode runs deploy with APP_ONLY=true (skips firewall setup), so ensure
+  # UFW allows required ports here.
+  if command -v ufw >/dev/null 2>&1; then
+    ufw allow 80/tcp >/dev/null 2>&1 || true
+    ufw allow 443/tcp >/dev/null 2>&1 || true
+    ufw allow 1000/tcp >/dev/null 2>&1 || true
+    ufw reload >/dev/null 2>&1 || true
+  fi
   
   print "[fresh] Deploying in domain mode with SSL..."
   sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; APP_ONLY=true AUTO_GENERATE_SECRETS=true SKIP_LETSENCRYPT=false bash scripts/all.sh deploy"
