@@ -3092,13 +3092,10 @@ EMAIL="${LETSENCRYPT_EMAIL:-admin@yourdomain.com}"
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.production.yml}"
 SKIP_LETSENCRYPT="${SKIP_LETSENCRYPT:-false}"
 
-DOMAINS=(
-  "${DOMAIN_ROOT}"
-  "www.${DOMAIN_ROOT}"
-  "api.${DOMAIN_ROOT}"
-  "driver.${DOMAIN_ROOT}"
-  "admin.${DOMAIN_ROOT}"
-)
+# IMPORTANT: DOMAINS must be computed AFTER loading .env.production (if present).
+# This script may be invoked before env vars are exported, so default values
+# above may still be placeholders at this point.
+DOMAINS=()
 
 supports_color() {
   [ -t 1 ] || return 1
@@ -3154,6 +3151,18 @@ if [ -f ./.env.production ]; then
   . ./.env.production
   set +a
 fi
+
+# Re-apply defaults AFTER sourcing .env.production, then compute DOMAINS.
+DOMAIN_ROOT="${DOMAIN_ROOT:-${DOMAIN:-yourdomain.com}}"
+EMAIL="${LETSENCRYPT_EMAIL:-admin@${DOMAIN_ROOT}}"
+
+DOMAINS=(
+  "${DOMAIN_ROOT}"
+  "www.${DOMAIN_ROOT}"
+  "api.${DOMAIN_ROOT}"
+  "driver.${DOMAIN_ROOT}"
+  "admin.${DOMAIN_ROOT}"
+)
 
 if ! docker compose version >/dev/null 2>&1; then
   print "docker compose plugin not found; attempting to install" >&2
@@ -3326,6 +3335,7 @@ docker compose -f "${COMPOSE_FILE}" up -d --no-deps nginx-proxy
 
 # Quick HTTP-01 self-test: verify the challenge path is reachable over port 80.
 # If this fails, Certbot will also fail (typically provider firewall / UFW / iptables).
+WEBROOT_REACHABLE=true
 if command -v curl >/dev/null 2>&1; then
   test_token="project-acme-self-test-$(date +%s)"
   docker run --rm -v "${WWW_VOLUME}:/var/www/certbot" alpine:3.20 sh -eu -c '
@@ -3335,12 +3345,9 @@ if command -v curl >/dev/null 2>&1; then
   ' -- "${test_token}" >/dev/null 2>&1 || true
 
   if ! curl -fsS --connect-timeout 5 --max-time 8 "http://${DOMAIN_ROOT}/.well-known/acme-challenge/${test_token}" >/dev/null 2>&1; then
-    echo "[SSL] ERROR: HTTP-01 challenge URL is not reachable for ${DOMAIN_ROOT}." >&2
-    echo "[SSL] Fix required: open inbound TCP/80 and TCP/443 to this VPS (UFW + VPS provider firewall)." >&2
-    echo "[SSL] Helpful commands:" >&2
-    echo "[SSL]   ufw status verbose" >&2
-    echo "[SSL]   ss -ltnp | grep -E ':80|:443'" >&2
-    exit 1
+    WEBROOT_REACHABLE=false
+    echo "[SSL] WARNING: HTTP-01 challenge URL is not reachable for ${DOMAIN_ROOT}." >&2
+    echo "[SSL] Will try TLS-ALPN-01 on port 443 as a fallback." >&2
   fi
 fi
 
@@ -3355,19 +3362,24 @@ echo "[SSL] Requesting Let's Encrypt certificates"
 # Primary path: HTTP-01 via webroot (port 80)
 webroot_ok=true
 failed_domain=""
-for d in "${DOMAINS[@]}"; do
-  echo "  - ${d}"
-  if ! docker compose -f "${COMPOSE_FILE}" run --rm --entrypoint certbot certbot certonly \
-    --webroot -w /var/www/certbot \
-    --email "${EMAIL}" --agree-tos --no-eff-email \
-    -d "${d}" \
-    --rsa-key-size 4096 \
-    --force-renewal; then
-    webroot_ok=false
-    failed_domain="${d}"
-    break
-  fi
-done
+if [ "${WEBROOT_REACHABLE}" = "true" ]; then
+  for d in "${DOMAINS[@]}"; do
+    echo "  - ${d}"
+    if ! docker compose -f "${COMPOSE_FILE}" run --rm --entrypoint certbot certbot certonly \
+      --webroot -w /var/www/certbot \
+      --email "${EMAIL}" --agree-tos --no-eff-email \
+      -d "${d}" \
+      --rsa-key-size 4096 \
+      --force-renewal; then
+      webroot_ok=false
+      failed_domain="${d}"
+      break
+    fi
+  done
+else
+  webroot_ok=false
+  failed_domain="${DOMAIN_ROOT}"
+fi
 
 # Fallback path: TLS-ALPN-01 via standalone (port 443)
 # Useful when providers block inbound 80 but allow 443.
@@ -3377,6 +3389,11 @@ if [ "${webroot_ok}" != "true" ]; then
 
   # certbot standalone needs to bind to the host port 443, so use host networking.
   # Request one cert covering all domains.
+  d_args=()
+  for d in "${DOMAINS[@]}"; do
+    d_args+=( -d "${d}" )
+  done
+
   if ! docker run --rm --network host \
     -v "${LE_VOLUME}:/etc/letsencrypt" \
     -v "${WWW_VOLUME}:/var/www/certbot" \
@@ -3387,7 +3404,7 @@ if [ "${webroot_ok}" != "true" ]; then
       --email "${EMAIL}" --agree-tos --no-eff-email \
       --rsa-key-size 4096 \
       --force-renewal \
-      $(printf -- '-d %q ' "${DOMAINS[@]}"); then
+      "${d_args[@]}"; then
     echo "[SSL] ERROR: TLS-ALPN-01 also failed." >&2
     echo "[SSL] This usually means inbound TCP/443 is blocked (VPS provider firewall) or already in use." >&2
     echo "[SSL] Check: ss -ltnp | grep -E ':80|:443'" >&2
