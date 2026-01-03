@@ -2695,6 +2695,20 @@ main() {
     fi
   fi
   echo "[deploy] Creating fresh database and redis containers..."
+  # Docker Compose may try to recreate the named network (project_internal). If an
+  # old container (e.g. Project-nginx-ip) is still attached, network removal fails
+  # with: "network project_internal has active endpoints".
+  docker rm -f Project-nginx-ip >/dev/null 2>&1 || true
+  if docker network inspect project_internal >/dev/null 2>&1; then
+    attached_containers="$(docker network inspect -f '{{range $k, $v := .Containers}}{{$k}} {{end}}' project_internal 2>/dev/null || true)"
+    if [ -n "${attached_containers}" ]; then
+      for c in ${attached_containers}; do
+        docker network disconnect -f project_internal "${c}" >/dev/null 2>&1 || true
+        docker rm -f "${c}" >/dev/null 2>&1 || true
+      done
+    fi
+    docker network rm project_internal >/dev/null 2>&1 || true
+  fi
   docker compose -f docker-compose.production.yml up -d --force-recreate postgres redis
   
   # Give postgres a moment to initialize
@@ -3882,7 +3896,7 @@ cleanup_Project_docker() {
     # Try to forcibly disconnect any attached containers first, then remove the network(s)
     for n in ${nets}; do
       # Inspect network containers (the Inspect JSON .Containers keys are container IDs)
-      containers="$(docker network inspect -f '{{ range $k := (keys .Containers) }}{{ $k }} {{ end }}' "${n}" 2>/dev/null || true)"
+      containers="$(docker network inspect -f '{{range $k, $v := .Containers}}{{$k}} {{end}}' "${n}" 2>/dev/null || true)"
       if [ -n "${containers}" ]; then
         for c in ${containers}; do
           # Try to gracefully disconnect, then forcibly remove any left-over container
