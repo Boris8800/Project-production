@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const Routes: React.FC = () => {
   const routes = [
@@ -47,12 +47,25 @@ const Routes: React.FC = () => {
         </div>
         
         <div className="flex-1 h-[260px] sm:h-[320px] md:h-[450px] lg:h-auto rounded-3xl overflow-hidden relative shadow-2xl border border-white/5 group">
-          <div 
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] group-hover:scale-110" 
-            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1520986606214-8b456906c813?auto=format&fit=crop&q=80&w=800')` }}
-          />
+          {/* Image carousel: cycles every 5s with fade transition */}
+          {/** Preload & crossfade images for smooth transitions */}
+          {(() => {
+            const images = [
+              'https://images.unsplash.com/photo-1520986606214-8b456906c813?auto=format&fit=crop&q=80&w=1600',
+              'https://images.unsplash.com/photo-1505765057599-4e1b3a0b0c6f?auto=format&fit=crop&q=80&w=1600',
+              'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&q=80&w=1600',
+              'https://images.unsplash.com/photo-1504215680853-026ed2a45def?auto=format&fit=crop&q=80&w=1600'
+            ];
+
+            // useState/useEffect declared outside of the IIFE below — we need to manage them in component scope
+            return null;
+          })()}
+
+          {/* Implemented below with proper state */}
+          <ImageCarousel />
+
           <div className="absolute inset-0 bg-blue-900/30 mix-blend-multiply"></div>
-          
+
           <div className="absolute bottom-5 left-5 right-5 md:bottom-8 md:left-8 md:right-8 bg-surface-dark/95 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-white/10 shadow-2xl">
             <div className="flex items-start gap-3 md:gap-4">
               <div className="size-9 md:size-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
@@ -67,6 +80,37 @@ const Routes: React.FC = () => {
             </div>
           </div>
         </div>
+
+const ImageCarousel: React.FC = () => {
+  const images = [
+    'https://images.unsplash.com/photo-1520986606214-8b456906c813?auto=format&fit=crop&q=80&w=1600',
+    'https://images.unsplash.com/photo-1505765057599-4e1b3a0b0c6f?auto=format&fit=crop&q=80&w=1600',
+    'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&q=80&w=1600',
+    'https://images.unsplash.com/photo-1504215680853-026ed2a45def?auto=format&fit=crop&q=80&w=1600'
+  ];
+
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    // Preload images
+    images.forEach((s) => { const i = new Image(); i.src = s; });
+    const id = setInterval(() => setIndex((i) => (i + 1) % images.length), 5000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="absolute inset-0">
+      {images.map((src, i) => (
+        <div
+          key={i}
+          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000`}
+          style={{ backgroundImage: `url('${src}')`, opacity: index === i ? 1 : 0 }}
+          aria-hidden={index !== i}
+        />
+      ))}
+    </div>
+  );
+};
       </div>
     </section>
   );
