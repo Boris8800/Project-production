@@ -57,6 +57,62 @@ For quick status/logs/health/restart on the VPS:
 TLS is bootstrapped by `bash scripts/all.sh setup-ssl` using Let’s Encrypt **webroot** validation.
 It requests individual certs for each hostname and reloads Nginx.
 
+### Domain & SSL — Guide & Troubleshooting ✅
+
+Use `bash scripts/all.sh setup-ssl` to bootstrap SSL for your domain. The script includes runtime flags and diagnostics to simplify setup and troubleshooting.
+
+Common usage examples
+
+- Print computed domains (quick sanity check):
+
+  ```sh
+  bash scripts/all.sh setup-ssl --print-domains
+  ```
+
+- Dry-run checks without requesting certificates:
+
+  ```sh
+  bash scripts/all.sh setup-ssl --dry-run
+  ```
+
+- Wait for DNS propagation (e.g., wait 10 minutes):
+
+  ```sh
+  bash scripts/all.sh setup-ssl --wait-for-dns 600
+  ```
+
+- Force dummy certs (useful if DNS can't be pointed yet):
+
+  ```sh
+  bash scripts/all.sh setup-ssl --skip-letsencrypt
+  ```
+
+- Run a smoke test for HTTP/HTTPS reachability for the computed domains:
+
+  ```sh
+  bash scripts/all.sh setup-ssl --smoke-test
+  # or run directly
+  bash scripts/check-domains.sh <yourdomain> www.<yourdomain> api.<yourdomain> admin.<yourdomain> driver.<yourdomain>
+  ```
+
+Troubleshooting checklist
+
+1) Verify DNS A records exist for the root and subdomains (A records for @, www, api, admin, driver).
+2) Use `dig +short <host>` or `nslookup <host>` to check propagation.
+3) If propagation is slow, run `--wait-for-dns` with a generous timeout (e.g., 600).
+4) Non-interactive runs default to dummy certs when DNS is not ready; re-run with DNS fixed to obtain real certs.
+5) If your VPS is behind a firewall/NAT, ensure ports 80 and 443 are reachable from the public internet.
+
+CI smoke-tests
+
+We added an optional GitHub Actions workflow that can run `scripts/check-domains.sh` on push/schedule or manually. It expects a repository secret `SMOKE_TEST_DOMAINS` (space-separated list of domains to test) or can be triggered manually with inputs.
+
+VPS validation helper
+
+There's also a helper script `scripts/vps-setup-validate.sh` you can run on the VPS to pull the latest code, run the smoke-test locally, and optionally run `setup-ssl` in `--dry-run` mode.  
+
+If you'd like, enable the GitHub Action and set `SMOKE_TEST_DOMAINS` in your repository secrets so the workflow can verify reachability automatically.
+
 ## Monitoring
 Start monitoring stack:
 - `docker compose -f docker-compose.monitoring.yml up -d`
