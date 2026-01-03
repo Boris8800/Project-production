@@ -15,12 +15,12 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ className = "", size = 40 }) => {
       rel="noopener noreferrer"
       className={`bg-transparent flex items-center justify-center rounded-xl group transition-all overflow-hidden cursor-pointer ${className}`}
       style={{ width: size, height: size }}
-      aria-label="Open TransferLane logo"
+      aria-label="Open Transferline logo"
       title="Open logo"
     >
       <img
         src={logoSrc}
-        alt="TransferLane"
+        alt="Transferline"
         width={size}
         height={size}
         className="block w-full h-full object-contain scale-[1.25] transform-gpu"

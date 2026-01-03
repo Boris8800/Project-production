@@ -38,7 +38,7 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6 font-display">1. Introduction</h2>
             <div className="text-slate-600 dark:text-slate-200 leading-relaxed space-y-4 text-sm font-medium">
               <p>
-                At TransferLane, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your data when you use our premium chauffeur and intercity travel services.
+                At Transferline, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your data when you use our premium chauffeur and intercity travel services.
               </p>
               <p>
                 By using our services, you consent to the data practices described in this policy. We encourage you to read this policy carefully to understand our views and practices regarding your personal data.
@@ -211,7 +211,7 @@ export default function PrivacyPage() {
 
               <p className="font-bold text-slate-900 dark:text-white mt-6">6.6 Exercising Your Rights</p>
               <p>
-                To exercise any of these rights, please contact us at privacy@transferlane.com. We will respond to your request within 30 days.
+                To exercise any of these rights, please contact us at privacy@transferline.com. We will respond to your request within 30 days.
               </p>
             </div>
           </section>
@@ -317,11 +317,11 @@ export default function PrivacyPage() {
                 If you have questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
               </p>
               <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-6 mt-4 space-y-2">
-                <p><strong className="text-slate-900 dark:text-white">TransferLane Privacy Team</strong></p>
-                <p>Email: privacy@transferlane.com</p>
+                <p><strong className="text-slate-900 dark:text-white">Transferline Privacy Team</strong></p>
+                <p>Email: privacy@transferline.com</p>
                 <p>Phone: +44 (0) 20 XXXX XXXX</p>
                 <p>Address: [Your Company Address]</p>
-                <p>Data Protection Officer: dpo@transferlane.com</p>
+                <p>Data Protection Officer: dpo@transferline.com</p>
               </div>
               <p className="mt-4">
                 If you are located in the UK or EU and are not satisfied with our response, you have the right to lodge a complaint with your local data protection authority.
@@ -351,7 +351,7 @@ export default function PrivacyPage() {
 
           <div className="border-t border-slate-200 dark:border-slate-700 pt-8 mt-12">
             <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
-              This Privacy Policy is effective as of December 31, 2025. By using TransferLane services, you acknowledge that you have read and understood this policy.
+              This Privacy Policy is effective as of December 31, 2025. By using Transferline services, you acknowledge that you have read and understood this policy.
             </p>
           </div>
         </div>

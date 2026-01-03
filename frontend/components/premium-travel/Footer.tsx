@@ -18,28 +18,28 @@ const Footer: React.FC<FooterProps> = ({ onHomeClick }) => {
       company: 'Company', about: 'About Us', careers: 'Careers', press: 'Press',
       services: 'Services', intercity: 'Intercity Rides', airport: 'Airport Transfer',
       support: 'Support', help: 'Help Center', safety: 'Safety', terms: 'Terms',
-      rights: '© 2026 TransferLane. All rights reserved.', privacy: 'Privacy', sitemap: 'Sitemap'
+      rights: '© 2026 Transferline. All rights reserved.', privacy: 'Privacy', sitemap: 'Sitemap'
     },
     [Language.ES]: {
       desc: 'La elección premium para viajes interurbanos, traslados al aeropuerto y servicios de chófer en el Reino Unido.',
       company: 'Compañía', about: 'Nosotros', careers: 'Carreras', press: 'Prensa',
       services: 'Servicios', intercity: 'Viajes Interurbanos', airport: 'Traslado Aeropuerto',
       support: 'Soporte', help: 'Centro de Ayuda', safety: 'Seguridad', terms: 'Términos',
-      rights: '© 2026 TransferLane. Todos los derechos reservados.', privacy: 'Privacidad', sitemap: 'Mapa del Sitio'
+      rights: '© 2026 Transferline. Todos los derechos reservados.', privacy: 'Privacidad', sitemap: 'Mapa del Sitio'
     },
     [Language.FR]: {
       desc: 'Le choix premium pour les voyages interurbains, les transferts aéroport et les services de chauffeur au Royaume-Uni.',
       company: 'Entreprise', about: 'À Propos', careers: 'Carrières', press: 'Presse',
       services: 'Services', intercity: 'Trajets Interurbains', airport: 'Transfert Aéroport',
       support: 'Support', help: 'Centre d\'Aide', safety: 'Sécurité', terms: 'Conditions',
-      rights: '© 2026 TransferLane. Tous droits réservés.', privacy: 'Confidentialité', sitemap: 'Plan du Site'
+      rights: '© 2026 Transferline. Tous droits réservés.', privacy: 'Confidentialité', sitemap: 'Plan du Site'
     },
     [Language.DE]: {
       desc: 'Premium-Wahl für Fernreisen, Flughafentransfers und Fahrservice in Großbritannien.',
       company: 'Unternehmen', about: 'Über Uns', careers: 'Karriere', press: 'Presse',
       services: 'Services', intercity: 'Fernfahrten', airport: 'Flughafentransfer',
       support: 'Support', help: 'Hilfe-Center', safety: 'Sicherheit', terms: 'Bedingungen',
-      rights: '© 2026 TransferLane. Alle Rechte vorbehalten.', privacy: 'Datenschutz', sitemap: 'Sitemap'
+      rights: '© 2026 Transferline. Alle Rechte vorbehalten.', privacy: 'Datenschutz', sitemap: 'Sitemap'
     },
   } as const;
 
@@ -55,7 +55,7 @@ const Footer: React.FC<FooterProps> = ({ onHomeClick }) => {
               className="flex items-center gap-3 text-white mb-8 hover:opacity-80 transition-opacity cursor-pointer text-left"
             >
               <BrandLogo size={52} />
-              <h2 className="text-2xl font-bold font-display">TransferLane</h2>
+              <h2 className="text-2xl font-bold font-display">Transferline</h2>
             </button>
             <p className="text-slate-300 text-sm max-w-xs mb-8 leading-relaxed">
               {t.desc}

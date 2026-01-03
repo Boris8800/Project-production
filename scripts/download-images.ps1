@@ -113,7 +113,7 @@ $images = @(
 )
 
 Write-Host "`n========================================" -ForegroundColor Cyan
-Write-Host "Downloading Images for TransferLane" -ForegroundColor Cyan
+Write-Host "Downloading Images for Transferline" -ForegroundColor Cyan
 Write-Host "========================================`n" -ForegroundColor Cyan
 
 $successCount = 0

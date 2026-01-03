@@ -59,7 +59,7 @@ export default function SafetyPage() {
               Safety
             </h1>
             <p className="text-xl text-slate-600 dark:text-slate-200 max-w-2xl mx-auto font-medium leading-relaxed">
-              Safety is not a feature — it&apos;s a standard. TransferLane is built around professional chauffeurs, operational discipline, and clear passenger support.
+              Safety is not a feature — it&apos;s a standard. Transferline is built around professional chauffeurs, operational discipline, and clear passenger support.
             </p>
           </div>
         </section>

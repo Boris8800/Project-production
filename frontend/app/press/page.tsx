@@ -20,8 +20,8 @@ export default function PressPage() {
   const items: PressItem[] = useMemo(
     () => [
       {
-        title: 'TransferLane expands executive intercity coverage',
-        outlet: 'TransferLane Newsroom',
+        title: 'Transferline expands executive intercity coverage',
+        outlet: 'Transferline Newsroom',
         date: 'May 2024',
         description:
           'New route availability across key UK corridors, with refined dispatch workflows and enhanced passenger experience.',
@@ -34,7 +34,7 @@ export default function PressPage() {
           'How operational consistency, vetted chauffeurs, and fixed transparent pricing raise the standard for private travel.',
       },
       {
-        title: 'TransferLane launches concierge-first booking experience',
+        title: 'Transferline launches concierge-first booking experience',
         outlet: 'Mobility Weekly',
         date: 'March 2024',
         description:
@@ -70,7 +70,7 @@ export default function PressPage() {
               Press
             </h1>
             <p className="text-xl text-slate-600 dark:text-slate-200 max-w-2xl mx-auto font-medium leading-relaxed">
-              Updates, announcements, and stories about TransferLane.
+              Updates, announcements, and stories about Transferline.
             </p>
           </div>
         </section>

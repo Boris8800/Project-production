@@ -250,7 +250,7 @@ const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
       model: 'Mitsubishi Outlander',
       sub: 'Exceptional space and a commanding view of the road. Perfect for families seeking a safe, versatile, and high-end journey.',
       seats: 4, bags: 4,
-      img: ['/images/vehicles/mitsubishi-outlander.png', '/images/vehicles/mitsubishi-outlander-2.png'],
+      img: ['/images/vehicles/mitsubishi-outlander-2.png', '/images/vehicles/mitsubishi-outlander.png'],
       tag: 'Spacious Comfort'
     },
     {

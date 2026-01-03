@@ -1,6 +1,6 @@
 {
-  "name": "TransferLane Driver",
-  "short_name": "TransferLane",
+  "name": "Transferline Driver",
+  "short_name": "Transferline",
   "start_url": "/(driver)",
   "display": "standalone",
   "background_color": "#ffffff",

@@ -258,7 +258,7 @@ export class DispatchService {
     const link = this.buildDispatchLink(token);
 
     if (toEmail) {
-      const subject = `Your TransferLane live journey link${booking.bookingNumber ? ` (${booking.bookingNumber})` : ''}`;
+      const subject = `Your Transferline live journey link${booking.bookingNumber ? ` (${booking.bookingNumber})` : ''}`;
       const pickup = location.pickupAddress;
       const dropoff = location.dropoffAddress;
       const when = booking.scheduledPickupAt ? new Date(booking.scheduledPickupAt).toLocaleString() : 'Scheduled';
@@ -377,7 +377,7 @@ export class DispatchService {
 
     const link = this.buildDispatchLink(token);
 
-    const subject = `Your TransferLane live journey link${booking.bookingNumber ? ` (${booking.bookingNumber})` : ''}`;
+    const subject = `Your Transferline live journey link${booking.bookingNumber ? ` (${booking.bookingNumber})` : ''}`;
     const pickup = location.pickupAddress;
     const dropoff = location.dropoffAddress;
     const when = booking.scheduledPickupAt ? new Date(booking.scheduledPickupAt).toLocaleString() : 'Scheduled';
