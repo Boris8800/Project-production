@@ -218,6 +218,15 @@ const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
       tag: 'Spacious Comfort'
     },
     {
+      name: 'Executive MPV',
+      model: 'Mercedes-Benz V-Class',
+      sub: 'A masterpiece of versatility and luxury. Perfectly configured for small groups or executive board meetings on the move.',
+      seats: 7, bags: 6,
+      // Now uses two frames so the card will animate (similar to Mitsubishi Outlander)
+      img: ['/images/vehicles/mercedes-v-class/uhn.png', '/images/vehicles/mercedes-v-class/uhn2.png'],
+      tag: 'Corporate People Mover'
+    },
+    {
       name: 'MPV Voyager',
       model: 'Volkswagen Sharan',
       sub: 'The ultimate choice for group transfers. Generous seating and ample storage without compromising on passenger comfort.',
@@ -232,17 +241,7 @@ const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
       seats: 3, bags: 2,
       img: '/images/vehicles/mercedes-s-class.png',
       tag: 'Iconic Excellence'
-    },
-    {
-      name: 'Executive MPV',
-      model: 'Mercedes-Benz V-Class',
-      sub: 'A masterpiece of versatility and luxury. Perfectly configured for small groups or executive board meetings on the move.',
-      seats: 7, bags: 6,
-      // Now uses two frames so the card will animate (similar to Mitsubishi Outlander)
-      img: ['/images/vehicles/mercedes-v-class/uhn.png', '/images/vehicles/mercedes-v-class/uhn2.png'],
-      tag: 'Corporate People Mover'
-    },
-
+    }
   ];
 
   const displayedVehicles = showAll ? vehicles : vehicles.slice(0, 3);
