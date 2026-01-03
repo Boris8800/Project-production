@@ -3878,8 +3878,19 @@ cleanup_Project_docker() {
   local nets
   nets="$(docker network ls -q --filter name=Project_ 2>/dev/null || true)"
   if [ -n "${nets}" ]; then
-    # shellcheck disable=SC2086
-    docker network rm ${nets} >/dev/null 2>&1 || true
+    # Try to forcibly disconnect any attached containers first, then remove the network(s)
+    for n in ${nets}; do
+      # List containers attached to this network (by name or id)
+      attached="$(docker ps -aq --filter network=$(docker network inspect -f '{{.Name}}' "${n}" 2>/dev/null) 2>/dev/null || true)"
+      if [ -n "${attached}" ]; then
+        for c in ${attached}; do
+          docker network disconnect -f "${n}" "${c}" >/dev/null 2>&1 || true
+        done
+      fi
+
+      # Finally remove the network
+      docker network rm "${n}" >/dev/null 2>&1 || true
+    done
   fi
 
   # Always remove volumes on clean install to avoid password mismatch issues
