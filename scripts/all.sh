@@ -3324,6 +3324,26 @@ print "[SSL] Starting Nginx for ACME challenge"
 # Start nginx without waiting for backend health; ACME only needs port 80 reachable.
 docker compose -f "${COMPOSE_FILE}" up -d --no-deps nginx-proxy
 
+# Quick HTTP-01 self-test: verify the challenge path is reachable over port 80.
+# If this fails, Certbot will also fail (typically provider firewall / UFW / iptables).
+if command -v curl >/dev/null 2>&1; then
+  test_token="project-acme-self-test-$(date +%s)"
+  docker run --rm -v "${WWW_VOLUME}:/var/www/certbot" alpine:3.20 sh -eu -c '
+    t="$1"
+    mkdir -p /var/www/certbot/.well-known/acme-challenge
+    echo ok > "/var/www/certbot/.well-known/acme-challenge/${t}"
+  ' -- "${test_token}" >/dev/null 2>&1 || true
+
+  if ! curl -fsS --connect-timeout 5 --max-time 8 "http://${DOMAIN_ROOT}/.well-known/acme-challenge/${test_token}" >/dev/null 2>&1; then
+    echo "[SSL] ERROR: HTTP-01 challenge URL is not reachable for ${DOMAIN_ROOT}." >&2
+    echo "[SSL] Fix required: open inbound TCP/80 and TCP/443 to this VPS (UFW + VPS provider firewall)." >&2
+    echo "[SSL] Helpful commands:" >&2
+    echo "[SSL]   ufw status verbose" >&2
+    echo "[SSL]   ss -ltnp | grep -E ':80|:443'" >&2
+    exit 1
+  fi
+fi
+
 if [ "${SKIP_LETSENCRYPT}" = "true" ]; then
   echo "[SSL] SKIP_LETSENCRYPT=true: leaving dummy certificates in place."
   echo "[SSL] Re-run without SKIP_LETSENCRYPT to request real certificates once DNS is ready."
@@ -4443,11 +4463,15 @@ run_ssl_setup() {
 
   # Let's Encrypt HTTP-01 needs inbound port 80 reachable from the internet.
   # Domain mode runs deploy with APP_ONLY=true (skips firewall setup), so ensure
-  # UFW allows required ports here.
+  # a firewall is installed + enabled here (safe: also allows SSH 22).
+  if ! command -v ufw >/dev/null 2>&1; then
+    if command -v apt-get >/dev/null 2>&1; then
+      apt-get update -y >/dev/null 2>&1 || true
+      apt-get install -y ufw >/dev/null 2>&1 || true
+    fi
+  fi
   if command -v ufw >/dev/null 2>&1; then
-    ufw allow 80/tcp >/dev/null 2>&1 || true
-    ufw allow 443/tcp >/dev/null 2>&1 || true
-    ufw allow 1000/tcp >/dev/null 2>&1 || true
+    enable_firewall >/dev/null 2>&1 || true
     ufw reload >/dev/null 2>&1 || true
   fi
   
