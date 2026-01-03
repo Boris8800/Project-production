@@ -3,6 +3,83 @@
 
 import React, { useEffect, useState } from 'react';
 
+const CAROUSEL_IMAGES = [
+  '/images/backgrounds/hero-luxury-car.jpg',
+  '/images/backgrounds/luxury-interior.jpg',
+  '/images/backgrounds/uk-map.jpg',
+  '/images/vehicles/mercedes-s-class.png'
+];
+
+// Image carousel component (module-scoped, above `Routes` to avoid JSX parse issues)
+const ImageCarousel: React.FC<{ intervalMs?: number }> = ({ intervalMs = 5000 }) => {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const len = CAROUSEL_IMAGES.length; 
+
+  // Preload images once
+  useEffect(() => {
+    CAROUSEL_IMAGES.forEach((s) => { const img = new Image(); img.src = s; });
+  }, []);
+
+  // Auto-advance when not paused
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % len), intervalMs);
+    return () => clearInterval(id);
+  }, [paused, intervalMs, len]);
+
+  const prev = () => setIndex((i) => (i - 1 + len) % len);
+  const next = () => setIndex((i) => (i + 1) % len);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') setIndex((i) => (i - 1 + len) % len);
+      if (e.key === 'ArrowRight') setIndex((i) => (i + 1) % len);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [len]);
+
+  return (
+    <div
+      className="absolute inset-0"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+      role="region"
+      aria-label="Popular routes image carousel"
+    >
+      {CAROUSEL_IMAGES.map((src, i) => (
+        <div
+          key={i}
+          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000`}
+          style={{ backgroundImage: `url('${src}')`, opacity: index === i ? 1 : 0 }}
+          aria-hidden={index !== i}
+        />
+      ))}
+
+      {/* Controls */}
+      <div className="absolute inset-0 flex items-center justify-between px-3 md:px-5 pointer-events-none">
+        <button onClick={prev} className="pointer-events-auto bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition" aria-label="Previous image">
+          <span className="material-symbols-outlined">chevron_left</span>
+        </button>
+        <button onClick={next} className="pointer-events-auto bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition" aria-label="Next image">
+          <span className="material-symbols-outlined">chevron_right</span>
+        </button>
+      </div>
+
+      {/* Indicator dots */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+        {CAROUSEL_IMAGES.map((_, i) => (
+          <button key={i} onClick={() => setIndex(i)} className={`w-2 h-2 rounded-full ${i === index ? 'bg-white' : 'bg-white/50'} transition`} aria-label={`Go to slide ${i + 1}`} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const Routes: React.FC = () => {
   const routes = [
     { from: 'London', to: 'Oxford', time: '1h 45m', price: '£180' },
@@ -69,82 +146,7 @@ const Routes: React.FC = () => {
           </div>
         </div>
 
-// Image carousel component defined inside Routes for easy access to local assets
-const ImageCarousel: React.FC<{ intervalMs?: number }> = ({ intervalMs = 5000 }) => {
-  const carouselImages = [
-    '/images/backgrounds/hero-luxury-car.jpg',
-    '/images/backgrounds/luxury-interior.jpg',
-    '/images/backgrounds/uk-map.jpg',
-    '/images/vehicles/mercedes-s-class.png'
-  ];
 
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const len = carouselImages.length;
-
-  // Preload images once
-  useEffect(() => {
-    carouselImages.forEach((s) => { const img = new Image(); img.src = s; });
-  }, []);
-
-  // Auto-advance when not paused
-  useEffect(() => {
-    if (paused) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % len), intervalMs);
-    return () => clearInterval(id);
-  }, [paused, intervalMs, len]);
-
-  const prev = () => setIndex((i) => (i - 1 + len) % len);
-  const next = () => setIndex((i) => (i + 1) % len);
-
-  // Keyboard navigation
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') prev();
-      if (e.key === 'ArrowRight') next();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
-
-  return (
-    <div
-      className="absolute inset-0"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={() => setPaused(false)}
-      role="region"
-      aria-label="Popular routes image carousel"
-    >
-      {carouselImages.map((src, i) => (
-        <div
-          key={i}
-          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000`}
-          style={{ backgroundImage: `url('${src}')`, opacity: index === i ? 1 : 0 }}
-          aria-hidden={index !== i}
-        />
-      ))}
-
-      {/* Controls */}
-      <div className="absolute inset-0 flex items-center justify-between px-3 md:px-5 pointer-events-none">
-        <button onClick={prev} className="pointer-events-auto bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition" aria-label="Previous image">
-          <span className="material-symbols-outlined">chevron_left</span>
-        </button>
-        <button onClick={next} className="pointer-events-auto bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition" aria-label="Next image">
-          <span className="material-symbols-outlined">chevron_right</span>
-        </button>
-      </div>
-
-      {/* Indicator dots */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-        {carouselImages.map((_, i) => (
-          <button key={i} onClick={() => setIndex(i)} className={`w-2 h-2 rounded-full ${i === index ? 'bg-white' : 'bg-white/50'} transition`} aria-label={`Go to slide ${i + 1}`} />
-        ))}
-      </div>
-    </div>
-  );
-};
       </div>
     </section>
   );
