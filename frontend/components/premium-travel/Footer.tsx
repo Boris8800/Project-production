@@ -18,28 +18,28 @@ const Footer: React.FC<FooterProps> = ({ onHomeClick }) => {
       company: 'Company', about: 'About Us', careers: 'Careers', press: 'Press',
       services: 'Services', intercity: 'Intercity Rides', airport: 'Airport Transfer',
       support: 'Support', help: 'Help Center', safety: 'Safety', terms: 'Terms',
-      rights: '© 2024 TransferLane. All rights reserved.', privacy: 'Privacy', sitemap: 'Sitemap'
+      rights: '© 2026 TransferLane. All rights reserved.', privacy: 'Privacy', sitemap: 'Sitemap'
     },
     [Language.ES]: {
       desc: 'La elección premium para viajes interurbanos, traslados al aeropuerto y servicios de chófer en el Reino Unido.',
       company: 'Compañía', about: 'Nosotros', careers: 'Carreras', press: 'Prensa',
       services: 'Servicios', intercity: 'Viajes Interurbanos', airport: 'Traslado Aeropuerto',
       support: 'Soporte', help: 'Centro de Ayuda', safety: 'Seguridad', terms: 'Términos',
-      rights: '© 2024 TransferLane. Todos los derechos reservados.', privacy: 'Privacidad', sitemap: 'Mapa del Sitio'
+      rights: '© 2026 TransferLane. Todos los derechos reservados.', privacy: 'Privacidad', sitemap: 'Mapa del Sitio'
     },
     [Language.FR]: {
       desc: 'Le choix premium pour les voyages interurbains, les transferts aéroport et les services de chauffeur au Royaume-Uni.',
       company: 'Entreprise', about: 'À Propos', careers: 'Carrières', press: 'Presse',
       services: 'Services', intercity: 'Trajets Interurbains', airport: 'Transfert Aéroport',
       support: 'Support', help: 'Centre d\'Aide', safety: 'Sécurité', terms: 'Conditions',
-      rights: '© 2024 TransferLane. Tous droits réservés.', privacy: 'Confidentialité', sitemap: 'Plan du Site'
+      rights: '© 2026 TransferLane. Tous droits réservés.', privacy: 'Confidentialité', sitemap: 'Plan du Site'
     },
     [Language.DE]: {
       desc: 'Premium-Wahl für Fernreisen, Flughafentransfers und Fahrservice in Großbritannien.',
       company: 'Unternehmen', about: 'Über Uns', careers: 'Karriere', press: 'Presse',
       services: 'Services', intercity: 'Fernfahrten', airport: 'Flughafentransfer',
       support: 'Support', help: 'Hilfe-Center', safety: 'Sicherheit', terms: 'Bedingungen',
-      rights: '© 2024 TransferLane. Alle Rechte vorbehalten.', privacy: 'Datenschutz', sitemap: 'Sitemap'
+      rights: '© 2026 TransferLane. Alle Rechte vorbehalten.', privacy: 'Datenschutz', sitemap: 'Sitemap'
     },
   } as const;
 
