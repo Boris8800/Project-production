@@ -192,6 +192,41 @@ const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
   const [showAll, setShowAll] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
+  const { language } = useLanguage();
+
+  const translations = {
+    [Language.EN]: {
+      badge: 'The Showroom',
+      title: 'Bespoke Fleet',
+      sub: 'Our curated collection features a hand-picked selection of prestigious vehicles, ensuring every mile is traveled in absolute refinement and cinematic comfort.',
+      viewFull: 'View Full Fleet',
+      collapse: 'Collapse'
+    },
+    [Language.ES]: {
+      badge: 'La Exposición',
+      title: 'Flota Exclusiva',
+      sub: 'Nuestra colección seleccionada presenta vehículos prestigiosos para garantizar que cada milla se viaje con refinamiento absoluto y comodidad cinematográfica.',
+      viewFull: 'Ver Flota Completa',
+      collapse: 'Contraer'
+    },
+    [Language.FR]: {
+      badge: "La Salle d'Exposition",
+      title: 'Flotte Sur Mesure',
+      sub: 'Notre collection propose des véhicules prestigieux, garantissant que chaque mile se parcourt avec raffinement et confort cinématographique.',
+      viewFull: 'Voir la Flotte Complète',
+      collapse: 'Réduire'
+    },
+    [Language.DE]: {
+      badge: 'Die Ausstellung',
+      title: 'Exklusive Flotte',
+      sub: 'Unsere kuratierte Kollektion bietet eine Auswahl prestigeträchtiger Fahrzeuge, sodass jede Meile mit höchstem Komfort und Stil zurückgelegt wird.',
+      viewFull: 'Komplette Flotte ansehen',
+      collapse: 'Einklappen'
+    },
+  } as const;
+
+  const t = translations[language];
+
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) { setIsVisible(true); observer.unobserve(entry.target); }
@@ -254,14 +289,14 @@ const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
           <div className="max-w-3xl text-left">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-8">
                <span className="material-symbols-outlined text-primary text-sm">auto_awesome</span>
-               <span className="text-[11px] font-black text-primary tracking-[0.3em] uppercase">The Showroom</span>
+               <span className="text-[11px] font-black text-primary tracking-[0.3em] uppercase">{t.badge}</span>
             </div>
             <h2 className="text-6xl md:text-8xl font-black mb-8 leading-[0.9] tracking-tighter">
-              Bespoke <br/>
-              <span className="text-primary italic font-display">Fleet</span>
+              {t.title.split(' ').slice(0, -1).join(' ')} <br/>
+              <span className="text-primary italic font-display">{t.title.split(' ').slice(-1)}</span>
             </h2>
             <p className="text-text-muted dark:text-slate-200 text-xl md:text-2xl font-medium leading-relaxed max-w-2xl">
-              Our curated collection features a hand-picked selection of prestigious vehicles, ensuring every mile is traveled in absolute refinement and cinematic comfort.
+              {t.sub}
             </p>
           </div>
 
@@ -269,7 +304,7 @@ const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
             onClick={() => setShowAll(!showAll)}
             className="tl-shine-6s group flex items-center gap-6 px-10 py-5 rounded-[24px] border border-primary/30 text-primary font-black uppercase tracking-[0.3em] text-[11px] hover:bg-primary hover:text-white transition-all shadow-2xl shadow-primary/5 active:scale-95"
           >
-            {showAll ? 'Collapse' : 'View Full Fleet'}
+            {showAll ? t.collapse : t.viewFull}
             <span className={`material-symbols-outlined transition-transform duration-500 ${showAll ? 'rotate-180' : 'group-hover:translate-x-2'}`}>
               {showAll ? 'expand_less' : 'arrow_forward'}
             </span>
@@ -287,7 +322,7 @@ const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
             onClick={() => setShowAll(!showAll)}
             className="tl-shine-6s group flex items-center gap-6 px-10 py-5 rounded-[24px] border border-primary/30 text-primary font-black uppercase tracking-[0.3em] text-[11px] hover:bg-primary hover:text-white transition-all shadow-2xl shadow-primary/5 active:scale-95"
           >
-            {showAll ? 'Collapse' : 'View Full Fleet'}
+            {showAll ? t.collapse : t.viewFull}
             <span className={`material-symbols-outlined transition-transform duration-500 ${showAll ? 'rotate-180' : 'group-hover:translate-x-2'}`}>
               {showAll ? 'expand_less' : 'arrow_forward'}
             </span>
