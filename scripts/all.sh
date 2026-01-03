@@ -4428,7 +4428,18 @@ run_ssl_setup() {
   chown "${DEPLOY_USER}:${DEPLOY_USER}" .env.production
   
   print "[fresh] Stopping IP-mode services..."
-  docker compose -f docker-compose.yml down >/dev/null 2>&1 || true
+  # IMPORTANT: IP mode uses the 'ip' profile. Without --profile ip, `down` may not
+  # target the IP-only services, leaving Project-nginx-ip running and attached to
+  # project_internal (which later blocks network removal).
+  docker compose -f docker-compose.yml --profile ip down --remove-orphans >/dev/null 2>&1 || true
+
+  # Fallback: force-remove known IP-mode container names.
+  docker rm -f \
+    Project-nginx-ip \
+    Project-backend-dev \
+    Project-postgres-dev \
+    Project-redis-dev \
+    >/dev/null 2>&1 || true
   
   print "[fresh] Deploying in domain mode with SSL..."
   sudo -u "${DEPLOY_USER}" -H bash -lc "cd '${INSTALL_DIR}'; APP_ONLY=true AUTO_GENERATE_SECRETS=true SKIP_LETSENCRYPT=false bash scripts/all.sh deploy"
