@@ -3876,15 +3876,27 @@ cleanup_Project_docker() {
 
   # Networks (best effort)
   local nets
-  nets="$(docker network ls -q --filter name=Project_ 2>/dev/null || true)"
+  # Find any networks related to the Project (match 'project' case-insensitive, includes 'project_internal')
+  nets="$(docker network ls --format '{{.Name}}' 2>/dev/null | grep -i 'project' || true)"
   if [ -n "${nets}" ]; then
     # Try to forcibly disconnect any attached containers first, then remove the network(s)
     for n in ${nets}; do
-      # List containers attached to this network (by name or id)
-      attached="$(docker ps -aq --filter network=$(docker network inspect -f '{{.Name}}' "${n}" 2>/dev/null) 2>/dev/null || true)"
-      if [ -n "${attached}" ]; then
-        for c in ${attached}; do
+      # Inspect network containers (the Inspect JSON .Containers keys are container IDs)
+      containers="$(docker network inspect -f '{{ range $k := (keys .Containers) }}{{ $k }} {{ end }}' "${n}" 2>/dev/null || true)"
+      if [ -n "${containers}" ]; then
+        for c in ${containers}; do
+          # Try to gracefully disconnect, then forcibly remove any left-over container
           docker network disconnect -f "${n}" "${c}" >/dev/null 2>&1 || true
+          docker rm -f "${c}" >/dev/null 2>&1 || true
+        done
+      fi
+
+      # Also try to catch containers named like 'Project-...' that may be attached
+      legacy_ids="$(docker ps -aq --filter name='^/Project-' 2>/dev/null || true)"
+      if [ -n "${legacy_ids}" ]; then
+        for id in ${legacy_ids}; do
+          docker network disconnect -f "${n}" "${id}" >/dev/null 2>&1 || true
+          docker rm -f "${id}" >/dev/null 2>&1 || true
         done
       fi
 
