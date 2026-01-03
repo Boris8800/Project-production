@@ -3154,6 +3154,66 @@ EMAIL="${LETSENCRYPT_EMAIL:-admin@${DOMAIN_ROOT}}"
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.production.yml}"
 SKIP_LETSENCRYPT="${SKIP_LETSENCRYPT:-false}"
 
+# Optional runtime flags (also can be set via env vars):
+#  --dry-run            : perform checks but don't change state or request certs
+#  --print-domains      : print computed DOMAINS and exit
+#  --no-check-dns       : skip DNS verification
+#  --wait-for-dns N     : wait up to N seconds for DNS to point at the VPS
+#  --skip-letsencrypt   : force using dummy certs (sets SKIP_LETSENCRYPT=true)
+#  --help               : show this help and exit
+DRY_RUN="${DRY_RUN:-false}"
+PRINT_DOMAINS="${PRINT_DOMAINS:-false}"
+CHECK_DNS="${CHECK_DNS:-true}"
+WAIT_FOR_DNS="${WAIT_FOR_DNS:-0}"
+
+print_help() {
+  print "[SSL] Usage: bash scripts/all.sh setup-ssl [--dry-run] [--print-domains] [--no-check-dns] [--wait-for-dns N] [--skip-letsencrypt]"
+  print "[SSL]    --dry-run: run checks without modifying state or requesting certs"
+  print "[SSL]    --print-domains: show computed DOMAINS and exit"
+  print "[SSL]    --no-check-dns: do not verify DNS records (use with caution)"
+  print "[SSL]    --wait-for-dns N: wait up to N seconds for DNS to point at the server"
+  print "[SSL]    --skip-letsencrypt: force dummy certs (useful during initial setup)"
+}
+
+# Parse simple flags (we only handle a few common options)
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --dry-run) DRY_RUN=true; shift ;;
+    --print-domains) PRINT_DOMAINS=true; shift ;;
+    --no-check-dns) CHECK_DNS=false; shift ;;
+    --wait-for-dns) WAIT_FOR_DNS="$2"; shift 2 ;;
+    --skip-letsencrypt) SKIP_LETSENCRYPT="true"; shift ;;
+    --help) print_help; exit 0 ;;
+    *) shift ;;
+  esac
+done
+
+troubleshoot_tips() {
+  print "[SSL] Troubleshooting checklist:"
+  print "[SSL] 1) Verify A records have been added for: ${DOMAIN_ROOT}, www.${DOMAIN_ROOT}, api.${DOMAIN_ROOT}, driver.${DOMAIN_ROOT}, admin.${DOMAIN_ROOT}"
+  print "[SSL] 2) Use: dig +short <host> or nslookup <host> to check propagation"
+  print "[SSL] 3) If DNS is new, wait 5-30 minutes and retry (or use --wait-for-dns <seconds>)"
+  print "[SSL] 4) To proceed without valid DNS, run: bash scripts/all.sh setup-ssl --skip-letsencrypt"
+  print "[SSL] 5) If your server is behind NAT or firewall, ensure external IP is reachable and ports 80/443 are open"
+}
+
+# Helper: check domains resolve to expected IP and print results
+dns_check() {
+  dns_ok=true
+  for d in "${DOMAINS[@]}"; do
+    resolved="$(resolve_ipv4 "${d}" || true)"
+    if [ -z "${resolved}" ] || [ -z "${expected_ip}" ] || [ "${resolved}" != "${expected_ip}" ]; then
+      dns_ok=false
+    fi
+  done
+}
+
+# If user asked to only print domains, do so and exit
+if [ "${PRINT_DOMAINS}" = "true" ]; then
+  print "[SSL] Computed DOMAINS: ${DOMAIN_ROOT} www.${DOMAIN_ROOT} api.${DOMAIN_ROOT} driver.${DOMAIN_ROOT} admin.${DOMAIN_ROOT}"
+  exit 0
+fi
+
 normalize_domain_root() {
   local d="$1"
   d="${d#http://}"
@@ -3304,17 +3364,84 @@ if [ "${SKIP_LETSENCRYPT}" != "true" ]; then
     fi
 
     if [ -n "${expected_ip}" ]; then
+      print "[SSL] Computed DOMAINS: ${DOMAIN_ROOT} www.${DOMAIN_ROOT} api.${DOMAIN_ROOT} driver.${DOMAIN_ROOT} admin.${DOMAIN_ROOT}"
+
+      # Check DNS status
       dns_ok=true
       for d in "${DOMAINS[@]}"; do
         resolved="$(resolve_ipv4 "${d}" || true)"
         if [ -z "${resolved}" ] || [ "${resolved}" != "${expected_ip}" ]; then
           dns_ok=false
           print "[SSL] DNS not ready: ${d} -> ${resolved:-<no A record>} (expected ${expected_ip})"
+        else
+          print "[SSL] DNS OK: ${d} -> ${resolved}"
         fi
       done
+
       if [ "${dns_ok}" != "true" ]; then
-        print "[SSL] Defaulting SKIP_LETSENCRYPT=true (dummy certs only)."
-        SKIP_LETSENCRYPT="true"
+        print "[SSL] Some domains do not resolve to ${expected_ip}."
+
+        if [ "${DRY_RUN}" = "true" ]; then
+          die "DRY_RUN: aborting due to DNS not ready"
+        fi
+
+        # If user configured waiting, implement a simple wait loop
+        if [ "${WAIT_FOR_DNS}" -gt 0 ] 2>/dev/null; then
+          print "[SSL] Waiting up to ${WAIT_FOR_DNS}s for DNS to propagate..."
+          end_time=$(( $(date +%s) + WAIT_FOR_DNS ))
+          while [ $(date +%s) -lt "$end_time" ]; do
+            sleep 15
+            dns_ok=true
+            for d in "${DOMAINS[@]}"; do
+              resolved="$(resolve_ipv4 "${d}" || true)"
+              if [ -z "${resolved}" ] || [ "${resolved}" != "${expected_ip}" ]; then
+                dns_ok=false
+                break
+              fi
+            done
+            if [ "${dns_ok}" = "true" ]; then
+              print "[SSL] DNS now appears to be correct. Proceeding..."
+              break
+            fi
+            print "[SSL] Still waiting for DNS..."
+          done
+        fi
+
+        # Re-check after optional wait
+        if [ "${dns_ok}" != "true" ]; then
+          # Interactive prompt if possible
+          if [ -t 0 ]; then
+            print "[SSL] DNS is not ready. Choose an action:"
+            print "[1] Wait and retry (provide seconds as --wait-for-dns N next run)"
+            print "[2] Use dummy certs and continue (set SKIP_LETSENCRYPT=true)"
+            print "[3] Abort and fix DNS"
+            print "[4] Show troubleshooting tips"
+            read -r -p "Enter choice [1-4] (default 2): " choice
+            case "${choice}" in
+              1)
+                die "Pick a timeout and re-run: bash scripts/all.sh setup-ssl --wait-for-dns 600"
+                ;;
+              2)
+                print "[SSL] Using dummy certs (SKIP_LETSENCRYPT=true)."
+                SKIP_LETSENCRYPT="true"
+                ;;
+              3)
+                die "Aborting: fix DNS and re-run setup-ssl"
+                ;;
+              4)
+                troubleshoot_tips
+                die "Aborting: please fix DNS and re-run"
+                ;;
+              *)
+                print "[SSL] No valid choice given; using dummy certs."
+                SKIP_LETSENCRYPT="true"
+                ;;
+            esac
+          else
+            print "[SSL] Non-interactive session: defaulting to dummy certs (SKIP_LETSENCRYPT=true)."
+            SKIP_LETSENCRYPT="true"
+          fi
+        fi
       fi
     else
       print "[SSL] Could not determine VPS public IP; defaulting SKIP_LETSENCRYPT=true."
