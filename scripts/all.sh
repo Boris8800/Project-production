@@ -4489,6 +4489,11 @@ build_frontend() {
   print "[frontend] Building (npm ci && npm run build) as ${SERVICE_USER}"
   print "         (npm warnings are normal and can be ignored)"
   print "         Installing dependencies..."
+
+  print "[frontend] Ensuring ownership and npm cache for ${SERVICE_USER}"
+  sudo chown -R "${SERVICE_USER}:${SERVICE_USER}" "${FRONTEND_DIR}" /home/"${SERVICE_USER}" 2>/dev/null || true
+  sudo -u "${SERVICE_USER}" -H bash -lc "mkdir -p /home/\"${SERVICE_USER}\"/.npm && npm config set cache /home/\"${SERVICE_USER}\"/.npm"
+
   sudo -u "${SERVICE_USER}" -H bash -lc "
     set -euo pipefail
     cd '${FRONTEND_DIR}'
@@ -4497,7 +4502,7 @@ build_frontend() {
       . '${ENV_FILE}'
       set +a
     fi
-    npm ci --loglevel=error 2>&1 | sed '/deprecated/d'
+    npm ci --unsafe-perm --loglevel=error 2>&1 | sed '/deprecated/d'
   "
   print "         Building Next.js application (this may take 1-2 minutes)..."
   sudo -u "${SERVICE_USER}" -H bash -lc "
