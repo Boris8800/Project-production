@@ -3351,16 +3351,52 @@ if [ "${SKIP_LETSENCRYPT}" = "true" ]; then
 fi
 
 echo "[SSL] Requesting Let's Encrypt certificates"
-# Request certs individually to match per-hostname live paths used by nginx configs.
+
+# Primary path: HTTP-01 via webroot (port 80)
+webroot_ok=true
+failed_domain=""
 for d in "${DOMAINS[@]}"; do
   echo "  - ${d}"
-  docker compose -f "${COMPOSE_FILE}" run --rm --entrypoint certbot certbot certonly \
+  if ! docker compose -f "${COMPOSE_FILE}" run --rm --entrypoint certbot certbot certonly \
     --webroot -w /var/www/certbot \
     --email "${EMAIL}" --agree-tos --no-eff-email \
     -d "${d}" \
     --rsa-key-size 4096 \
-    --force-renewal
+    --force-renewal; then
+    webroot_ok=false
+    failed_domain="${d}"
+    break
+  fi
 done
+
+# Fallback path: TLS-ALPN-01 via standalone (port 443)
+# Useful when providers block inbound 80 but allow 443.
+if [ "${webroot_ok}" != "true" ]; then
+  echo "[SSL] Webroot HTTP-01 failed for ${failed_domain}. Trying TLS-ALPN-01 on port 443..." >&2
+  docker compose -f "${COMPOSE_FILE}" stop nginx-proxy >/dev/null 2>&1 || true
+
+  # certbot standalone needs to bind to the host port 443, so use host networking.
+  # Request one cert covering all domains.
+  if ! docker run --rm --network host \
+    -v "${LE_VOLUME}:/etc/letsencrypt" \
+    -v "${WWW_VOLUME}:/var/www/certbot" \
+    certbot/certbot:latest certonly \
+      --standalone \
+      --preferred-challenges tls-alpn-01 \
+      --tls-alpn-01-port 443 \
+      --email "${EMAIL}" --agree-tos --no-eff-email \
+      --rsa-key-size 4096 \
+      --force-renewal \
+      $(printf -- '-d %q ' "${DOMAINS[@]}"); then
+    echo "[SSL] ERROR: TLS-ALPN-01 also failed." >&2
+    echo "[SSL] This usually means inbound TCP/443 is blocked (VPS provider firewall) or already in use." >&2
+    echo "[SSL] Check: ss -ltnp | grep -E ':80|:443'" >&2
+    echo "[SSL] Ensure provider firewall allows TCP/80 and TCP/443 to this VPS." >&2
+    exit 1
+  fi
+
+  docker compose -f "${COMPOSE_FILE}" up -d --no-deps nginx-proxy >/dev/null 2>&1 || true
+fi
 
 echo "[SSL] Reloading Nginx"
 docker compose -f "${COMPOSE_FILE}" exec nginx-proxy nginx -s reload
