@@ -876,6 +876,15 @@ print_service_links() {
   load_env_if_present
   local domain_root
   domain_root="${DOMAIN_ROOT:-${DOMAIN:-yourdomain.com}}"
+  # Normalize common user input mistakes (e.g. using https:// or www.).
+  domain_root="${domain_root#http://}"
+  domain_root="${domain_root#https://}"
+  domain_root="${domain_root%%/*}"
+  domain_root="${domain_root%%:*}"
+  domain_root="$(echo "${domain_root}" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')"
+  if [[ "${domain_root}" == www.* ]]; then
+    domain_root="${domain_root#www.}"
+  fi
 
   print "Web / service links"
   print "- Customer: https://${domain_root}"
@@ -1970,6 +1979,20 @@ EMAIL="${LETSENCRYPT_EMAIL:-admin@yourdomain.com}"
 START_MONITORING="${START_MONITORING:-false}"
 AUTO_GENERATE_SECRETS="${AUTO_GENERATE_SECRETS:-false}"
 SKIP_LETSENCRYPT="${SKIP_LETSENCRYPT:-false}"
+
+normalize_domain_root() {
+  local d="$1"
+  d="${d#http://}"
+  d="${d#https://}"
+  d="${d%%/*}"
+  d="${d%%:*}"
+  d="$(echo "${d}" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')"
+  d="${d%.}"
+  if [[ "${d}" == www.* ]]; then
+    d="${d#www.}"
+  fi
+  printf '%s' "${d}"
+}
 APP_ONLY="${APP_ONLY:-false}"
 
 # Optional: update repo before deploying
@@ -2330,10 +2353,30 @@ autofill_env_secrets_if_requested() {
 
   print "[deploy] AUTO_GENERATE_SECRETS=true: generating secrets in .env.production"
 
+  get_env_value() {
+    local k="$1"
+    grep -E "^${k}=" "${file}" | head -n 1 | cut -d= -f2-
+  }
+
+  is_placeholder_value() {
+    local v="$1"
+    case "${v}" in
+      ""|ChangeMe_*|secure_password_here|your_jwt_secret_here|your_refresh_secret_here) return 0 ;;
+      *) return 1 ;;
+    esac
+  }
+
   # Use hex to avoid special chars that could break .env parsing.
-  ensure_env_kv "${file}" "POSTGRES_PASSWORD" "$(openssl rand -hex 32)"
-  ensure_env_kv "${file}" "JWT_SECRET" "$(openssl rand -hex 64)"
-  ensure_env_kv "${file}" "JWT_REFRESH_SECRET" "$(openssl rand -hex 64)"
+  # IMPORTANT: only replace values that are missing or placeholder-like.
+  if is_placeholder_value "$(get_env_value POSTGRES_PASSWORD)"; then
+    ensure_env_kv "${file}" "POSTGRES_PASSWORD" "$(openssl rand -hex 32)"
+  fi
+  if is_placeholder_value "$(get_env_value JWT_SECRET)"; then
+    ensure_env_kv "${file}" "JWT_SECRET" "$(openssl rand -hex 64)"
+  fi
+  if is_placeholder_value "$(get_env_value JWT_REFRESH_SECRET)"; then
+    ensure_env_kv "${file}" "JWT_REFRESH_SECRET" "$(openssl rand -hex 64)"
+  fi
 }
 
 install_docker() {
@@ -2605,8 +2648,6 @@ main() {
   sync_repo_to_origin_main
 
   print "== Project Production Deploy =="
-  print "Domain: ${DOMAIN}"
-  print "Email:  ${EMAIL}"
   print "Auto-generate secrets: ${AUTO_GENERATE_SECRETS}"
   print "Skip Let's Encrypt:     ${SKIP_LETSENCRYPT}"
   print
@@ -2668,6 +2709,16 @@ main() {
     # shellcheck disable=SC1091
     . ./.env.production
     set +a
+
+    # Print resolved values now that .env.production is loaded (avoid placeholders).
+    DOMAIN="${DOMAIN_ROOT:-${DOMAIN:-yourdomain.com}}"
+    if [[ "${DOMAIN}" == www.* ]]; then
+      DOMAIN="${DOMAIN#www.}"
+    fi
+    EMAIL="${LETSENCRYPT_EMAIL:-admin@${DOMAIN}}"
+    print "Domain: ${DOMAIN}"
+    print "Email:  ${EMAIL}"
+    print
 
   if [ "${SETUP_FRONTEND_HOST:-true}" = "true" ]; then
     print "[deploy] Frontend is built and run via Docker Compose (service: frontend)"
@@ -3154,6 +3205,7 @@ fi
 
 # Re-apply defaults AFTER sourcing .env.production, then compute DOMAINS.
 DOMAIN_ROOT="${DOMAIN_ROOT:-${DOMAIN:-yourdomain.com}}"
+DOMAIN_ROOT="$(normalize_domain_root "${DOMAIN_ROOT}")"
 EMAIL="${LETSENCRYPT_EMAIL:-admin@${DOMAIN_ROOT}}"
 
 DOMAINS=(
@@ -4478,10 +4530,15 @@ run_ssl_setup() {
   # Accept inputs like 'http://example.com/' or 'https://example.com' and sanitize
   domain="${domain#http://}"
   domain="${domain#https://}"
-  # Remove trailing slash if present
+  # Remove path/query fragments, ports, trailing slashes, and whitespace
+  domain="${domain%%/*}"
+  domain="${domain%%:*}"
   domain="${domain%/}"
-  # Trim any accidental whitespace
-  domain="$(echo "${domain}" | tr -d '[:space:]')"
+  domain="$(echo "${domain}" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')"
+  # If user pastes a www URL, store the apex domain to avoid www.www.
+  if [[ "${domain}" == www.* ]]; then
+    domain="${domain#www.}"
+  fi
 
   if [ -z "${domain}" ] || [ -z "${email}" ]; then
     die "Domain and Email are required."
