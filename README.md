@@ -30,3 +30,24 @@ The deploy script will also:
 
 ## Security note
 Do **not** commit real secrets. Commit `.env.production.example` only; keep `.env.production` on the server.
+
+---
+
+## Local development & Ops Dashboard (dev) 🔧
+
+To run the Ops Dashboard locally (dev mode, attached to dev compose):
+
+- Start the dashboard (dev):
+  - `docker compose up -d --build ops-dashboard`
+  - or use helper scripts: `scripts/run-ops-dashboard.sh` (mac/linux), `scripts/run-ops-dashboard.ps1` (PowerShell), `scripts/run-ops-dashboard.bat` (Windows)
+- Open: `http://127.0.0.1:8090/` (API: `http://127.0.0.1:8090/api/status`)
+
+Environment variables (dev defaults):
+- `BACKEND_URL` — default: `http://backend-api:4000` (used for health checks)
+- `NGINX_URL` — default: `http://Project-nginx`
+- `DOMAIN_ROOT` — default: `localhost`
+
+Notes:
+- The dev dashboard attaches to the Compose `internal` network so it resolves container hostnames (recommended for editing).
+- The production dashboard runs from `docker-compose.production.yml` and is intended for server environments.
+
