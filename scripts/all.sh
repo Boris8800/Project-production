@@ -3143,6 +3143,20 @@ EMAIL="${LETSENCRYPT_EMAIL:-admin@yourdomain.com}"
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.production.yml}"
 SKIP_LETSENCRYPT="${SKIP_LETSENCRYPT:-false}"
 
+normalize_domain_root() {
+  local d="$1"
+  d="${d#http://}"
+  d="${d#https://}"
+  d="${d%%/*}"
+  d="${d%%:*}"
+  d="$(echo "${d}" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')"
+  d="${d%.}"
+  if [[ "${d}" == www.* ]]; then
+    d="${d#www.}"
+  fi
+  printf '%s' "${d}"
+}
+
 # IMPORTANT: DOMAINS must be computed AFTER loading .env.production (if present).
 # This script may be invoked before env vars are exported, so default values
 # above may still be placeholders at this point.
