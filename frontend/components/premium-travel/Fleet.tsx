@@ -242,14 +242,7 @@ const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
       img: ['/images/vehicles/mercedes-v-class/uhn.png', '/images/vehicles/mercedes-v-class/uhn2.png'],
       tag: '7-Seater Luxury'
     },
-    {
-      name: 'Elite Group Travel',
-      model: 'Mercedes-Benz Vito Tourer',
-      sub: 'Maximum capacity without compromising on elegance. The premier choice for large families and high-end group logistics.',
-      seats: 8, bags: 8,
-      img: 'https://images.unsplash.com/photo-1621285853634-713b8dd6b5ee?q=85&w=1600&auto=format&fit=crop',
-      tag: '8-Seater Prestige'
-    }
+
   ];
 
   const displayedVehicles = showAll ? vehicles : vehicles.slice(0, 3);
