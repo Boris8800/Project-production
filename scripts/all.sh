@@ -3136,6 +3136,12 @@ __PROJECT_SCRIPT__
 # - Creates ssl-dhparams.pem inside letsencrypt volume
 # - Requests/renews Let's Encrypt certs for all hostnames
 
+# Source shared helpers (ensures normalize_domain_root is always available in temp scripts)
+if [ -f ./scripts/_common.sh ]; then
+  # shellcheck disable=SC1091
+  . ./scripts/_common.sh
+fi
+
 set -euo pipefail
 
 DOMAIN_ROOT="${DOMAIN_ROOT:-yourdomain.com}"
