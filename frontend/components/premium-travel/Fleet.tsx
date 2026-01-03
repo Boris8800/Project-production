@@ -79,7 +79,7 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSe
   };
 
   const translations = {
-    [Language.EN]: { seats: 'Seats', bags: 'Bags', book: 'Get a Quote' },
+    [Language.EN]: { seats: 'Seats', bags: 'Bags', book: 'Book Now' },
     [Language.ES]: { seats: 'Asientos', bags: 'Maletas', book: 'Obtener Presupuesto' },
     [Language.FR]: { seats: 'Sièges', bags: 'Bagages', book: 'Obtenir un Devis' },
     [Language.DE]: { seats: 'Sitze', bags: 'Gepäck', book: 'Angebot Anfordern' },
