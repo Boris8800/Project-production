@@ -1,7 +1,7 @@
 import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { randomBytes, randomUUID } from 'crypto';
 import type { Request } from 'express';
