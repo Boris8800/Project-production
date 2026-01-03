@@ -3139,7 +3139,12 @@ __PROJECT_SCRIPT__
 set -euo pipefail
 
 DOMAIN_ROOT="${DOMAIN_ROOT:-yourdomain.com}"
-EMAIL="${LETSENCRYPT_EMAIL:-admin@yourdomain.com}"
+if command -v normalize_domain_root >/dev/null 2>&1; then
+  DOMAIN_ROOT="$(normalize_domain_root "${DOMAIN_ROOT}")"
+else
+  DOMAIN_ROOT="$(echo "${DOMAIN_ROOT}" | sed -e 's~^https\?://~~' -e 's~/.*~~' -e 's/:.*$//' -e 's/^www\.//' | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]' | sed 's/\.$//')"
+fi
+EMAIL="${LETSENCRYPT_EMAIL:-admin@${DOMAIN_ROOT}}"
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.production.yml}"
 SKIP_LETSENCRYPT="${SKIP_LETSENCRYPT:-false}"
 
@@ -3219,7 +3224,12 @@ fi
 
 # Re-apply defaults AFTER sourcing .env.production, then compute DOMAINS.
 DOMAIN_ROOT="${DOMAIN_ROOT:-${DOMAIN:-yourdomain.com}}"
-DOMAIN_ROOT="$(normalize_domain_root "${DOMAIN_ROOT}")"
+if command -v normalize_domain_root >/dev/null 2>&1; then
+  DOMAIN_ROOT="$(normalize_domain_root "${DOMAIN_ROOT}")"
+else
+  # Fallback normalization (strip scheme/path/port, remove www, lowercase, trim)
+  DOMAIN_ROOT="$(echo "${DOMAIN_ROOT}" | sed -e 's~^https\?://~~' -e 's~/.*~~' -e 's/:.*$//' -e 's/^www\.//' | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]' | sed 's/\.$//')"
+fi
 EMAIL="${LETSENCRYPT_EMAIL:-admin@${DOMAIN_ROOT}}"
 
 DOMAINS=(
