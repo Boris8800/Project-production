@@ -47,21 +47,9 @@ const Routes: React.FC = () => {
         </div>
         
         <div className="flex-1 h-[260px] sm:h-[320px] md:h-[450px] lg:h-auto rounded-3xl overflow-hidden relative shadow-2xl border border-white/5 group">
-          {/* Image carousel: cycles every 5s with fade transition */}
-          {/** Preload & crossfade images for smooth transitions */}
-          {(() => {
-            const images = [
-              'https://images.unsplash.com/photo-1520986606214-8b456906c813?auto=format&fit=crop&q=80&w=1600',
-              'https://images.unsplash.com/photo-1505765057599-4e1b3a0b0c6f?auto=format&fit=crop&q=80&w=1600',
-              'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&q=80&w=1600',
-              'https://images.unsplash.com/photo-1504215680853-026ed2a45def?auto=format&fit=crop&q=80&w=1600'
-            ];
+          {/* Image carousel: cycles every 5s with fade transition, preloads, has controls and pause-on-hover */}
 
-            // useState/useEffect declared outside of the IIFE below — we need to manage them in component scope
-            return null;
-          })()}
-
-          {/* Implemented below with proper state */}
+          {/* ImageCarousel implemented below (uses local /images assets for production stability) */}
           <ImageCarousel />
 
           <div className="absolute inset-0 bg-blue-900/30 mix-blend-multiply"></div>
@@ -81,26 +69,55 @@ const Routes: React.FC = () => {
           </div>
         </div>
 
-const ImageCarousel: React.FC = () => {
-  const images = [
-    'https://images.unsplash.com/photo-1520986606214-8b456906c813?auto=format&fit=crop&q=80&w=1600',
-    'https://images.unsplash.com/photo-1505765057599-4e1b3a0b0c6f?auto=format&fit=crop&q=80&w=1600',
-    'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&q=80&w=1600',
-    'https://images.unsplash.com/photo-1504215680853-026ed2a45def?auto=format&fit=crop&q=80&w=1600'
+// Image carousel component defined inside Routes for easy access to local assets
+const ImageCarousel: React.FC<{ intervalMs?: number }> = ({ intervalMs = 5000 }) => {
+  const carouselImages = [
+    '/images/backgrounds/hero-luxury-car.jpg',
+    '/images/backgrounds/luxury-interior.jpg',
+    '/images/backgrounds/uk-map.jpg',
+    '/images/vehicles/mercedes-s-class.png'
   ];
 
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const len = carouselImages.length;
 
+  // Preload images once
   useEffect(() => {
-    // Preload images
-    images.forEach((s) => { const i = new Image(); i.src = s; });
-    const id = setInterval(() => setIndex((i) => (i + 1) % images.length), 5000);
+    carouselImages.forEach((s) => { const img = new Image(); img.src = s; });
+  }, []);
+
+  // Auto-advance when not paused
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % len), intervalMs);
     return () => clearInterval(id);
+  }, [paused, intervalMs, len]);
+
+  const prev = () => setIndex((i) => (i - 1 + len) % len);
+  const next = () => setIndex((i) => (i + 1) % len);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowRight') next();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   return (
-    <div className="absolute inset-0">
-      {images.map((src, i) => (
+    <div
+      className="absolute inset-0"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+      role="region"
+      aria-label="Popular routes image carousel"
+    >
+      {carouselImages.map((src, i) => (
         <div
           key={i}
           className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000`}
@@ -108,6 +125,23 @@ const ImageCarousel: React.FC = () => {
           aria-hidden={index !== i}
         />
       ))}
+
+      {/* Controls */}
+      <div className="absolute inset-0 flex items-center justify-between px-3 md:px-5 pointer-events-none">
+        <button onClick={prev} className="pointer-events-auto bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition" aria-label="Previous image">
+          <span className="material-symbols-outlined">chevron_left</span>
+        </button>
+        <button onClick={next} className="pointer-events-auto bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition" aria-label="Next image">
+          <span className="material-symbols-outlined">chevron_right</span>
+        </button>
+      </div>
+
+      {/* Indicator dots */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+        {carouselImages.map((_, i) => (
+          <button key={i} onClick={() => setIndex(i)} className={`w-2 h-2 rounded-full ${i === index ? 'bg-white' : 'bg-white/50'} transition`} aria-label={`Go to slide ${i + 1}`} />
+        ))}
+      </div>
     </div>
   );
 };
