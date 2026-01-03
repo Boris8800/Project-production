@@ -47,6 +47,30 @@ Environment variables (dev defaults):
 - `NGINX_URL` — default: `http://Project-nginx`
 - `DOMAIN_ROOT` — default: `localhost`
 
+## SSL setup & troubleshooting ✅
+
+Use the interactive setup to enable a domain and obtain Let's Encrypt certificates:
+
+- Example: sudo bash scripts/all.sh
+  - Menu → Enable Domain & SSL
+- Or run directly: bash scripts/all.sh setup-ssl
+
+Available options:
+
+- `--print-domains` — Show computed domains and exit
+- `--dry-run` — Run checks without requesting certificates or changing state
+- `--wait-for-dns N` — Wait up to N seconds for DNS to point at the VPS
+- `--skip-letsencrypt` — Force use of temporary dummy certs (safe for testing)
+- `--smoke-test` / `--no-smoke-test` — Run/skip a quick HTTP/HTTPS reachability check for computed domains
+
+Troubleshooting tips:
+
+- If DNS isn't propagated: wait and re-run with `--wait-for-dns 600` or use `--skip-letsencrypt` to continue with dummy certs
+- You can run a targeted smoke test locally on the VPS: `bash scripts/check-domains.sh <domain> [other domains]`
+- The deploy script now prints per-domain DNS resolution and offers interactive options when issues are detected
+
+
+
 Notes:
 - The dev dashboard attaches to the Compose `internal` network so it resolves container hostnames (recommended for editing).
 - The production dashboard runs from `docker-compose.production.yml` and is intended for server environments.

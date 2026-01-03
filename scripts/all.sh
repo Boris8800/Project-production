@@ -3160,11 +3160,15 @@ SKIP_LETSENCRYPT="${SKIP_LETSENCRYPT:-false}"
 #  --no-check-dns       : skip DNS verification
 #  --wait-for-dns N     : wait up to N seconds for DNS to point at the VPS
 #  --skip-letsencrypt   : force using dummy certs (sets SKIP_LETSENCRYPT=true)
+#  --smoke-test         : run a quick HTTP/HTTPS reachability test for computed domains
+#  --no-smoke-test      : skip smoke test
 #  --help               : show this help and exit
 DRY_RUN="${DRY_RUN:-false}"
 PRINT_DOMAINS="${PRINT_DOMAINS:-false}"
 CHECK_DNS="${CHECK_DNS:-true}"
 WAIT_FOR_DNS="${WAIT_FOR_DNS:-0}"
+SMOKE_TEST="${SMOKE_TEST:-true}"
+SMOKE_SCRIPT="${SMOKE_SCRIPT:-./scripts/check-domains.sh}"
 
 print_help() {
   print "[SSL] Usage: bash scripts/all.sh setup-ssl [--dry-run] [--print-domains] [--no-check-dns] [--wait-for-dns N] [--skip-letsencrypt]"
@@ -3183,6 +3187,8 @@ while [ "$#" -gt 0 ]; do
     --no-check-dns) CHECK_DNS=false; shift ;;
     --wait-for-dns) WAIT_FOR_DNS="$2"; shift 2 ;;
     --skip-letsencrypt) SKIP_LETSENCRYPT="true"; shift ;;
+    --smoke-test) SMOKE_TEST=true; shift ;;
+    --no-smoke-test) SMOKE_TEST=false; shift ;;
     --help) print_help; exit 0 ;;
     *) shift ;;
   esac
@@ -3416,7 +3422,8 @@ if [ "${SKIP_LETSENCRYPT}" != "true" ]; then
             print "[2] Use dummy certs and continue (set SKIP_LETSENCRYPT=true)"
             print "[3] Abort and fix DNS"
             print "[4] Show troubleshooting tips"
-            read -r -p "Enter choice [1-4] (default 2): " choice
+            print "[5] Run a quick smoke-test for HTTP/HTTPS reachability"
+            read -r -p "Enter choice [1-5] (default 2): " choice
             case "${choice}" in
               1)
                 die "Pick a timeout and re-run: bash scripts/all.sh setup-ssl --wait-for-dns 600"
@@ -3431,6 +3438,15 @@ if [ "${SKIP_LETSENCRYPT}" != "true" ]; then
               4)
                 troubleshoot_tips
                 die "Aborting: please fix DNS and re-run"
+                ;;
+              5)
+                if [ -x "${SMOKE_SCRIPT}" ]; then
+                  "${SMOKE_SCRIPT}" "${DOMAINS[@]}" || true
+                  print "[SSL] Smoke-test complete; re-run setup-ssl after fixing issues or use --skip-letsencrypt to continue"
+                else
+                  print "[SSL] Smoke-test script not found or not executable: ${SMOKE_SCRIPT}"
+                fi
+                die "Aborting: please fix connectivity and re-run"
                 ;;
               *)
                 print "[SSL] No valid choice given; using dummy certs."
