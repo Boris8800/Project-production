@@ -4356,6 +4356,14 @@ run_ssl_setup() {
   read -rp "Enter your main domain (e.g., example.com): " domain < /dev/tty
   read -rp "Enter your email for Let's Encrypt: " email < /dev/tty
   
+  # Accept inputs like 'http://example.com/' or 'https://example.com' and sanitize
+  domain="${domain#http://}"
+  domain="${domain#https://}"
+  # Remove trailing slash if present
+  domain="${domain%/}"
+  # Trim any accidental whitespace
+  domain="$(echo "${domain}" | tr -d '[:space:]')"
+
   if [ -z "${domain}" ] || [ -z "${email}" ]; then
     die "Domain and Email are required."
   fi
