@@ -1,0 +1,64 @@
+name: Ops Dashboard Health Check
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'ops-dashboard/**'
+      - '.github/workflows/ops-dashboard-health.yml'
+  pull_request:
+    paths:
+      - 'ops-dashboard/**'
+      - '.github/workflows/ops-dashboard-health.yml'
+  workflow_dispatch:
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build ops-dashboard image
+        run: docker build -t project-ops-dashboard:ci ./ops-dashboard
+
+      - name: Run ops-dashboard
+        run: |
+          docker run -d --name ops-dashboard-ci -p 127.0.0.1:8090:8090 project-ops-dashboard:ci
+
+      - name: Wait for HTTP 200 on /
+        run: |
+          STATUS=0
+          for i in $(seq 1 15); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8090/ || echo 0)
+            if [ "$STATUS" = "200" ]; then
+              echo "Ops dashboard is up"
+              break
+            fi
+            echo "Waiting for ops-dashboard... attempt $i"
+            sleep 2
+          done
+          if [ "$STATUS" != "200" ]; then
+            echo "ops-dashboard did not respond with 200 on /"
+            docker logs ops-dashboard-ci || true
+            docker rm -f ops-dashboard-ci || true
+            exit 1
+          fi
+
+      - name: Check /api/status HTTP 200
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8090/api/status || echo 0)
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "/api/status returned $HTTP_STATUS"
+            docker logs ops-dashboard-ci || true
+            docker rm -f ops-dashboard-ci || true
+            exit 1
+          fi
+
+      - name: Install jq and show sample status
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq
+          curl -s http://127.0.0.1:8090/api/status | jq '{now: .now, domainRoot: .domainRoot, checks: .checks}' | sed -n '1,200p' || true
+
+      - name: Cleanup
+        run: docker rm -f ops-dashboard-ci || true
