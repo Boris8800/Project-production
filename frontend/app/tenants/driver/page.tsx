@@ -178,10 +178,9 @@ export default function DriverRoot() {
       <main className="flex-grow">
         <section className="relative w-full flex items-center justify-center py-16 px-4 md:px-12 overflow-hidden">
           <div
-            className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-transform duration-[30s] scale-110"
+            className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat hero-bg-animate"
             style={{
               backgroundImage: `linear-gradient(rgba(12, 11, 9, 0.6), rgba(12, 11, 9, 0.92)), url('https://images.unsplash.com/photo-1436491865332-7a61a109c055?auto=format&fit=crop&q=85&w=2400')`,
-              backgroundAttachment: 'fixed',
             }}
           />
 

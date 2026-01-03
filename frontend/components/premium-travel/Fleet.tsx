@@ -25,6 +25,7 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSe
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
+  const [reduceMotion, setReduceMotion] = useState(false);
   const images = Array.isArray(vehicle.img) ? vehicle.img : [vehicle.img];
   const activeImg = images[Math.min(imgIndex, images.length - 1)];
 
@@ -35,15 +36,33 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSe
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const update = () => setReduceMotion(mq.matches);
+    update();
+
+    // Safari < 14 uses addListener/removeListener.
+    if ('addEventListener' in mq) {
+      mq.addEventListener('change', update);
+      return () => mq.removeEventListener('change', update);
+    }
+
+    mq.addListener(update);
+    return () => mq.removeListener(update);
+  }, []);
+
+  useEffect(() => {
     if (!isVisible) return;
     if (images.length < 2) return;
+    if (reduceMotion) return;
 
     const id = setInterval(() => {
       setImgIndex((prev) => (prev + 1) % images.length);
     }, 7_000);
 
     return () => clearInterval(id);
-  }, [isVisible, images.length]);
+  }, [isVisible, images.length, reduceMotion]);
 
   useEffect(() => {
     if (images.length < 2) return;
@@ -87,7 +106,8 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSe
 
   const t = translations[language];
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (reduceMotion) return;
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -97,13 +117,13 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSe
     setOffset({ x: moveX * -12, y: moveY * -12 });
   };
 
-  const handleMouseLeave = () => setOffset({ x: 0, y: 0 });
+  const handlePointerLeave = () => setOffset({ x: 0, y: 0 });
 
   return (
     <div 
       ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
       style={{ transitionDelay: `${index * 150}ms` }}
       className={`group relative rounded-[32px] overflow-hidden bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 hover:shadow-3xl flex flex-col h-full transition-all duration-1000 ease-out transform ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
@@ -118,7 +138,7 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSe
               onLoad={() => setImgLoaded(true)}
               loading="lazy"
               onTransitionEnd={handleFadeComplete}
-              className={`absolute inset-0 block w-full h-full object-cover transition-opacity duration-700 ease-out will-change-transform transform-gpu ${showFront ? 'opacity-100' : 'opacity-0'} ${imgLoaded ? 'grayscale-[0.2] group-hover:grayscale-0' : ''}`}
+              className={`absolute inset-0 block w-full h-full object-cover transition-opacity duration-700 ease-out will-change-transform transform-gpu ${showFront ? 'opacity-100' : 'opacity-0'} ${imgLoaded ? 'grayscale-[0.2] group-hover:grayscale-0 group-active:grayscale-0' : ''}`}
               style={{
                 transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(1.08)`,
               }}
@@ -129,7 +149,7 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSe
               onLoad={() => setImgLoaded(true)}
               loading="lazy"
               onTransitionEnd={handleFadeComplete}
-              className={`absolute inset-0 block w-full h-full object-cover transition-opacity duration-700 ease-out will-change-transform transform-gpu ${showFront ? 'opacity-0' : 'opacity-100'} ${imgLoaded ? 'grayscale-[0.2] group-hover:grayscale-0' : ''}`}
+              className={`absolute inset-0 block w-full h-full object-cover transition-opacity duration-700 ease-out will-change-transform transform-gpu ${showFront ? 'opacity-0' : 'opacity-100'} ${imgLoaded ? 'grayscale-[0.2] group-hover:grayscale-0 group-active:grayscale-0' : ''}`}
               style={{
                 transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(1.08)`,
               }}
@@ -173,10 +193,10 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSe
 
         <button 
           onClick={() => onSelect?.(vehicle.name)}
-          className="tl-shine-6s relative overflow-hidden mt-auto w-full py-4 rounded-[18px] bg-slate-900 dark:bg-primary text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-2xl transition-all transform hover:scale-[1.02] active:scale-95 group-hover:bg-primary group-hover:text-white"
+          className="tl-shine-6s relative overflow-hidden mt-auto w-full py-4 rounded-[18px] bg-slate-900 dark:bg-primary text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-2xl transition-all transform hover:scale-[1.02] active:scale-95 group-hover:bg-primary group-hover:text-white active:bg-primary active:text-white"
         >
           <span className="relative z-10">{t.book}</span>
-          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity"></div>
         </button>
       </div>
     </div>

@@ -85,10 +85,9 @@ const CTA: React.FC<CTAProps> = ({ onBookClick }) => {
     <section className="relative min-h-[800px] flex items-center justify-center py-24 overflow-hidden">
       {/* Cinematic Airport Background with Airplane */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-transform duration-[30s] scale-110"
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat hero-bg-animate"
         style={{ 
           backgroundImage: `linear-gradient(rgba(12, 11, 9, 0.6), rgba(12, 11, 9, 0.9)), url('https://images.unsplash.com/photo-1436491865332-7a61a109c055?auto=format&fit=crop&q=85&w=2400')`,
-          backgroundAttachment: 'fixed'
         }}
       />
 
