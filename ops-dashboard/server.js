@@ -40,7 +40,7 @@ async function fetchWithTimeout(url, timeoutMs = 2500) {
 }
 
 function getDomainRoot() {
-  return process.env.DOMAIN_ROOT || process.env.DOMAIN || 'yourdomain.com';
+  return process.env.DOMAIN_ROOT || process.env.DOMAIN || 'localhost';
 }
 
 function readCertExpiry(domain) {
@@ -62,10 +62,11 @@ function readCertExpiry(domain) {
 async function buildStatus() {
   const domainRoot = getDomainRoot();
   const urls = {
-    customer: `https://${domainRoot}`,
-    driver: `https://driver.${domainRoot}`,
-    admin: `https://admin.${domainRoot}`,
-    api: `https://api.${domainRoot}`,
+    customer: process.env.CUSTOMER_URL || `http://${domainRoot}`,
+    driver: process.env.DRIVER_URL || `http://driver.${domainRoot}`,
+    admin: process.env.ADMIN_URL || `http://admin.${domainRoot}`,
+    api: process.env.BACKEND_URL || `http://backend-api:4000`,
+    nginx: process.env.NGINX_URL || `http://Project-nginx`,
   };
 
   const integrations = {
@@ -82,9 +83,9 @@ async function buildStatus() {
   };
 
   const checks = {
-    nginxHostHealth: await fetchWithTimeout('http://Project-nginx/health').catch(() => ({ ok: false })),
-    backendHealth: await fetchWithTimeout('http://backend-api:4000/v1/health'),
-    frontendHome: await fetchWithTimeout('http://Project-nginx/'),
+    nginxHostHealth: await fetchWithTimeout(`${urls.nginx}/health`).catch(() => ({ ok: false })),
+    backendHealth: await fetchWithTimeout(`${urls.api}/v1/health`),
+    frontendHome: await fetchWithTimeout(`${urls.nginx}/`),
   };
 
   const apiInfo = {

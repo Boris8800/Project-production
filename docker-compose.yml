@@ -87,6 +87,23 @@ services:
       - internal
     restart: unless-stopped
 
+  ops-dashboard:
+    build:
+      context: ./ops-dashboard
+      dockerfile: Dockerfile
+    container_name: Project-ops-dashboard-dev
+    environment:
+      PORT: 8090
+      BACKEND_URL: ${BACKEND_URL:-http://backend-api:4000}
+      NGINX_URL: ${NGINX_URL:-http://Project-nginx}
+    ports:
+      - "127.0.0.1:8090:8090"
+    depends_on:
+      - backend-api
+    networks:
+      - internal
+    restart: unless-stopped
+
   frontend:
     build:
       context: ./frontend
