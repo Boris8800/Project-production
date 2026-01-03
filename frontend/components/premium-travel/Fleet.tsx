@@ -42,14 +42,22 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSe
     const update = () => setReduceMotion(mq.matches);
     update();
 
-    // Safari < 14 uses addListener/removeListener.
-    if ('addEventListener' in mq) {
-      mq.addEventListener('change', update);
-      return () => mq.removeEventListener('change', update);
+    // TypeScript thinks MediaQueryList always has addEventListener, but older Safari
+    // only supports addListener/removeListener.
+    const mqCompat = mq as unknown as {
+      addEventListener?: (type: 'change', listener: () => void) => void;
+      removeEventListener?: (type: 'change', listener: () => void) => void;
+      addListener?: (listener: () => void) => void;
+      removeListener?: (listener: () => void) => void;
+    };
+
+    if (typeof mqCompat.addEventListener === 'function') {
+      mqCompat.addEventListener('change', update);
+      return () => mqCompat.removeEventListener?.('change', update);
     }
 
-    mq.addListener(update);
-    return () => mq.removeListener(update);
+    mqCompat.addListener?.(update);
+    return () => mqCompat.removeListener?.(update);
   }, []);
 
   useEffect(() => {
