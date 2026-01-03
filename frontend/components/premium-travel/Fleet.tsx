@@ -206,7 +206,8 @@ const Fleet: React.FC<FleetProps> = ({ onSelectVehicle }) => {
       model: 'Tesla Model S',
       sub: 'An ultra-quiet cabin and smooth ride quality designed for total relaxation. Experience the future of premium private travel.',
       seats: 3, bags: 3,
-      img: 'https://images.unsplash.com/photo-1536700503339-1e4b06520771?q=85&w=1600&auto=format&fit=crop',
+      // animate between model image and provided tesla.jpg
+      img: ['/images/vehicles/tesla-model-s.jpg', '/images/vehicles/tesla/tesla.jpg'],
       tag: 'Quiet & Refined'
     },
     {
