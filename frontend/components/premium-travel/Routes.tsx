@@ -4,10 +4,10 @@
 import React, { useEffect, useState } from 'react';
 
 const CAROUSEL_IMAGES = [
-  '/images/backgrounds/hero-luxury-car.jpg',
-  '/images/backgrounds/luxury-interior.jpg',
-  '/images/backgrounds/uk-map.jpg',
-  '/images/vehicles/mercedes-s-class.png'
+  '/images/carousel/heathrow_175811215827035.jpg',
+  '/images/carousel/heathrow_1758112812492012.jpg',
+  '/images/carousel/heathrow_175811958168761.jpg',
+  '/images/carousel/heathrow_17581432176473.jpg'
 ];
 
 // Image carousel component (module-scoped, above `Routes` to avoid JSX parse issues)
