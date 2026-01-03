@@ -2698,11 +2698,20 @@ main() {
   # Docker Compose may try to recreate the named network (project_internal). If an
   # old container (e.g. Project-nginx-ip) is still attached, network removal fails
   # with: "network project_internal has active endpoints".
+  docker network disconnect -f project_internal Project-nginx-ip >/dev/null 2>&1 || true
   docker rm -f Project-nginx-ip >/dev/null 2>&1 || true
   if docker network inspect project_internal >/dev/null 2>&1; then
-    attached_containers="$(docker network inspect -f '{{range $k, $v := .Containers}}{{$k}} {{end}}' project_internal 2>/dev/null || true)"
-    if [ -n "${attached_containers}" ]; then
-      for c in ${attached_containers}; do
+    attached_names="$(docker network inspect -f '{{range .Containers}}{{.Name}} {{end}}' project_internal 2>/dev/null || true)"
+    attached_ids="$(docker network inspect -f '{{range $id, $_ := .Containers}}{{$id}} {{end}}' project_internal 2>/dev/null || true)"
+
+    if [ -n "${attached_names}" ]; then
+      for n in ${attached_names}; do
+        docker network disconnect -f project_internal "${n}" >/dev/null 2>&1 || true
+        docker rm -f "${n}" >/dev/null 2>&1 || true
+      done
+    fi
+    if [ -n "${attached_ids}" ]; then
+      for c in ${attached_ids}; do
         docker network disconnect -f project_internal "${c}" >/dev/null 2>&1 || true
         docker rm -f "${c}" >/dev/null 2>&1 || true
       done
