@@ -19,7 +19,7 @@ services:
     image: prom/prometheus:v2.55.1
     container_name: Project-prometheus
     volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
@@ -33,7 +33,7 @@ services:
     image: prom/alertmanager:v0.27.0
     container_name: Project-alertmanager
     volumes:
-      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./infrastructure/monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     command:
       - --config.file=/etc/alertmanager/alertmanager.yml
     networks:
@@ -45,7 +45,7 @@ services:
     container_name: Project-loki
     command: -config.file=/etc/loki/config.yml
     volumes:
-      - ./monitoring/loki/config.yml:/etc/loki/config.yml:ro
+      - ./infrastructure/monitoring/loki.yml:/etc/loki/config.yml:ro
     networks:
       - monitoring
     restart: unless-stopped
@@ -55,7 +55,7 @@ services:
     container_name: Project-promtail
     command: -config.file=/etc/promtail/config.yml
     volumes:
-      - ./monitoring/promtail/config.yml:/etc/promtail/config.yml:ro
+      - ./infrastructure/monitoring/promtail.yml:/etc/promtail/config.yml:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/log:/var/log:ro
       - promtail_positions:/tmp
