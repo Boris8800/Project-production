@@ -52,11 +52,11 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
               <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-8 tracking-tight font-display">
-                The TransferLane Story
+                The Transferline Story
               </h2>
               <div className="space-y-6 text-slate-600 dark:text-slate-200 text-lg leading-relaxed">
                 <p>
-                  TransferLane was born from a simple observation: intercity travel often lacks the personal touch and refinement that travellers deserve.
+                  Transferline was born from a simple observation: intercity travel often lacks the personal touch and refinement that travellers deserve.
                 </p>
                 <p>
                   Based in the heart of the UK, we maintain core values of discretion, safety, and uncompromising quality. Our chauffeurs are trained professionals.
@@ -82,7 +82,7 @@ export default function AboutPage() {
             <div className="relative group">
               <div className="relative aspect-[4/5] rounded-[40px] overflow-hidden shadow-4xl border border-gray-200 dark:border-white/10">
                 <Image
-                  alt="TransferLane"
+                  alt="Transferline"
                   src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=1200"
                   fill
                   sizes="(min-width: 768px) 50vw, 100vw"
@@ -94,7 +94,7 @@ export default function AboutPage() {
                 <p className="font-bold text-lg leading-tight italic font-display">
                   We don&apos;t just move people; we provide the space for them to be their best selves while traveling.
                 </p>
-                <p className="mt-4 text-xs font-black uppercase tracking-widest opacity-70">— CEO, TransferLane</p>
+                <p className="mt-4 text-xs font-black uppercase tracking-widest opacity-70">— CEO, Transferline</p>
               </div>
             </div>
           </div>

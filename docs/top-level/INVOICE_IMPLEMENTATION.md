@@ -2,7 +2,7 @@
 
 ## ✅ Completed Implementation
 
-A complete invoice generation system with **automatic email delivery** has been added to your TransferLane project.
+A complete invoice generation system with **automatic email delivery** has been added to your Transferline project.
 
 ## 🎯 Key Design: Email-First Approach
 
@@ -117,7 +117,7 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
-SMTP_FROM="TransferLane <noreply@transferlane.com>"
+SMTP_FROM="Transferline <noreply@transferline.com>"
 ```
 
 **For Gmail:**
@@ -179,14 +179,14 @@ export class TripsModule {}
 
 ## 📧 What Customers Receive
 
-**Email Subject:** "Your TransferLane Invoice - INV-2025-000001"
+**Email Subject:** "Your Transferline Invoice - INV-2025-000001"
 
 **Email Contains:**
-- Professional TransferLane branding
+- Professional Transferline branding
 - Personalized greeting
 - Journey summary (pickup, destination, date/time)
 - Total amount: £168.00 (including VAT)
-- **PDF invoice attached**: `TransferLane-Invoice-INV-2025-000001.pdf`
+- **PDF invoice attached**: `Transferline-Invoice-INV-2025-000001.pdf`
 - Support contact information
 
 **PDF Invoice:**
@@ -326,7 +326,7 @@ Authorization: Bearer {admin-token}
 ## 📞 Support
 
 For questions or issues:
-- Email: support@transferlane.com
+- Email: support@transferline.com
 - Check logs for error messages
 - See INTEGRATION.md for troubleshooting
 

@@ -25,7 +25,7 @@ SMTP_HOST=smtp.gmail.com           # Your SMTP server
 SMTP_PORT=587                      # SMTP port (587 for TLS, 465 for SSL)
 SMTP_USER=your-email@gmail.com     # SMTP username
 SMTP_PASS=your-app-password        # SMTP password or app-specific password
-SMTP_FROM="TransferLane <noreply@transferlane.com>"  # Sender email
+SMTP_FROM="Transferline <noreply@transferline.com>"  # Sender email
 ```
 
 ### Email Provider Examples
@@ -36,7 +36,7 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-specific-password  # Generate in Google Account settings
-SMTP_FROM="TransferLane <noreply@transferlane.com>"
+SMTP_FROM="Transferline <noreply@transferline.com>"
 ```
 
 #### SendGrid
@@ -45,7 +45,7 @@ SMTP_HOST=smtp.sendgrid.net
 SMTP_PORT=587
 SMTP_USER=apikey
 SMTP_PASS=your-sendgrid-api-key
-SMTP_FROM="TransferLane <noreply@transferlane.com>"
+SMTP_FROM="Transferline <noreply@transferline.com>"
 ```
 
 #### AWS SES
@@ -54,7 +54,7 @@ SMTP_HOST=email-smtp.us-east-1.amazonaws.com
 SMTP_PORT=587
 SMTP_USER=your-ses-smtp-username
 SMTP_PASS=your-ses-smtp-password
-SMTP_FROM="TransferLane <noreply@transferlane.com>"
+SMTP_FROM="Transferline <noreply@transferline.com>"
 ```
 
 #### Development (No Config Needed)
@@ -146,7 +146,7 @@ export class TripsModule {}
 When a trip completes, customers automatically receive an email with:
 
 ### Email Content:
-- Professional TransferLane branding
+- Professional Transferline branding
 - Journey details (pickup, destination, date)
 - Total amount with VAT breakdown
 - PDF invoice attached

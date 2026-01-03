@@ -34,7 +34,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
       confirm: 'Confirm Choice', select: 'Select Vehicle', noVehicles: 'No Suitable Vehicles',
       noVehiclesDesc: 'Your selection of {persons} passengers and {luggage} bags exceeds the capacity of our available fleet.',
       adjust: 'Adjust Requirements', miles: 'Miles', stop: 'Stop {n}',
-      footerNote: 'TransferLane operates a fleet of licensed, professionally maintained vehicles. Every {miles} mile journey is monitored 24/7 by our operations centre.'
+      footerNote: 'Transferline operates a fleet of licensed, professionally maintained vehicles. Every {miles} mile journey is monitored 24/7 by our operations centre.'
     },
     [Language.ES]: {
       back: 'Volver a la búsqueda', badge: 'Ruta Confirmada', title: 'Su Viaje Personalizado',
@@ -46,7 +46,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
       confirm: 'Confirmar Elección', select: 'Seleccionar Vehículo', noVehicles: 'No Hay Vehículos Adecuados',
       noVehiclesDesc: 'Su selección de {persons} pasajeros y {luggage} maletas excede la capacidad de nuestra flota disponible.',
       adjust: 'Ajustar Requisitos', miles: 'Millas', stop: 'Parada {n}',
-      footerNote: 'TransferLane opera una flota de vehículos autorizados y mantenidos profesionalmente. Cada viaje de {miles} millas es monitoreado 24/7 por nuestro centro de operaciones.'
+      footerNote: 'Transferline opera una flota de vehículos autorizados y mantenidos profesionalmente. Cada viaje de {miles} millas es monitoreado 24/7 por nuestro centro de operaciones.'
     },
     [Language.FR]: {
       back: 'Retour à la recherche', badge: 'Itinéraire Confirmé', title: 'Votre Voyage Sur Mesure',
@@ -58,7 +58,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
       confirm: 'Confirmer', select: 'Sélectionner', noVehicles: 'Aucun Véhicule Adapté',
       noVehiclesDesc: 'Votre sélection de {persons} passagers et {luggage} bagages dépasse la capacité de notre flotte disponible.',
       adjust: 'Ajuster', miles: 'Miles', stop: 'Arrêt {n}',
-      footerNote: 'TransferLane exploite une flotte de véhicules agréés et entretenus professionnellement. Chaque trajet de {miles} miles est surveillé 24h/24 et 7j/7 par notre centre d\'opérations.'
+      footerNote: 'Transferline exploite une flotte de véhicules agréés et entretenus professionnellement. Chaque trajet de {miles} miles est surveillé 24h/24 et 7j/7 par notre centre d\'opérations.'
     },
     [Language.DE]: {
       back: 'Zur Suche', badge: 'Route Bestätigt', title: 'Ihre Reise',
@@ -70,7 +70,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
       confirm: 'Bestätigen', select: 'Wählen', noVehicles: 'Keine Fahrzeuge',
       noVehiclesDesc: '{persons} Passagiere und {luggage} Gepäckstücke übersteigen unsere Kapazität.',
       adjust: 'Anpassen', miles: 'Meilen', stop: 'Haltestelle {n}',
-      footerNote: 'TransferLane betreibt lizenzierte Fahrzeuge. Jede {miles}-Meilen-Fahrt wird 24/7 überwacht.'
+      footerNote: 'Transferline betreibt lizenzierte Fahrzeuge. Jede {miles}-Meilen-Fahrt wird 24/7 überwacht.'
     },
   } as const;
 
@@ -159,7 +159,7 @@ const VehicleSelection: React.FC<VehicleSelectionProps> = ({ rideData, onSelect,
       ratePerMile: 2.75,
       seats: 4,
       bags: 4,
-      img: '/images/vehicles/mitsubishi-outlander.png',
+      img: '/images/vehicles/mitsubishi-outlander-2.png',
       tag: 'Family Favorite',
       desc: 'Spacious and commanding. Ideal for families with luggage.'
     },

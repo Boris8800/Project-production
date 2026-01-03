@@ -66,7 +66,7 @@ export default function CustomerMagicLoginClient() {
 
           <div className="relative max-w-3xl mx-auto text-center">
             <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white mb-6 font-display tracking-tight">
-              TransferLane
+              Transferline
             </h1>
             <p className="text-xl text-slate-600 dark:text-slate-200 max-w-2xl mx-auto font-medium leading-relaxed">
               Magic link sign-in

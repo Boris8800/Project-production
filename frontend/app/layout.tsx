@@ -17,8 +17,8 @@ const sourceSerif = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'TransferLane',
-  description: 'TransferLane',
+  title: 'Transferline',
+  description: 'Transferline',
   icons: {
     shortcut: '/favicon.ico',
     icon: [

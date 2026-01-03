@@ -40,7 +40,7 @@ export class PdfGeneratorService {
       doc
         .fontSize(24)
         .font('Helvetica-Bold')
-        .text('TransferLane', { align: 'left' })
+        .text('Transferline', { align: 'left' })
         .fontSize(10)
         .font('Helvetica')
         .text('Premium Executive Travel Services', { align: 'left' })
@@ -212,7 +212,7 @@ export class PdfGeneratorService {
         .fontSize(8)
         .font('Helvetica')
         .text(
-          'Thank you for choosing TransferLane. For questions about this invoice, please contact support@transferlane.com',
+          'Thank you for choosing Transferline. For questions about this invoice, please contact support@transferline.com',
           50,
           700,
           { align: 'center', width: 500 },

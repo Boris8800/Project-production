@@ -1,6 +1,6 @@
-# TransferLane Images Directory
+# Transferline Images Directory
 
-This folder contains all images used in the TransferLane premium travel website.
+This folder contains all images used in the Transferline premium travel website.
 
 ## 📁 Folder Structure
 

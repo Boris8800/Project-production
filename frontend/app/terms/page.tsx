@@ -38,7 +38,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6 font-display">1. Acceptance of Terms</h2>
             <div className="text-slate-600 dark:text-slate-200 leading-relaxed space-y-4 text-sm font-medium">
               <p>
-                By accessing and using TransferLane (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you must refrain from using our chauffeur and intercity travel services.
+                By accessing and using Transferline (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you must refrain from using our chauffeur and intercity travel services.
               </p>
             </div>
           </section>
@@ -47,7 +47,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6 font-display">2. Service Provision</h2>
             <div className="text-slate-600 dark:text-slate-200 leading-relaxed space-y-4 text-sm font-medium">
               <p>
-                TransferLane provides executive private transportation services across the United Kingdom. We reserve the right to modify or discontinue any aspect of the service at any time without prior notice.
+                Transferline provides executive private transportation services across the United Kingdom. We reserve the right to modify or discontinue any aspect of the service at any time without prior notice.
               </p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>All bookings are subject to vehicle and chauffeur availability.</li>
@@ -85,7 +85,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6 font-display">5. Liability</h2>
             <div className="text-slate-600 dark:text-slate-200 leading-relaxed space-y-4 text-sm font-medium">
               <p>
-                TransferLane holds comprehensive commercial insurance for all vehicles and passengers. However, we are not liable for delays caused by circumstances beyond our control (force majeure), including extreme weather, road closures, or industrial action.
+                Transferline holds comprehensive commercial insurance for all vehicles and passengers. However, we are not liable for delays caused by circumstances beyond our control (force majeure), including extreme weather, road closures, or industrial action.
               </p>
             </div>
           </section>

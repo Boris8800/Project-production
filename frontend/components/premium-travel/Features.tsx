@@ -9,7 +9,7 @@ const Features: React.FC = () => {
   const translations = {
     [Language.EN]: {
       badge: 'Our Commitment',
-      title: 'Why Choose TransferLane?',
+      title: 'Why Choose Transferline?',
       sub: 'We redefine long-distance travel with professional drivers and a heritage of excellence.',
       f1_title: 'Premium Comfort',
       f1_desc: 'Spacious legroom, climate control, and pristine interiors ensure you arrive refreshed, no matter the distance.',
@@ -20,7 +20,7 @@ const Features: React.FC = () => {
     },
     [Language.ES]: {
       badge: 'Nuestro Compromiso',
-      title: '¿Por Qué Elegir TransferLane?',
+      title: '¿Por Qué Elegir Transferline?',
       sub: 'Redefinimos los viajes de larga distancia con conductores profesionales y una herencia de excelencia.',
       f1_title: 'Confort Premium',
       f1_desc: 'Espacio amplio para las piernas, climatización e interiores impecables que garantizan que llegue descansado.',
@@ -31,7 +31,7 @@ const Features: React.FC = () => {
     },
     [Language.FR]: {
       badge: 'Notre Engagement',
-      title: 'Pourquoi Choisir TransferLane?',
+      title: 'Pourquoi Choisir Transferline?',
       sub: 'Nous redéfinissons les voyages longue distance avec des chauffeurs professionnels et une tradition d\'excellence.',
       f1_title: 'Confort Premium',
       f1_desc: 'Espace pour les jambes, climatisation et intérieurs impeccables pour arriver reposé.',
@@ -42,7 +42,7 @@ const Features: React.FC = () => {
     },
     [Language.DE]: {
       badge: 'Unser Engagement',
-      title: 'Warum TransferLane?',
+      title: 'Warum Transferline?',
       sub: 'Wir definieren Fernreisen mit professionellen Fahrern und Exzellenz neu.',
       f1_title: 'Premium-Komfort',
       f1_desc: 'Viel Beinfreiheit, Klimaanlage und makellose Innenräume.',

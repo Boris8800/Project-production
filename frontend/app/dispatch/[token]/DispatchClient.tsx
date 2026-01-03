@@ -195,7 +195,7 @@ export default function DispatchClient({
           <section className="rounded-[28px] bg-white/80 dark:bg-white/5 backdrop-blur-sm border border-gray-100 dark:border-white/10 shadow-3xl p-6 md:p-10">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
               <div className="grid gap-2">
-                <div className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-200">TransferLane</div>
+                <div className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-200">Transferline</div>
                 <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white font-display tracking-tight">
                   {title}
                 </h1>

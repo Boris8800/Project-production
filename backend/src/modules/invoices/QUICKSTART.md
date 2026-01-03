@@ -31,7 +31,7 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
-SMTP_FROM="TransferLane <noreply@transferlane.com>"
+SMTP_FROM="Transferline <noreply@transferline.com>"
 ```
 
 ### 3. Integrate with Trip Completion

@@ -78,7 +78,7 @@ export class EmailService {
 
     try {
       const info = await this.transporter.sendMail({
-        from: process.env.SMTP_FROM || '"TransferLane" <noreply@transferlane.com>',
+        from: process.env.SMTP_FROM || '"Transferline" <noreply@transferline.com>',
         to: options.to,
         subject: options.subject,
         text: options.text,
@@ -119,7 +119,7 @@ export class EmailService {
       journeyDate?: string;
     },
   ): Promise<boolean> {
-    const subject = `Your TransferLane Invoice - ${invoiceNumber}`;
+    const subject = `Your Transferline Invoice - ${invoiceNumber}`;
     
     const html = this.generateInvoiceEmailHtml(invoiceNumber, details);
     const text = this.generateInvoiceEmailText(invoiceNumber, details);
@@ -131,7 +131,7 @@ export class EmailService {
       text,
       attachments: [
         {
-          filename: `TransferLane-Invoice-${invoiceNumber}.pdf`,
+          filename: `Transferline-Invoice-${invoiceNumber}.pdf`,
           content: pdfBuffer,
           contentType: 'application/pdf',
         },
@@ -181,7 +181,7 @@ export class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>TransferLane</h1>
+            <h1>Transferline</h1>
             <p>Premium Executive Travel Services</p>
           </div>
           
@@ -191,7 +191,7 @@ export class EmailService {
             </p>
             
             <p>
-              Thank you for choosing TransferLane for your recent journey. We hope you had a pleasant and comfortable experience.
+              Thank you for choosing Transferline for your recent journey. We hope you had a pleasant and comfortable experience.
             </p>
             
             <div class="invoice-details">
@@ -238,15 +238,15 @@ export class EmailService {
             
             <p style="margin-top: 30px;">
               Best regards,<br>
-              <strong>The TransferLane Team</strong>
+              <strong>The Transferline Team</strong>
             </p>
           </div>
           
           <div class="footer">
-            <p>TransferLane Premium Executive Travel</p>
+            <p>Transferline Premium Executive Travel</p>
             <p>United Kingdom</p>
             <p>
-              <a href="mailto:support@transferlane.com" style="color: #0066cc;">support@transferlane.com</a>
+              <a href="mailto:support@transferline.com" style="color: #0066cc;">support@transferline.com</a>
             </p>
             <p style="margin-top: 15px; font-size: 11px; color: #999;">
               This is an automated email. Please do not reply directly to this message.
@@ -270,11 +270,11 @@ export class EmailService {
     },
   ): string {
     return `
-TransferLane - Premium Executive Travel
+Transferline - Premium Executive Travel
 
 Dear ${details.customerName || 'Valued Customer'},
 
-Thank you for choosing TransferLane for your recent journey.
+Thank you for choosing Transferline for your recent journey.
 
 INVOICE DETAILS
 Invoice Number: ${invoiceNumber}
@@ -286,13 +286,13 @@ TOTAL AMOUNT (including VAT): ${details.totalAmount}
 
 Your detailed invoice is attached to this email as a PDF document.
 
-If you have any questions, please contact us at support@transferlane.com
+If you have any questions, please contact us at support@transferline.com
 
 Best regards,
-The TransferLane Team
+The Transferline Team
 
 ---
-TransferLane Premium Executive Travel
+Transferline Premium Executive Travel
 United Kingdom
     `.trim();
   }
@@ -309,7 +309,7 @@ United Kingdom
       driverName?: string;
     },
   ): Promise<boolean> {
-    const subject = 'Journey Completed - Thank You for Choosing TransferLane';
+    const subject = 'Journey Completed - Thank You for Choosing Transferline';
     
     const html = `
       <!DOCTYPE html>
@@ -334,7 +334,7 @@ United Kingdom
             ${details.driverName ? `<p>Your chauffeur, ${details.driverName}, thanks you for your business.</p>` : ''}
             <p>Your invoice will be sent to you shortly in a separate email.</p>
             <p>We hope you had a pleasant experience and look forward to serving you again.</p>
-            <p>Best regards,<br>The TransferLane Team</p>
+            <p>Best regards,<br>The Transferline Team</p>
           </div>
         </div>
       </body>

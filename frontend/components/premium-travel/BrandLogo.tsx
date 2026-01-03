@@ -20,7 +20,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ className = '', size = 40 }) => {
       {!imgError ? (
         <Image
           src={logoSrc}
-          alt="TransferLane"
+          alt="Transferline"
           width={size}
           height={size}
           sizes={`${size}px`}

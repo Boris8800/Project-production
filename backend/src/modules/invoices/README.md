@@ -40,7 +40,7 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
-SMTP_FROM="TransferLane <noreply@transferlane.com>"
+SMTP_FROM="Transferline <noreply@transferline.com>"
 ```
 
 See [INTEGRATION.md](./INTEGRATION.md) for provider-specific examples (Gmail, SendGrid, AWS SES).
@@ -169,7 +169,7 @@ Check logs for delivery status:
 ### Automatic Generation (After Trip Completion
 
 The PDF generator creates professional invoices with:
-- **Company Header**: TransferLane branding
+- **Company Header**: Transferline branding
 - **Invoice Details**: Number, date, booking ID
 - **Customer Information**: Email and phone
 - *Security
@@ -247,7 +247,7 @@ The `invoices` table (already exists in migrations):
 For issues or questions:
 - Check [INTEGRATION.md](./INTEGRATION.md) for setup guide
 - Review console logs for error details
-- Contact: support@transferlane.com
+- Contact: support@transferline.com
 ## Currency Support
 
 The system supports multiple currencies (GBP, EUR, USD) with proper symbol formatting:
