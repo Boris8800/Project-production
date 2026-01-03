@@ -537,7 +537,7 @@ const Hero: React.FC<HeroProps> = ({ onEstimate, selectedVehicleClass }) => {
                     min={mounted ? minAllowedDate : undefined}
                     ref={dateInputRef}
                     onClick={openNativeDatePicker}
-                    className="w-full pl-14 pr-4 py-4 rounded-[18px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-sm font-bold transition-all outline-none text-slate-900 dark:text-white" 
+                    className="w-full h-14 pl-14 pr-4 py-0 rounded-[18px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-base leading-tight font-bold transition-all outline-none text-slate-900 dark:text-white" 
                   />
                 </div>
 
@@ -551,7 +551,7 @@ const Hero: React.FC<HeroProps> = ({ onEstimate, selectedVehicleClass }) => {
                     min={mounted ? minTimeForSelectedDate : undefined}
                     ref={timeInputRef}
                     onClick={openNativeTimePicker}
-                    className="w-full pl-14 pr-4 py-4 rounded-[18px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-sm font-bold transition-all outline-none text-slate-900 dark:text-white"
+                    className="w-full h-14 pl-14 pr-4 py-0 rounded-[18px] bg-slate-100 dark:bg-background-dark/60 border-2 border-slate-200 dark:border-transparent focus:border-primary/40 text-base leading-tight font-bold transition-all outline-none text-slate-900 dark:text-white"
                   />
                 </div>
                 

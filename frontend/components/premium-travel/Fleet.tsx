@@ -114,24 +114,30 @@ const FleetCard: React.FC<VehicleCardProps> = ({ vehicle, index, isVisible, onSe
 
   const t = translations[language];
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+  const handleMove = (clientX: number, clientY: number) => {
     if (reduceMotion) return;
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    const moveX = (e.clientX - centerX) / (rect.width / 2);
-    const moveY = (e.clientY - centerY) / (rect.height / 2);
+    const moveX = (clientX - centerX) / (rect.width / 2);
+    const moveY = (clientY - centerY) / (rect.height / 2);
     setOffset({ x: moveX * -12, y: moveY * -12 });
   };
 
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => handleMove(e.clientX, e.clientY);
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => handleMove(e.clientX, e.clientY);
+
   const handlePointerLeave = () => setOffset({ x: 0, y: 0 });
+  const handleMouseLeave = () => setOffset({ x: 0, y: 0 });
 
   return (
     <div 
       ref={cardRef}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       style={{ transitionDelay: `${index * 150}ms` }}
       className={`group relative rounded-[32px] overflow-hidden bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 hover:shadow-3xl flex flex-col h-full transition-all duration-1000 ease-out transform ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
