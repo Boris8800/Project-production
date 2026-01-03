@@ -21,6 +21,8 @@ Thumbs.db
 backend/dist/
 frontend/.next/
 frontend/out/
+transfer-line-travel/dist/
+frontend/.next-dev.out.log
 
 # Next.js lint output
 frontend/.next-lint.json
